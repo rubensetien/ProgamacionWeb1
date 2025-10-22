@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 import { useAuth } from '../context/AuthContext';
 import Avatar from './Avatar';
+import { reproducirNotificacion } from '../utils/soundUtils';
 import '../styles/Chat.css';
 
 const ChatAdmin = () => {
@@ -12,6 +13,7 @@ const ChatAdmin = () => {
   const [mensajes, setMensajes] = useState([]);
   const [inputMensaje, setInputMensaje] = useState('');
   const [escribiendo, setEscribiendo] = useState(false);
+  const [totalMensajesSinLeer, setTotalMensajesSinLeer] = useState(0);
   const mensajesEndRef = useRef(null);
 
   useEffect(() => {
@@ -28,11 +30,20 @@ const ChatAdmin = () => {
     });
 
     newSocket.on('lista-salas', (salas) => {
+      console.log('📋 Salas recibidas:', salas);
       setSalasActivas(salas);
+      
+      // Calcular total de mensajes sin leer
+      const total = salas.reduce((acc, sala) => acc + (sala.mensajesSinLeer || 0), 0);
+      setTotalMensajesSinLeer(total);
     });
 
-    newSocket.on('nueva-solicitud-chat', ({ userId, email }) => {
-      setSalasActivas((prev) => [...prev, { userId, email, mensajesSinLeer: 0 }]);
+    newSocket.on('nueva-solicitud-chat', ({ userId, email, mensajesSinLeer }) => {
+      console.log('🆕 Nueva solicitud de chat:', userId, email);
+      setSalasActivas((prev) => [...prev, { userId, email, mensajesSinLeer: mensajesSinLeer || 0 }]);
+      
+      // Reproducir sonido de notificación
+      reproducirNotificacion();
     });
 
     newSocket.on('historial-mensajes', ({ userId, messages }) => {
@@ -45,6 +56,7 @@ const ChatAdmin = () => {
       if (salaSeleccionada === mensaje.userId) {
         setMensajes((prev) => [...prev, mensaje]);
       } else {
+        // Incrementar contador de mensajes sin leer
         setSalasActivas((prev) =>
           prev.map((sala) =>
             sala.userId === mensaje.userId
@@ -52,7 +64,43 @@ const ChatAdmin = () => {
               : sala
           )
         );
+        setTotalMensajesSinLeer(prev => prev + 1);
       }
+    });
+
+    // Nuevo evento: mensaje sin leer de otro admin
+    newSocket.on('nuevo-mensaje-sin-leer', ({ userId, email, mensaje }) => {
+      console.log('📬 Nuevo mensaje sin leer:', userId, email);
+      
+      setSalasActivas((prev) => {
+        const salaExiste = prev.find(s => s.userId === userId);
+        if (salaExiste) {
+          return prev.map((sala) =>
+            sala.userId === userId
+              ? { ...sala, mensajesSinLeer: (sala.mensajesSinLeer || 0) + 1 }
+              : sala
+          );
+        } else {
+          // Si la sala no existe, agregarla
+          return [...prev, { userId, email, mensajesSinLeer: 1 }];
+        }
+      });
+      
+      setTotalMensajesSinLeer(prev => prev + 1);
+      
+      // Reproducir sonido de notificación
+      reproducirNotificacion();
+    });
+
+    // Mensajes leídos
+    newSocket.on('mensajes-leidos', ({ userId }) => {
+      setSalasActivas((prev) =>
+        prev.map((sala) =>
+          sala.userId === userId
+            ? { ...sala, mensajesSinLeer: 0 }
+            : sala
+        )
+      );
     });
 
     newSocket.on('usuario-escribiendo', ({ userId }) => {
@@ -75,6 +123,12 @@ const ChatAdmin = () => {
     };
   }, [usuario, salaSeleccionada]);
 
+  // Recalcular total de mensajes sin leer cuando cambien las salas
+  useEffect(() => {
+    const total = salasActivas.reduce((acc, sala) => acc + (sala.mensajesSinLeer || 0), 0);
+    setTotalMensajesSinLeer(total);
+  }, [salasActivas]);
+
   useEffect(() => {
     mensajesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [mensajes]);
@@ -83,11 +137,19 @@ const ChatAdmin = () => {
     setSalaSeleccionada(userId);
     setMensajes([]);
     
+    // Obtener mensajes sin leer antes de resetear
+    const sala = salasActivas.find(s => s.userId === userId);
+    const mensajesSinLeerSala = sala?.mensajesSinLeer || 0;
+    
+    // Resetear mensajes sin leer de esta sala
     setSalasActivas((prev) =>
       prev.map((sala) =>
         sala.userId === userId ? { ...sala, mensajesSinLeer: 0 } : sala
       )
     );
+    
+    // Decrementar total
+    setTotalMensajesSinLeer(prev => Math.max(0, prev - mensajesSinLeerSala));
     
     if (socket) {
       socket.emit('admin-unirse-chat', { userId });
@@ -107,7 +169,8 @@ const ChatAdmin = () => {
         id: Date.now(),
         texto: inputMensaje,
         emisor: 'admin',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        leido: false
       };
       setMensajes((prev) => [...prev, nuevoMensaje]);
       setInputMensaje('');
@@ -136,7 +199,14 @@ const ChatAdmin = () => {
   return (
     <div className="chat-admin-container">
       <div className="salas-lista">
-        <h3>Chats Activos ({salasActivas.length})</h3>
+        <div className="salas-header">
+          <h3>Chats Activos ({salasActivas.length})</h3>
+          {totalMensajesSinLeer > 0 && (
+            <span className="total-sin-leer-badge" title="Total de mensajes sin leer">
+              {totalMensajesSinLeer}
+            </span>
+          )}
+        </div>
         {salasActivas.length === 0 ? (
           <p className="sin-chats">No hay chats activos</p>
         ) : (
@@ -144,7 +214,7 @@ const ChatAdmin = () => {
             {salasActivas.map((sala) => (
               <li
                 key={sala.userId}
-                className={salaSeleccionada === sala.userId ? 'activa' : ''}
+                className={`${salaSeleccionada === sala.userId ? 'activa' : ''} ${sala.mensajesSinLeer > 0 ? 'con-sin-leer' : ''}`}
                 onClick={() => seleccionarSala(sala.userId)}
               >
                 <div className="sala-item">
@@ -152,7 +222,7 @@ const ChatAdmin = () => {
                   <div className="sala-info">
                     <span className="sala-email">{sala.email}</span>
                     {sala.mensajesSinLeer > 0 && (
-                      <span className="badge-sin-leer">{sala.mensajesSinLeer}</span>
+                      <span className="badge-sin-leer pulse">{sala.mensajesSinLeer}</span>
                     )}
                   </div>
                 </div>
@@ -190,12 +260,19 @@ const ChatAdmin = () => {
                   )}
                   <div className="mensaje-contenido">
                     <p>{msg.texto}</p>
-                    <span className="mensaje-timestamp">
-                      {new Date(msg.timestamp).toLocaleTimeString('es-ES', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </span>
+                    <div className="mensaje-footer">
+                      <span className="mensaje-timestamp">
+                        {new Date(msg.timestamp).toLocaleTimeString('es-ES', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                      {msg.emisor !== 'sistema' && (
+                        <span className="mensaje-estado">
+                          {msg.leido ? '✓✓' : '✓'}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

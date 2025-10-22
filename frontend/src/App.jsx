@@ -2,7 +2,7 @@ import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import LoginForm from './components/LoginForm.jsx';
 import ProductosList from './components/ProductosList.jsx';
 import ChatUsuario from './components/ChatUsuario.jsx';
-import ChatAdmin from './components/ChatAdmin.jsx';
+import AdminLayout from './components/AdminLayout.jsx';
 import './App.css';
 
 function AppContent() {
@@ -12,12 +12,16 @@ function AppContent() {
     return <LoginForm />;
   }
 
+  // Si es admin, mostrar el layout completo con menú
+  if (usuario?.rol === 'admin') {
+    return <AdminLayout />;
+  }
+
+  // Si es usuario normal, mostrar catálogo + chat flotante
   return (
     <>
       <ProductosList />
-      
-      {/* Mostrar chat según el rol del usuario */}
-      {usuario?.rol === 'admin' ? <ChatAdmin /> : <ChatUsuario />}
+      <ChatUsuario />
     </>
   );
 }
