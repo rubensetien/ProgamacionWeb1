@@ -1,7 +1,7 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import Producto from '../models/Producto.js';
-import { authBasic } from '../middlewares/authBasic.js';
+import authBasic  from '../middlewares/authBasic.js';
 import { authorizeRole } from '../middlewares/authorizeRole.js';
 
 const router = express.Router();
@@ -22,13 +22,21 @@ const validacionProducto = [
 
 router.get('/', authBasic, authorizeRole(['admin', 'user']), async (req, res, next) => {
   try {
-    const productos = await Producto.find();
+    const { busqueda } = req.query;
+    
+    let filtro = {};
+    if (busqueda && busqueda.trim()) {
+      filtro = {
+        nombre: { $regex: busqueda, $options: 'i' }  // Búsqueda case-insensitive
+      };
+    }
+    
+    const productos = await Producto.find(filtro);
     res.json(productos);
   } catch (err) {
     next(err);
   }
 });
-
 router.get('/:id', authBasic, authorizeRole(['admin', 'user']), async (req, res, next) => {
   try {
     const producto = await Producto.findById(req.params.id);

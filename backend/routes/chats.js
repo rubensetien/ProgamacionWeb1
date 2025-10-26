@@ -1,6 +1,6 @@
 import express from 'express';
 import Chat from '../models/Chat.js';
-import { authBasic } from '../middlewares/authBasic.js';
+import  authBasic  from '../middlewares/authBasic.js';
 import { authorizeRole } from '../middlewares/authorizeRole.js';
 
 const router = express.Router();

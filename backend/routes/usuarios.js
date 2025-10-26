@@ -1,5 +1,5 @@
 import express from 'express';
-import { authBasic } from '../middlewares/authBasic.js';
+import  authBasic  from '../middlewares/authBasic.js';
 import Usuario from '../models/Usuario.js';
 
 const router = express.Router();

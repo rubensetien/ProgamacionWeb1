@@ -1,18 +1,29 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext();
+const API_URL = 'http://localhost:3001';
 
 export const AuthProvider = ({ children }) => {
   const [usuario, setUsuario] = useState(null);
   const [autenticado, setAutenticado] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Cargar usuario desde localStorage al iniciar
+  useEffect(() => {
+    const usuarioGuardado = localStorage.getItem('usuario');
+    const token = localStorage.getItem('accessToken');
+    if (usuarioGuardado && token) {
+      setUsuario(JSON.parse(usuarioGuardado));
+      setAutenticado(true);
+    }
+  }, []);
+
   const crearHeaderAuth = () => {
-    if (!usuario) return {};
-    const credenciales = `${usuario.email}:${usuario.password}`;
-    const base64 = btoa(credenciales);
+    const token = localStorage.getItem('accessToken');
+    if (!token) return { 'Content-Type': 'application/json' };
+    
     return {
-      'Authorization': `Basic ${base64}`,
+      'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
     };
   };
@@ -20,27 +31,21 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     setLoading(true);
     try {
-      const credenciales = `${email}:${password}`;
-      const base64 = btoa(credenciales);
-
-      // Obtener usuario desde backend para saber su rol
-      const res = await fetch('http://localhost:3001/usuarios/perfil', {
-        headers: {
-          'Authorization': `Basic ${base64}`,
-        },
+      const res = await fetch(`${API_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, password }),
       });
 
       if (!res.ok) throw new Error('Credenciales inválidas');
 
-      const userData = await res.json();
+      const data = await res.json();
 
-      setUsuario({ 
-        email, 
-        password, 
-        rol: userData.rol,
-        nombre: userData.nombre,
-        id: userData._id 
-      });
+      localStorage.setItem('accessToken', data.accessToken);
+      localStorage.setItem('usuario', JSON.stringify(data.usuario));
+
+      setUsuario(data.usuario);
       setAutenticado(true);
       return true;
     } catch (err) {
@@ -50,9 +55,30 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    setAutenticado(false);
-    setUsuario(null);
+  const logout = async () => {
+    try {
+      await fetch(`${API_URL}/api/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (err) {
+      console.error('Error al cerrar sesión:', err);
+    } finally {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('usuario');
+      setAutenticado(false);
+      setUsuario(null);
+    }
+  };
+
+  // Maneja errores 401 (token expirado)
+  const manejarError401 = (response) => {
+    if (response.status === 401) {
+      logout();
+      alert('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+      return true;
+    }
+    return false;
   };
 
   return (
@@ -63,6 +89,7 @@ export const AuthProvider = ({ children }) => {
       login,
       logout,
       crearHeaderAuth,
+      manejarError401,
     }}>
       {children}
     </AuthContext.Provider>

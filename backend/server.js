@@ -7,8 +7,10 @@ import cors from 'cors';
 import morgan from 'morgan';
 import productosRoutes from './routes/productos.js';
 import usuariosRoutes from './routes/usuarios.js';
+import authRoutes from './routes/auth.js';  // AÑADIR ESTA LÍNEA
 import { errorHandler } from './middlewares/errorHandler.js';
 import Chat from './models/Chat.js';
+import cookieParser from 'cookie-parser';
 
 dotenv.config();
 
@@ -28,6 +30,7 @@ app.use(
   })
 );
 app.use(express.json());
+app.use(cookieParser());  // AÑADIR ESTA LÍNEA
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
 mongoose
@@ -35,8 +38,9 @@ mongoose
   .then(() => console.log('✅ Conectado a MongoDB'))
   .catch((err) => console.error('❌ Error al conectar a MongoDB:', err));
 
-app.use('/productos', productosRoutes);
-app.use('/usuarios', usuariosRoutes);
+app.use('/api/auth', authRoutes);  // AÑADIR ESTA LÍNEA
+app.use('/api/productos', productosRoutes);  // CAMBIAR A /api/productos
+app.use('/api/usuarios', usuariosRoutes);  // CAMBIAR A /api/usuarios
 
 app.get('/', (req, res) => {
   res.json({ mensaje: 'API de Productos funcionando ✅' });

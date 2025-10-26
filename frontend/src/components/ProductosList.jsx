@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 
-const API_URL = 'http://localhost:3001';
+const API_URL = 'http://localhost:3001/api';
 
 export default function ProductosList() {
-  const { usuario, logout, crearHeaderAuth } = useAuth();
+  const { usuario, logout, crearHeaderAuth, manejarError401 } = useAuth();
   const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState(null);
@@ -27,7 +27,13 @@ export default function ProductosList() {
   const cargarProductos = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/productos`, { headers: crearHeaderAuth() });
+      const res = await fetch(`${API_URL}/productos`, { 
+        headers: crearHeaderAuth(),
+        credentials: 'include'
+      });
+      
+      if (manejarError401(res)) return;
+      
       if (!res.ok) throw new Error('Error al cargar productos');
       const data = await res.json();
       setProductos(data);
@@ -49,7 +55,13 @@ export default function ProductosList() {
     }
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/productos?busqueda=${encodeURIComponent(valor)}`, { headers: crearHeaderAuth() });
+      const res = await fetch(`${API_URL}/productos?busqueda=${encodeURIComponent(valor)}`, { 
+        headers: crearHeaderAuth(),
+        credentials: 'include'
+      });
+      
+      if (manejarError401(res)) return;
+      
       if (!res.ok) throw new Error('Error en búsqueda');
       const data = await res.json();
       setProductos(data);
@@ -79,8 +91,12 @@ export default function ProductosList() {
       const res = await fetch(`${API_URL}/productos`, {
         method: 'POST',
         headers: crearHeaderAuth(),
+        credentials: 'include',
         body: JSON.stringify(nuevoProducto),
       });
+      
+      if (manejarError401(res)) return;
+      
       if (!res.ok) throw new Error('Error al añadir producto');
       setNuevoProducto({ nombre: '', precio: '', descripcion: '' });
       cargarProductos();
@@ -96,7 +112,14 @@ export default function ProductosList() {
     if (!window.confirm('¿Seguro que deseas eliminar este producto?')) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/productos/${id}`, { method: 'DELETE', headers: crearHeaderAuth() });
+      const res = await fetch(`${API_URL}/productos/${id}`, { 
+        method: 'DELETE', 
+        headers: crearHeaderAuth(),
+        credentials: 'include'
+      });
+      
+      if (manejarError401(res)) return;
+      
       if (!res.ok) throw new Error('Error al eliminar');
       cargarProductos();
       mostrarMensaje('Producto eliminado', 'ok');
@@ -127,8 +150,12 @@ export default function ProductosList() {
       const res = await fetch(`${API_URL}/productos/${id}`, {
         method: 'PUT',
         headers: crearHeaderAuth(),
+        credentials: 'include',
         body: JSON.stringify(editando),
       });
+      
+      if (manejarError401(res)) return;
+      
       if (!res.ok) throw new Error('Error al actualizar');
       const data = await res.json();
       setProductos(productos.map((p) => (p._id === id ? data : p)));
