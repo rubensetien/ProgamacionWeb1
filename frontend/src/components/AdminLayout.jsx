@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import ProductosList from './ProductosList';
 import ChatAdmin from './ChatAdmin';
+import RegisterAdmin from './RegisterAdmin';
 import '../styles/AdminLayout.css';
 
 const AdminLayout = () => {
   const { logout, usuario } = useAuth();
-  const [vistaActual, setVistaActual] = useState('catalogo'); // 'catalogo' o 'chat'
+  const [vistaActual, setVistaActual] = useState('catalogo'); // 'catalogo' | 'chat' | 'registrar'
+  const [mostrarModalRegistro, setMostrarModalRegistro] = useState(false);
 
   return (
     <div className="admin-layout">
@@ -44,6 +46,15 @@ const AdminLayout = () => {
             <span className="nav-icon">💬</span>
             <span className="nav-text">Chats</span>
           </button>
+
+          {/* NUEVO: Botón Registrar Admin */}
+          <button
+            className="nav-item"
+            onClick={() => setMostrarModalRegistro(true)}
+          >
+            <span className="nav-icon">👨‍💼</span>
+            <span className="nav-text">Registrar Admin</span>
+          </button>
         </nav>
 
         <div className="sidebar-footer">
@@ -71,6 +82,11 @@ const AdminLayout = () => {
           {vistaActual === 'catalogo' ? <ProductosList /> : <ChatAdmin />}
         </div>
       </main>
+
+      {/* Modal de Registro de Admin */}
+      {mostrarModalRegistro && (
+        <RegisterAdmin onClose={() => setMostrarModalRegistro(false)} />
+      )}
     </div>
   );
 };
