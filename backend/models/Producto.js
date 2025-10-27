@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const productoSchema = new mongoose.Schema({
   nombre: {
@@ -15,7 +15,13 @@ const productoSchema = new mongoose.Schema({
     type: String,
     required: [true, 'La descripción es obligatoria'],
     minlength: [5, 'La descripción debe tener al menos 5 caracteres']
+  },
+  imagen: {
+    type: String,
+    default: null // Ruta a la imagen: /uploads/producto-123456.jpg
   }
+}, {
+  timestamps: true
 });
 
-module.exports = mongoose.model('Producto', productoSchema);
+export default mongoose.model('Producto', productoSchema);

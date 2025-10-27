@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 
 const API_URL = 'http://localhost:3001/api';
+const BASE_URL = 'http://localhost:3001';
 
 export default function ProductosList() {
   const { usuario, logout, crearHeaderAuth, manejarError401 } = useAuth();
@@ -15,7 +16,17 @@ export default function ProductosList() {
   const [ordenAsc, setOrdenAsc] = useState(true);
   const porPagina = 5;
   const esAdmin = usuario?.rol === 'admin';
-  const [nuevoProducto, setNuevoProducto] = useState({ nombre: '', precio: '', descripcion: '' });
+  const [nuevoProducto, setNuevoProducto] = useState({ 
+    nombre: '', 
+    precio: '', 
+    descripcion: '',
+    imagen: null 
+  });
+  const [previewImagen, setPreviewImagen] = useState(null);
+  const [imagenEditando, setImagenEditando] = useState(null);
+  const [previewEditando, setPreviewEditando] = useState(null);
+  const fileInputRef = useRef(null);
+  const fileInputEditRef = useRef(null);
 
   useEffect(() => { cargarProductos(); }, []);
 
@@ -72,6 +83,57 @@ export default function ProductosList() {
     }
   };
 
+  // Manejar selección de imagen para nuevo producto
+  const handleImagenChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validar tamaño (5MB máximo)
+      if (file.size > 5 * 1024 * 1024) {
+        mostrarMensaje('La imagen no debe superar 5MB', 'error');
+        return;
+      }
+      
+      // Validar tipo
+      if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type)) {
+        mostrarMensaje('Solo se permiten imágenes JPG, PNG o WEBP', 'error');
+        return;
+      }
+
+      setNuevoProducto({ ...nuevoProducto, imagen: file });
+      
+      // Crear preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImagen(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Manejar selección de imagen para editar producto
+  const handleImagenEditChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        mostrarMensaje('La imagen no debe superar 5MB', 'error');
+        return;
+      }
+      
+      if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type)) {
+        mostrarMensaje('Solo se permiten imágenes JPG, PNG o WEBP', 'error');
+        return;
+      }
+
+      setImagenEditando(file);
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewEditando(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleCrear = async (e) => {
     e.preventDefault();
     if (!nuevoProducto.nombre || nuevoProducto.nombre.length < 3) {
@@ -86,19 +148,37 @@ export default function ProductosList() {
       mostrarMensaje('La descripción debe tener al menos 5 caracteres', 'error');
       return;
     }
+
     setLoading(true);
     try {
+      // Crear FormData para enviar archivo
+      const formData = new FormData();
+      formData.append('nombre', nuevoProducto.nombre);
+      formData.append('precio', nuevoProducto.precio);
+      formData.append('descripcion', nuevoProducto.descripcion);
+      if (nuevoProducto.imagen) {
+        formData.append('imagen', nuevoProducto.imagen);
+      }
+
+      const token = localStorage.getItem('accessToken');
       const res = await fetch(`${API_URL}/productos`, {
         method: 'POST',
-        headers: crearHeaderAuth(),
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          // NO incluir 'Content-Type' cuando se usa FormData
+        },
         credentials: 'include',
-        body: JSON.stringify(nuevoProducto),
+        body: formData,
       });
       
       if (manejarError401(res)) return;
       
       if (!res.ok) throw new Error('Error al añadir producto');
-      setNuevoProducto({ nombre: '', precio: '', descripcion: '' });
+      
+      setNuevoProducto({ nombre: '', precio: '', descripcion: '', imagen: null });
+      setPreviewImagen(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      
       cargarProductos();
       mostrarMensaje('Producto añadido correctamente', 'ok');
     } catch (err) {
@@ -130,7 +210,11 @@ export default function ProductosList() {
     }
   };
 
-  const handleEditar = (producto) => { setEditando({ ...producto }); };
+  const handleEditar = (producto) => { 
+    setEditando({ ...producto });
+    setImagenEditando(null);
+    setPreviewEditando(null);
+  };
 
   const handleGuardar = async (id) => {
     if (!editando.nombre || editando.nombre.length < 3) {
@@ -145,13 +229,25 @@ export default function ProductosList() {
       mostrarMensaje('La descripción debe tener al menos 5 caracteres', 'error');
       return;
     }
+
     setLoading(true);
     try {
+      const formData = new FormData();
+      formData.append('nombre', editando.nombre);
+      formData.append('precio', editando.precio);
+      formData.append('descripcion', editando.descripcion);
+      if (imagenEditando) {
+        formData.append('imagen', imagenEditando);
+      }
+
+      const token = localStorage.getItem('accessToken');
       const res = await fetch(`${API_URL}/productos/${id}`, {
         method: 'PUT',
-        headers: crearHeaderAuth(),
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
         credentials: 'include',
-        body: JSON.stringify(editando),
+        body: formData,
       });
       
       if (manejarError401(res)) return;
@@ -160,6 +256,8 @@ export default function ProductosList() {
       const data = await res.json();
       setProductos(productos.map((p) => (p._id === id ? data : p)));
       setEditando(null);
+      setImagenEditando(null);
+      setPreviewEditando(null);
       mostrarMensaje('Producto actualizado', 'ok');
     } catch (err) {
       mostrarMensaje('Error al actualizar producto', 'error');
@@ -214,9 +312,50 @@ export default function ProductosList() {
 
       {esAdmin && (
         <div className="formulario">
-          <input type="text" placeholder="Nombre del helado" value={nuevoProducto.nombre} onChange={(e) => setNuevoProducto({ ...nuevoProducto, nombre: e.target.value })} />
-          <input type="number" step="0.01" placeholder="Precio (€)" value={nuevoProducto.precio} onChange={(e) => setNuevoProducto({ ...nuevoProducto, precio: e.target.value })} />
-          <input type="text" placeholder="Descripción" value={nuevoProducto.descripcion} onChange={(e) => setNuevoProducto({ ...nuevoProducto, descripcion: e.target.value })} />
+          <input 
+            type="text" 
+            placeholder="Nombre del helado" 
+            value={nuevoProducto.nombre} 
+            onChange={(e) => setNuevoProducto({ ...nuevoProducto, nombre: e.target.value })} 
+          />
+          <input 
+            type="number" 
+            step="0.01" 
+            placeholder="Precio (€)" 
+            value={nuevoProducto.precio} 
+            onChange={(e) => setNuevoProducto({ ...nuevoProducto, precio: e.target.value })} 
+          />
+          <input 
+            type="text" 
+            placeholder="Descripción" 
+            value={nuevoProducto.descripcion} 
+            onChange={(e) => setNuevoProducto({ ...nuevoProducto, descripcion: e.target.value })} 
+          />
+          
+          {/* Input de imagen */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <input 
+              type="file" 
+              ref={fileInputRef}
+              accept="image/jpeg,image/jpg,image/png,image/webp"
+              onChange={handleImagenChange}
+              style={{ flex: 1 }}
+            />
+            {previewImagen && (
+              <img 
+                src={previewImagen} 
+                alt="Preview" 
+                style={{ 
+                  width: '50px', 
+                  height: '50px', 
+                  objectFit: 'cover', 
+                  borderRadius: '8px',
+                  border: '2px solid #ff6600'
+                }} 
+              />
+            )}
+          </div>
+
           <button onClick={handleCrear} disabled={loading}>Añadir</button>
         </div>
       )}
@@ -227,6 +366,7 @@ export default function ProductosList() {
       <table>
         <thead>
           <tr>
+            <th>Imagen</th>
             <th onClick={() => ordenarPor('nombre')}>Nombre</th>
             <th onClick={() => ordenarPor('precio')}>Precio (€)</th>
             <th onClick={() => ordenarPor('descripcion')}>Descripción</th>
@@ -235,14 +375,109 @@ export default function ProductosList() {
         </thead>
         <tbody>
           {visibles.length === 0 ? (
-            <tr><td colSpan={esAdmin ? '4' : '3'} style={{ textAlign: 'center' }}>No hay productos</td></tr>
+            <tr><td colSpan={esAdmin ? '5' : '4'} style={{ textAlign: 'center' }}>No hay productos</td></tr>
           ) : (
             visibles.map((p) => (
               <tr key={p._id}>
-                <td>{esAdmin && editando?._id === p._id ? <input type="text" value={editando.nombre} onChange={(e) => setEditando({ ...editando, nombre: e.target.value })} /> : p.nombre}</td>
-                <td>{esAdmin && editando?._id === p._id ? <input type="number" step="0.01" value={editando.precio} onChange={(e) => setEditando({ ...editando, precio: e.target.value })} /> : `${p.precio.toFixed(2)}€`}</td>
-                <td>{esAdmin && editando?._id === p._id ? <input type="text" value={editando.descripcion} onChange={(e) => setEditando({ ...editando, descripcion: e.target.value })} /> : p.descripcion}</td>
-                {esAdmin && (<td>{editando?._id === p._id ? (<><button onClick={() => handleGuardar(p._id)} disabled={loading}>💾 Guardar</button><button onClick={() => setEditando(null)}>❌</button></>) : (<><button onClick={() => handleEditar(p)}>✏️ Editar</button><button onClick={() => handleEliminar(p._id)}>🗑️ Eliminar</button></>)}</td>)}
+                {/* Columna de Imagen */}
+                <td>
+                  {editando?._id === p._id && esAdmin ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
+                      <input 
+                        type="file"
+                        ref={fileInputEditRef}
+                        accept="image/jpeg,image/jpg,image/png,image/webp"
+                        onChange={handleImagenEditChange}
+                        style={{ fontSize: '11px' }}
+                      />
+                      {(previewEditando || editando.imagen) && (
+                        <img 
+                          src={previewEditando || `${BASE_URL}${editando.imagen}`}
+                          alt={editando.nombre}
+                          style={{ 
+                            width: '60px', 
+                            height: '60px', 
+                            objectFit: 'cover', 
+                            borderRadius: '8px' 
+                          }}
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    p.imagen ? (
+                      <img 
+                        src={`${BASE_URL}${p.imagen}`}
+                        alt={p.nombre}
+                        style={{ 
+                          width: '60px', 
+                          height: '60px', 
+                          objectFit: 'cover', 
+                          borderRadius: '8px',
+                          cursor: 'pointer'
+                        }}
+                        onClick={() => window.open(`${BASE_URL}${p.imagen}`, '_blank')}
+                      />
+                    ) : (
+                      <div style={{ 
+                        width: '60px', 
+                        height: '60px', 
+                        backgroundColor: '#f0f0f0',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '24px'
+                      }}>
+                        🍦
+                      </div>
+                    )
+                  )}
+                </td>
+
+                {/* Columna Nombre */}
+                <td>
+                  {esAdmin && editando?._id === p._id ? 
+                    <input type="text" value={editando.nombre} onChange={(e) => setEditando({ ...editando, nombre: e.target.value })} /> 
+                    : p.nombre
+                  }
+                </td>
+
+                {/* Columna Precio */}
+                <td>
+                  {esAdmin && editando?._id === p._id ? 
+                    <input type="number" step="0.01" value={editando.precio} onChange={(e) => setEditando({ ...editando, precio: e.target.value })} /> 
+                    : `${p.precio.toFixed(2)}€`
+                  }
+                </td>
+
+                {/* Columna Descripción */}
+                <td>
+                  {esAdmin && editando?._id === p._id ? 
+                    <input type="text" value={editando.descripcion} onChange={(e) => setEditando({ ...editando, descripcion: e.target.value })} /> 
+                    : p.descripcion
+                  }
+                </td>
+
+                {/* Columna Acciones (solo Admin) */}
+                {esAdmin && (
+                  <td>
+                    {editando?._id === p._id ? (
+                      <>
+                        <button onClick={() => handleGuardar(p._id)} disabled={loading}>💾 Guardar</button>
+                        <button onClick={() => {
+                          setEditando(null);
+                          setImagenEditando(null);
+                          setPreviewEditando(null);
+                        }}>❌</button>
+                      </>
+                    ) : (
+                      <>
+                        <button onClick={() => handleEditar(p)}>✏️ Editar</button>
+                        <button onClick={() => handleEliminar(p._id)}>🗑️ Eliminar</button>
+                      </>
+                    )}
+                  </td>
+                )}
               </tr>
             ))
           )}

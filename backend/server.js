@@ -32,6 +32,7 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());  // AÑADIR ESTA LÍNEA
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+app.use('/uploads', express.static('uploads'));
 
 mongoose
   .connect(process.env.MONGODB_URI)
