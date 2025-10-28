@@ -16,113 +16,153 @@ const ChatAdmin = () => {
   const [totalMensajesSinLeer, setTotalMensajesSinLeer] = useState(0);
   const mensajesEndRef = useRef(null);
 
-  useEffect(() => {
-    const newSocket = io('http://localhost:3001');
-    setSocket(newSocket);
+  // 🔔 Solicitar permiso para notificaciones al montar
+ useEffect(() => {
+  const newSocket = io('http://localhost:3001');
+  setSocket(newSocket);
 
-    newSocket.on('connect', () => {
-      console.log('Admin conectado al servidor de chat');
-      newSocket.emit('identificar', {
-        userId: usuario._id || usuario.email,
-        email: usuario.email,
-        role: 'admin'
+  newSocket.on('connect', () => {
+    console.log('Admin conectado al servidor de chat');
+    newSocket.emit('identificar', {
+      userId: usuario._id || usuario.email,
+      email: usuario.email,
+      role: 'admin'
+    });
+  });
+
+  newSocket.on('lista-salas', (salas) => {
+    console.log('📋 Salas recibidas:', salas);
+    setSalasActivas(salas);
+    
+    // Calcular total de mensajes sin leer
+    const total = salas.reduce((acc, sala) => acc + (sala.mensajesSinLeer || 0), 0);
+    setTotalMensajesSinLeer(total);
+  });
+
+  newSocket.on('nueva-solicitud-chat', ({ userId, email, mensajesSinLeer }) => {
+    console.log('🆕 Nueva solicitud de chat:', userId, email);
+    setSalasActivas((prev) => {
+      // Evitar duplicados
+      const existe = prev.find(s => s.userId === userId);
+      if (existe) return prev;
+      return [...prev, { userId, email, mensajesSinLeer: mensajesSinLeer || 0 }];
+    });
+    
+    // 🔊 Reproducir sonido de notificación
+    reproducirNotificacion();
+    
+    // 🔔 Notificación del navegador
+    if (Notification.permission === 'granted') {
+      new Notification('Nueva solicitud de chat', {
+        body: `${email} quiere iniciar un chat`,
+        icon: '🍦',
+        tag: 'nueva-solicitud',
+        requireInteraction: true
       });
-    });
+    }
+  });
 
-    newSocket.on('lista-salas', (salas) => {
-      console.log('📋 Salas recibidas:', salas);
-      setSalasActivas(salas);
-      
-      // Calcular total de mensajes sin leer
-      const total = salas.reduce((acc, sala) => acc + (sala.mensajesSinLeer || 0), 0);
-      setTotalMensajesSinLeer(total);
-    });
+  newSocket.on('historial-mensajes', ({ userId, messages }) => {
+    console.log('📜 Historial recibido para:', userId, messages);
+    if (salaSeleccionada === userId) {
+      setMensajes(messages);
+    }
+  });
 
-    newSocket.on('nueva-solicitud-chat', ({ userId, email, mensajesSinLeer }) => {
-      console.log('🆕 Nueva solicitud de chat:', userId, email);
-      setSalasActivas((prev) => [...prev, { userId, email, mensajesSinLeer: mensajesSinLeer || 0 }]);
-      
-      // Reproducir sonido de notificación
-      reproducirNotificacion();
-    });
-
-    newSocket.on('historial-mensajes', ({ userId, messages }) => {
-      if (salaSeleccionada === userId) {
-        setMensajes(messages);
-      }
-    });
-
-    newSocket.on('nuevo-mensaje', (mensaje) => {
-      if (salaSeleccionada === mensaje.userId) {
-        setMensajes((prev) => [...prev, mensaje]);
-      } else {
-        // Incrementar contador de mensajes sin leer
-        setSalasActivas((prev) =>
-          prev.map((sala) =>
-            sala.userId === mensaje.userId
-              ? { ...sala, mensajesSinLeer: (sala.mensajesSinLeer || 0) + 1 }
-              : sala
-          )
-        );
-        setTotalMensajesSinLeer(prev => prev + 1);
-      }
-    });
-
-    // Nuevo evento: mensaje sin leer de otro admin
-    newSocket.on('nuevo-mensaje-sin-leer', ({ userId, email, mensaje }) => {
-      console.log('📬 Nuevo mensaje sin leer:', userId, email);
-      
-      setSalasActivas((prev) => {
-        const salaExiste = prev.find(s => s.userId === userId);
-        if (salaExiste) {
-          return prev.map((sala) =>
-            sala.userId === userId
-              ? { ...sala, mensajesSinLeer: (sala.mensajesSinLeer || 0) + 1 }
-              : sala
-          );
-        } else {
-          // Si la sala no existe, agregarla
-          return [...prev, { userId, email, mensajesSinLeer: 1 }];
-        }
-      });
-      
-      setTotalMensajesSinLeer(prev => prev + 1);
-      
-      // Reproducir sonido de notificación
-      reproducirNotificacion();
-    });
-
-    // Mensajes leídos
-    newSocket.on('mensajes-leidos', ({ userId }) => {
+  newSocket.on('nuevo-mensaje', (mensaje) => {
+    console.log('📨 Nuevo mensaje recibido:', mensaje);
+    
+    if (salaSeleccionada === mensaje.userId) {
+      // Mensaje en sala activa - solo agregar a la lista
+      setMensajes((prev) => [...prev, mensaje]);
+    } else {
+      // Mensaje en otra sala - incrementar contador + notificar
       setSalasActivas((prev) =>
         prev.map((sala) =>
-          sala.userId === userId
-            ? { ...sala, mensajesSinLeer: 0 }
+          sala.userId === mensaje.userId
+            ? { ...sala, mensajesSinLeer: (sala.mensajesSinLeer || 0) + 1 }
             : sala
         )
       );
-    });
+      
+      // 🔊 Reproducir sonido SOLO si no es el mensaje del admin mismo
+      if (mensaje.emisor !== 'admin') {
+        reproducirNotificacion();
+        
+        // 🔔 Notificación del navegador
+        if (Notification.permission === 'granted') {
+          const sala = salasActivas.find(s => s.userId === mensaje.userId);
+          new Notification(`Nuevo mensaje de ${sala?.email || 'Usuario'}`, {
+            body: mensaje.texto.length > 50 
+              ? mensaje.texto.substring(0, 50) + '...' 
+              : mensaje.texto,
+            icon: '🍦',
+            tag: `mensaje-${mensaje.userId}`
+          });
+        }
+      }
+    }
+  });
 
-    newSocket.on('usuario-escribiendo', ({ userId }) => {
-      if (salaSeleccionada === userId) {
-        setEscribiendo(true);
-        setTimeout(() => setEscribiendo(false), 3000);
+  newSocket.on('nuevo-mensaje-sin-leer', ({ userId, email, mensaje }) => {
+    console.log('📬 Nuevo mensaje sin leer:', userId, email);
+    
+    setSalasActivas((prev) => {
+      const salaExiste = prev.find(s => s.userId === userId);
+      if (salaExiste) {
+        return prev.map((sala) =>
+          sala.userId === userId
+            ? { ...sala, mensajesSinLeer: (sala.mensajesSinLeer || 0) + 1 }
+            : sala
+        );
+      } else {
+        return [...prev, { userId, email, mensajesSinLeer: 1 }];
       }
     });
+    
+    // 🔊 Reproducir sonido
+    reproducirNotificacion();
+    
+    // 🔔 Notificación del navegador
+    if (Notification.permission === 'granted') {
+      new Notification(`Mensaje sin leer de ${email}`, {
+        body: mensaje?.texto || 'Tienes un nuevo mensaje',
+        icon: '🍦',
+        tag: `sin-leer-${userId}`
+      });
+    }
+  });
 
-    newSocket.on('chat-cerrado', ({ userId }) => {
-      setSalasActivas((prev) => prev.filter((sala) => sala.userId !== userId));
-      if (salaSeleccionada === userId) {
-        setSalaSeleccionada(null);
-        setMensajes([]);
-      }
-    });
+  newSocket.on('mensajes-leidos', ({ userId }) => {
+    setSalasActivas((prev) =>
+      prev.map((sala) =>
+        sala.userId === userId
+          ? { ...sala, mensajesSinLeer: 0 }
+          : sala
+      )
+    );
+  });
 
-    return () => {
-      newSocket.disconnect();
-    };
-  }, [usuario, salaSeleccionada]);
+  newSocket.on('usuario-escribiendo', ({ userId }) => {
+    if (salaSeleccionada === userId) {
+      setEscribiendo(true);
+      setTimeout(() => setEscribiendo(false), 3000);
+    }
+  });
 
+  newSocket.on('chat-cerrado', ({ userId }) => {
+    setSalasActivas((prev) => prev.filter((sala) => sala.userId !== userId));
+    if (salaSeleccionada === userId) {
+      setSalaSeleccionada(null);
+      setMensajes([]);
+    }
+  });
+
+  return () => {
+    console.log('🔌 Desconectando socket admin');
+    newSocket.disconnect();
+  };
+}, [usuario, salaSeleccionada]); // ✅ SOLO usuario y salaSeleccionada
   // Recalcular total de mensajes sin leer cuando cambien las salas
   useEffect(() => {
     const total = salasActivas.reduce((acc, sala) => acc + (sala.mensajesSinLeer || 0), 0);
@@ -132,6 +172,30 @@ const ChatAdmin = () => {
   useEffect(() => {
     mensajesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [mensajes]);
+
+  // 🔔 Manejar click en notificaciones del navegador
+  useEffect(() => {
+    const handleNotificationClick = (event) => {
+      if (event.notification.data?.userId) {
+        // Abrir/enfocar la ventana y seleccionar el chat
+        window.focus();
+        seleccionarSala(event.notification.data.userId);
+      }
+    };
+
+    if ('Notification' in window) {
+      // Escuchar clicks en notificaciones (solo funciona en algunos navegadores)
+      navigator.serviceWorker?.ready.then((registration) => {
+        registration.addEventListener('notificationclick', handleNotificationClick);
+      });
+    }
+
+    return () => {
+      navigator.serviceWorker?.ready.then((registration) => {
+        registration.removeEventListener('notificationclick', handleNotificationClick);
+      });
+    };
+  }, []);
 
   const seleccionarSala = (userId) => {
     setSalaSeleccionada(userId);
@@ -303,5 +367,4 @@ const ChatAdmin = () => {
     </div>
   );
 };
-
 export default ChatAdmin;

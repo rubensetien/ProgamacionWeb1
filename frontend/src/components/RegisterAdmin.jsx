@@ -50,28 +50,26 @@ export default function RegisterAdmin({ onClose }) {
   const handleContinuar = (e) => {
     e.preventDefault();
 
-    // Validaciones
     if (!formData.nombre || formData.nombre.length < 3) {
-      mostrarMensaje('El nombre debe tener al menos 3 caracteres', 'error');
+      mostrarMensaje('❌ El nombre debe tener al menos 3 caracteres', 'error');
       return;
     }
 
     if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) {
-      mostrarMensaje('Email inválido', 'error');
+      mostrarMensaje('❌ Email inválido', 'error');
       return;
     }
 
     if (erroresPassword.length > 0) {
-      mostrarMensaje('La contraseña no cumple los requisitos', 'error');
+      mostrarMensaje('❌ La contraseña no cumple los requisitos', 'error');
       return;
     }
 
     if (formData.password !== formData.passwordConfirm) {
-      mostrarMensaje('Las contraseñas no coinciden', 'error');
+      mostrarMensaje('❌ Las contraseñas no coinciden', 'error');
       return;
     }
 
-    // Pasar a verificación
     setMostrarVerificacion(true);
   };
 
@@ -79,7 +77,7 @@ export default function RegisterAdmin({ onClose }) {
     e.preventDefault();
 
     if (!formData.adminPassword) {
-      mostrarMensaje('Debes ingresar tu contraseña de administrador', 'error');
+      mostrarMensaje('❌ Debes ingresar tu contraseña de administrador', 'error');
       return;
     }
 
@@ -104,15 +102,14 @@ export default function RegisterAdmin({ onClose }) {
         throw new Error(data.mensaje || 'Error al registrar administrador');
       }
 
-      mostrarMensaje('✅ Administrador registrado exitosamente. Email enviado.', 'ok');
+      mostrarMensaje('✅ Administrador registrado exitosamente', 'ok');
       
-      // Cerrar modal después de 2 segundos
       setTimeout(() => {
         onClose();
       }, 2000);
 
     } catch (err) {
-      mostrarMensaje(err.message, 'error');
+      mostrarMensaje(`❌ ${err.message}`, 'error');
       setMostrarVerificacion(false);
       setFormData({ ...formData, adminPassword: '' });
     } finally {
@@ -120,131 +117,217 @@ export default function RegisterAdmin({ onClose }) {
     }
   };
 
+  const volverAtras = () => {
+    setMostrarVerificacion(false);
+    setFormData({ ...formData, adminPassword: '' });
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content register-admin-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>👨‍💼 Registrar Nuevo Administrador</h2>
+          <h2>
+            {mostrarVerificacion ? '🔐 Verificación de Seguridad' : '👨‍💼 Registrar Nuevo Administrador'}
+          </h2>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
 
-        {!mostrarVerificacion ? (
-          // PASO 1: Datos del nuevo admin
-          <form className="modal-form" onSubmit={handleContinuar}>
-            <div className="form-group">
-              <label htmlFor="nombre">Nombre completo</label>
-              <input
-                type="text"
-                id="nombre"
-                placeholder="Nombre del nuevo admin"
-                value={formData.nombre}
-                onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                disabled={loading}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="email">Email</label>
-              <input
-                type="email"
-                id="email"
-                placeholder="admin@ejemplo.com"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                disabled={loading}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="password">Contraseña</label>
-              <input
-                type="password"
-                id="password"
-                placeholder="Contraseña temporal"
-                value={formData.password}
-                onChange={handlePasswordChange}
-                disabled={loading}
-                required
-              />
-              {formData.password && erroresPassword.length > 0 && (
-                <div className="password-requirements">
-                  <small style={{ color: '#666' }}>Requisitos:</small>
-                  <ul>
-                    {erroresPassword.map((error, index) => (
-                      <li key={index} style={{ color: '#ff6600', fontSize: '12px' }}>
-                        ✗ {error}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="passwordConfirm">Confirmar contraseña</label>
-              <input
-                type="password"
-                id="passwordConfirm"
-                placeholder="Repite la contraseña"
-                value={formData.passwordConfirm}
-                onChange={(e) => setFormData({ ...formData, passwordConfirm: e.target.value })}
-                disabled={loading}
-                required
-              />
-              {formData.passwordConfirm && (
-                <small style={{ 
-                  color: formData.password === formData.passwordConfirm ? 'green' : '#ff6600',
-                  fontSize: '12px'
-                }}>
-                  {formData.password === formData.passwordConfirm ? '✓ Coinciden' : '✗ No coinciden'}
-                </small>
-              )}
-            </div>
-
-            {mensaje && (
-              <div className={`mensaje ${mensaje.tipo}`}>
-                {mensaje.texto}
-              </div>
-            )}
-
-            <div className="modal-actions">
-              <button 
-                type="submit" 
-                className="btn-primary"
-                disabled={loading || erroresPassword.length > 0}
-              >
-                Continuar →
-              </button>
-              <button 
-                type="button" 
-                onClick={onClose}
-                className="btn-secondary"
-                disabled={loading}
-              >
-                Cancelar
-              </button>
-            </div>
-          </form>
-        ) : (
-          // PASO 2: Verificación de seguridad
-          <form className="modal-form" onSubmit={handleSubmit}>
-            <div className="verification-section">
-              <div className="alert alert-warning">
-                <strong>⚠️ Verificación de Seguridad</strong>
-                <p>Por favor, confirma tu identidad ingresando tu contraseña de administrador.</p>
-                <p style={{ fontSize: '12px', marginTop: '10px' }}>
-                  Usuario actual: <strong>{usuario?.email}</strong>
-                </p>
+        <div className="modal-body">
+          {!mostrarVerificacion ? (
+            /* ========== PASO 1: Datos del nuevo admin ========== */
+            <form className="modal-form register-admin-form" onSubmit={handleContinuar}>
+              
+              {/* Info Card */}
+              <div className="info-card">
+                <span className="info-icon">ℹ️</span>
+                <p>Registra un nuevo administrador para tu plataforma. Se enviará un email con las credenciales.</p>
               </div>
 
-              <div className="form-group" style={{ marginTop: '20px' }}>
-                <label htmlFor="adminPassword">Tu contraseña (admin actual)</label>
+              {/* Nombre */}
+              <div className="modal-form-group">
+                <label className="modal-form-label">
+                  <span className="label-icon">👤</span>
+                  Nombre Completo
+                </label>
+                <input
+                  type="text"
+                  className="modal-form-input"
+                  placeholder="Ej: Juan Pérez García"
+                  value={formData.nombre}
+                  onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                  disabled={loading}
+                  required
+                />
+              </div>
+
+              {/* Email */}
+              <div className="modal-form-group">
+                <label className="modal-form-label">
+                  <span className="label-icon">📧</span>
+                  Email Corporativo
+                </label>
+                <input
+                  type="email"
+                  className="modal-form-input"
+                  placeholder="admin@regma.es"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  disabled={loading}
+                  required
+                />
+              </div>
+
+              {/* Contraseña */}
+              <div className="modal-form-group">
+                <label className="modal-form-label">
+                  <span className="label-icon">🔒</span>
+                  Contraseña Temporal
+                </label>
                 <input
                   type="password"
-                  id="adminPassword"
-                  placeholder="Ingresa tu contraseña"
+                  className="modal-form-input"
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={handlePasswordChange}
+                  disabled={loading}
+                  required
+                />
+                
+                {/* Requisitos de contraseña */}
+                {formData.password && (
+                  <div className="password-strength-card">
+                    <div className="strength-header">
+                      <span className="strength-title">Requisitos de seguridad:</span>
+                      <span className={`strength-badge ${erroresPassword.length === 0 ? 'strong' : 'weak'}`}>
+                        {erroresPassword.length === 0 ? '✓ Segura' : `${4 - erroresPassword.length}/4`}
+                      </span>
+                    </div>
+                    <div className="strength-requirements">
+                      <div className={`requirement-item ${formData.password.length >= 8 ? 'met' : ''}`}>
+                        <span className="requirement-icon">{formData.password.length >= 8 ? '✓' : '○'}</span>
+                        <span>Mínimo 8 caracteres</span>
+                      </div>
+                      <div className={`requirement-item ${/[A-Z]/.test(formData.password) ? 'met' : ''}`}>
+                        <span className="requirement-icon">{/[A-Z]/.test(formData.password) ? '✓' : '○'}</span>
+                        <span>Una letra mayúscula</span>
+                      </div>
+                      <div className={`requirement-item ${/[a-z]/.test(formData.password) ? 'met' : ''}`}>
+                        <span className="requirement-icon">{/[a-z]/.test(formData.password) ? '✓' : '○'}</span>
+                        <span>Una letra minúscula</span>
+                      </div>
+                      <div className={`requirement-item ${/\d/.test(formData.password) ? 'met' : ''}`}>
+                        <span className="requirement-icon">{/\d/.test(formData.password) ? '✓' : '○'}</span>
+                        <span>Un número</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Confirmar Contraseña */}
+              <div className="modal-form-group">
+                <label className="modal-form-label">
+                  <span className="label-icon">🔒</span>
+                  Confirmar Contraseña
+                </label>
+                <input
+                  type="password"
+                  className="modal-form-input"
+                  placeholder="Repite la contraseña"
+                  value={formData.passwordConfirm}
+                  onChange={(e) => setFormData({ ...formData, passwordConfirm: e.target.value })}
+                  disabled={loading}
+                  required
+                />
+                {formData.passwordConfirm && (
+                  <div className={`match-indicator ${formData.password === formData.passwordConfirm ? 'match' : 'no-match'}`}>
+                    <span className="match-icon">
+                      {formData.password === formData.passwordConfirm ? '✓' : '✗'}
+                    </span>
+                    <span className="match-text">
+                      {formData.password === formData.passwordConfirm ? 'Las contraseñas coinciden' : 'Las contraseñas no coinciden'}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Mensaje */}
+              {mensaje && (
+                <div className={`mensaje ${mensaje.tipo}`}>
+                  {mensaje.texto}
+                </div>
+              )}
+
+              {/* Botones */}
+              <div className="modal-actions">
+                <button 
+                  type="submit" 
+                  className="modal-btn modal-btn-primary"
+                  disabled={loading || erroresPassword.length > 0}
+                >
+                  <span className="btn-icon">→</span>
+                  Continuar
+                </button>
+                <button 
+                  type="button" 
+                  onClick={onClose}
+                  className="modal-btn modal-btn-secondary"
+                  disabled={loading}
+                >
+                  <span className="btn-icon">✕</span>
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          ) : (
+            /* ========== PASO 2: Verificación de seguridad ========== */
+            <form className="modal-form verification-form" onSubmit={handleSubmit}>
+              
+              {/* Alert de verificación */}
+              <div className="verification-alert">
+                <div className="alert-icon-wrapper">
+                  <span className="alert-icon">🔐</span>
+                </div>
+                <div className="alert-content">
+                  <h3>Confirma tu Identidad</h3>
+                  <p>Por seguridad, necesitamos verificar que eres tú antes de crear un nuevo administrador.</p>
+                </div>
+              </div>
+
+              {/* Datos del nuevo admin */}
+              <div className="admin-summary-card">
+                <h4>📋 Resumen del Nuevo Administrador</h4>
+                <div className="summary-item">
+                  <span className="summary-label">Nombre:</span>
+                  <span className="summary-value">{formData.nombre}</span>
+                </div>
+                <div className="summary-item">
+                  <span className="summary-label">Email:</span>
+                  <span className="summary-value">{formData.email}</span>
+                </div>
+              </div>
+
+              {/* Usuario actual */}
+              <div className="current-admin-card">
+                <div className="current-admin-avatar">
+                  {usuario?.nombre?.charAt(0).toUpperCase() || 'A'}
+                </div>
+                <div className="current-admin-info">
+                  <span className="current-admin-label">Administrador actual:</span>
+                  <span className="current-admin-email">{usuario?.email}</span>
+                </div>
+              </div>
+
+              {/* Input de contraseña */}
+              <div className="modal-form-group">
+                <label className="modal-form-label">
+                  <span className="label-icon">🔑</span>
+                  Tu Contraseña (Verificación)
+                </label>
+                <input
+                  type="password"
+                  className="modal-form-input verification-input"
+                  placeholder="Ingresa tu contraseña de administrador"
                   value={formData.adminPassword}
                   onChange={(e) => setFormData({ ...formData, adminPassword: e.target.value })}
                   disabled={loading}
@@ -253,35 +336,45 @@ export default function RegisterAdmin({ onClose }) {
                 />
               </div>
 
+              {/* Mensaje */}
               {mensaje && (
                 <div className={`mensaje ${mensaje.tipo}`}>
                   {mensaje.texto}
                 </div>
               )}
 
+              {/* Botones */}
               <div className="modal-actions">
                 <button 
                   type="submit" 
-                  className="btn-primary"
+                  className="modal-btn modal-btn-primary modal-btn-success"
                   disabled={loading || !formData.adminPassword}
                 >
-                  {loading ? '⏳ Registrando...' : '✅ Registrar Administrador'}
+                  {loading ? (
+                    <>
+                      <span className="btn-spinner"></span>
+                      Registrando...
+                    </>
+                  ) : (
+                    <>
+                      <span className="btn-icon">✓</span>
+                      Registrar Administrador
+                    </>
+                  )}
                 </button>
                 <button 
                   type="button" 
-                  onClick={() => {
-                    setMostrarVerificacion(false);
-                    setFormData({ ...formData, adminPassword: '' });
-                  }}
-                  className="btn-secondary"
+                  onClick={volverAtras}
+                  className="modal-btn modal-btn-secondary"
                   disabled={loading}
                 >
-                  ← Volver
+                  <span className="btn-icon">←</span>
+                  Volver
                 </button>
               </div>
-            </div>
-          </form>
-        )}
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );

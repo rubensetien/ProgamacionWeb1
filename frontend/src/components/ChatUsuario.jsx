@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
 import { useAuth } from '../context/AuthContext';
 import Avatar from './Avatar';
+import { reproducirNotificacion } from '../utils/soundUtils';
 import '../styles/Chat.css';
 
 const ChatUsuario = () => {
@@ -35,6 +36,8 @@ const ChatUsuario = () => {
 
     newSocket.on('admin-unido', () => {
       setAdminConectado(true);
+      // Opcional: sonido cuando admin se conecta
+      reproducirNotificacion();
     });
 
     newSocket.on('admin-desconectado', () => {
@@ -42,7 +45,22 @@ const ChatUsuario = () => {
     });
 
     newSocket.on('nuevo-mensaje', (mensaje) => {
+      console.log('📨 Nuevo mensaje recibido:', mensaje);
       setMensajes((prev) => [...prev, mensaje]);
+      
+      // 🔊 REPRODUCIR SONIDO si el mensaje es del admin
+      if (mensaje.emisor === 'admin') {
+        reproducirNotificacion();
+        
+        // 🔔 Notificación del navegador (opcional)
+        if (Notification.permission === 'granted') {
+          new Notification('Nuevo mensaje del Soporte', {
+            body: mensaje.texto,
+            icon: '🍦',
+            tag: 'chat-notification'
+          });
+        }
+      }
     });
 
     newSocket.on('admin-escribiendo', () => {
@@ -60,6 +78,13 @@ const ChatUsuario = () => {
       newSocket.disconnect();
     };
   }, [usuario]);
+
+  // 🔔 Solicitar permiso para notificaciones al montar el componente
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
 
   useEffect(() => {
     mensajesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
