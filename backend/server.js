@@ -18,8 +18,9 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: allowedOrigins,
     credentials: true,
+    methods: ['GET', 'POST']
   }
 });
 
@@ -39,9 +40,9 @@ mongoose
   .then(() => console.log('✅ Conectado a MongoDB'))
   .catch((err) => console.error('❌ Error al conectar a MongoDB:', err));
 
-app.use('/api/auth', authRoutes);  // AÑADIR ESTA LÍNEA
-app.use('/api/productos', productosRoutes);  // CAMBIAR A /api/productos
-app.use('/api/usuarios', usuariosRoutes);  // CAMBIAR A /api/usuarios
+app.use('/api/auth', authRoutes);
+app.use('/api/productos', productosRoutes);
+app.use('/api/usuarios', usuariosRoutes);
 
 app.get('/', (req, res) => {
   res.json({ mensaje: 'API de Productos funcionando ✅' });
@@ -56,7 +57,7 @@ const crearMensajeSistema = (texto) => ({
   texto,
   emisor: 'sistema',
   timestamp: new Date().toISOString(),
-  leido: true // Los mensajes del sistema se marcan como leídos
+  leido: true
 });
 
 const guardarMensaje = async (userId, mensaje) => {
@@ -100,7 +101,6 @@ const obtenerOCrearChat = async (userId, userEmail) => {
   }
 };
 
-// Contar mensajes sin leer
 const contarMensajesSinLeer = (mensajes, emisor) => {
   return mensajes.filter(m => m.emisor === emisor && !m.leido).length;
 };
@@ -118,7 +118,6 @@ io.on('connection', (socket) => {
       try {
         const chats = await Chat.find({ activo: true }).sort({ ultimaActividad: -1 });
         const salasParaAdmin = chats.map(chat => {
-          // Contar mensajes sin leer del usuario
           const mensajesSinLeer = contarMensajesSinLeer(chat.mensajes, 'user');
           
           if (!salasActivas.has(chat.userId)) {
@@ -245,7 +244,6 @@ io.on('connection', (socket) => {
       if (sala) {
         sala.adminSocketId = socket.id;
         
-        // Marcar todos los mensajes del usuario como leídos
         await Chat.findOneAndUpdate(
           { userId },
           { 
@@ -259,7 +257,6 @@ io.on('connection', (socket) => {
           }
         );
         
-        // Actualizar mensajes en memoria
         sala.messages = sala.messages.map(m => {
           if (m.emisor === 'user') {
             return { ...m, leido: true };
@@ -295,7 +292,6 @@ io.on('connection', (socket) => {
         
         socket.emit('historial-mensajes', { userId, messages: sala.messages });
         
-        // Notificar a todos los admins que los mensajes fueron leídos
         usuariosConectados.forEach((user, socketId) => {
           if (user.role === 'admin') {
             io.to(socketId).emit('mensajes-leidos', { userId });
@@ -322,7 +318,6 @@ io.on('connection', (socket) => {
         
         await guardarMensaje(userId, mensajeParaGuardar);
         
-        // Incrementar contador según quién envía
         if (emisor === 'user') {
           await Chat.findOneAndUpdate(
             { userId },
@@ -355,7 +350,6 @@ io.on('connection', (socket) => {
           io.to(sala.adminSocketId).emit('nuevo-mensaje', { ...mensajeCompleto, userId });
         }
         
-        // Notificar a TODOS los admins sobre el nuevo mensaje sin leer
         if (emisor === 'user') {
           usuariosConectados.forEach((user, socketId) => {
             if (user.role === 'admin' && socketId !== sala.adminSocketId) {
@@ -375,7 +369,6 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Marcar mensaje como leído
   socket.on('marcar-como-leido', async ({ userId, mensajeId }) => {
     try {
       await Chat.findOneAndUpdate(
