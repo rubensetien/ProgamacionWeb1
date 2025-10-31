@@ -14,7 +14,9 @@ build/
 .env
 .env.local
 .env.*.local
-
+Dockerfile
+Dockerfile.dev
+.dockerignore
 # IDE
 .vscode/
 .idea/

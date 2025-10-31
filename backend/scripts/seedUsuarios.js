@@ -7,7 +7,7 @@ dotenv.config();
 
 const seedUsuarios = async () => {
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
+    await mongoose.connect(process.env.MONGO_URI || 'mongodb://mongodb:27017/helados-regma');
     
     const usuariosJSON = JSON.parse(fs.readFileSync('./data/usuarios.json', 'utf-8'));
     

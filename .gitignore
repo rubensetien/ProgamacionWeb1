@@ -17,3 +17,5 @@ node_modules/
 
 # OS
 Thumbs.db
+
+docker-compose.yml

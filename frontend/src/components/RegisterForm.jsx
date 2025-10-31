@@ -196,23 +196,27 @@ export default function RegisterForm({ onVolver }) {
               disabled={loading}
               required
             />
-            {formData.passwordConfirm && (
-              <small style={{ 
-                color: formData.password === formData.passwordConfirm ? 'green' : '#ff6600' 
-              }}>
-                {formData.password === formData.passwordConfirm ? '✓ Las contraseñas coinciden' : '✗ Las contraseñas no coinciden'}
-              </small>
-            )}
-          </div>
-
-          <div className="form-group" style={{ marginTop: '20px' }}>
-            <ReCAPTCHA
-              ref={recaptchaRef}
-              sitekey={RECAPTCHA_SITE_KEY}
-              theme="light"
-            />
-          </div>
-
+{formData.passwordConfirm && (
+  <div className={`password-match-indicator ${formData.password === formData.passwordConfirm ? 'match' : 'no-match'}`}>
+    <span className="icon">
+      {formData.password === formData.passwordConfirm ? '✓' : '✗'}
+    </span>
+    <span>
+      {formData.password === formData.passwordConfirm ? 'Las contraseñas coinciden' : 'Las contraseñas no coinciden'}
+    </span>
+  </div>
+)}
+</div>
+<div className="form-group">
+  <div className="recaptcha-container">
+    <ReCAPTCHA
+      ref={recaptchaRef}
+      sitekey={RECAPTCHA_SITE_KEY}
+      theme="light"
+    />
+  </div>
+</div>
+          
           {mensaje && (
             <div className={`mensaje ${mensaje.tipo}`} style={{ marginTop: '15px' }}>
               {mensaje.texto}
