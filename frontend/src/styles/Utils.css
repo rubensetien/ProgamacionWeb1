@@ -1,0 +1,149 @@
+/* ========================================
+   MENSAJES Y NOTIFICACIONES
+   ======================================== */
+
+.mensaje {
+  padding: 18px 25px;
+  margin: 20px 40px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 15px;
+  animation: slideDown 0.3s ease;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mensaje::before {
+  content: '';
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.mensaje.ok {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  color: #155724;
+  border-left: 5px solid #28a745;
+}
+
+.mensaje.ok::before {
+  content: '✓';
+  background: #28a745;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.mensaje.error {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+  color: #721c24;
+  border-left: 5px solid #dc3545;
+}
+
+.mensaje.error::before {
+  content: '✗';
+  background: #dc3545;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+/* ========================================
+   PAGINACIÓN MEJORADA
+   ======================================== */
+
+.paginacion {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px;
+}
+
+.paginacion button {
+  min-width: 45px;
+  height: 45px;
+  padding: 10px 18px;
+  background: white;
+  border: 2px solid var(--regma-light-gray);
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: var(--regma-dark);
+}
+
+.paginacion button:hover {
+  border-color: var(--regma-orange);
+  color: var(--regma-orange);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.paginacion button[style*="background: rgb(0, 86, 179)"] {
+  background: linear-gradient(135deg, var(--regma-orange) 0%, var(--regma-dark-orange) 100%) !important;
+  color: white !important;
+  border-color: var(--regma-orange) !important;
+  box-shadow: var(--shadow-md);
+}
+
+/* ========================================
+   SPINNER DE CARGA
+   ======================================== */
+
+.spinner {
+  text-align: center;
+  padding: 60px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--regma-orange);
+  animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+  .mensaje {
+    margin: 20px;
+  }
+
+  .paginacion {
+    padding: 30px 20px;
+    flex-wrap: wrap;
+  }
+
+  .paginacion button {
+    min-width: 40px;
+    height: 40px;
+    font-size: 14px;
+  }
+}

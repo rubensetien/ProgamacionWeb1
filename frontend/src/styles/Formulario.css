@@ -1,0 +1,205 @@
+/* ========================================
+   FORMULARIO DE CREACIÓN - ESTILO PREMIUM
+   ======================================== */
+
+.formulario {
+  background: linear-gradient(135deg, white 0%, var(--regma-cream) 100%);
+  padding: 35px;
+  margin: 30px 40px;
+  border-radius: 20px;
+  box-shadow: var(--shadow-md);
+  border: 2px solid var(--regma-light-orange);
+}
+
+.formulario h3 {
+  color: var(--regma-orange);
+  font-size: 22px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.form-group-full {
+  grid-column: 1 / -1;
+}
+
+.formulario input[type="text"],
+.formulario input[type="number"],
+.formulario textarea {
+  width: 100%;
+  padding: 15px 20px;
+  border: 2px solid var(--regma-light-gray);
+  border-radius: 12px;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.formulario input:focus,
+.formulario textarea:focus {
+  outline: none;
+  border-color: var(--regma-orange);
+  box-shadow: 0 0 0 4px rgba(255, 102, 0, 0.1);
+}
+
+.formulario textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Input de archivo estilizado */
+.file-input-wrapper {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  border: 2px dashed var(--regma-orange);
+}
+
+.file-input-label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 18px 30px;
+  background: linear-gradient(135deg, var(--regma-orange) 0%, var(--regma-dark-orange) 100%);
+  color: white;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.file-input-label:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.file-input-label input[type="file"] {
+  display: none;
+}
+
+/* Preview de imagen */
+.image-preview-large {
+  width: 150px;
+  height: 150px;
+  border-radius: 20px;
+  object-fit: cover;
+  border: 4px solid var(--regma-orange);
+  box-shadow: var(--shadow-md);
+  animation: zoomIn 0.3s ease;
+}
+
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.formulario button[type="submit"] {
+  grid-column: 1 / -1;
+  width: 100%;
+  padding: 18px;
+  background: linear-gradient(135deg, var(--regma-orange) 0%, var(--regma-dark-orange) 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.formulario button:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+.formulario button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ========================================
+   BOTÓN FLOTANTE PARA AÑADIR PRODUCTO
+   ======================================== */
+
+.btn-flotante {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, var(--regma-orange) 0%, var(--regma-dark-orange) 100%);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 32px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(255, 102, 0, 0.4);
+  transition: all 0.3s ease;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulseFloat 2s infinite;
+}
+
+@keyframes pulseFloat {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 8px 24px rgba(255, 102, 0, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 12px 32px rgba(255, 102, 0, 0.6);
+  }
+}
+
+.btn-flotante:hover {
+  transform: scale(1.1) rotate(90deg);
+  box-shadow: 0 12px 40px rgba(255, 102, 0, 0.6);
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+  .formulario {
+    margin: 20px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .btn-flotante {
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    font-size: 28px;
+  }
+}

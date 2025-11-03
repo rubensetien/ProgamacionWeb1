@@ -1,0 +1,96 @@
+/* ========================================
+   RESET Y VARIABLES GLOBALES
+   ======================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --regma-orange: #ff6600;
+  --regma-dark-orange: #e55a00;
+  --regma-light-orange: #ff9944;
+  --regma-cream: #fff5ee;
+  --regma-white: #ffffff;
+  --regma-dark: #2c3e50;
+  --regma-gray: #7f8c8d;
+  --regma-light-gray: #ecf0f1;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 16px 48px rgba(255, 102, 0, 0.2);
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #fff5ee 0%, #ffe8d9 100%);
+  min-height: 100vh;
+  color: var(--regma-dark);
+}
+
+/* ========================================
+   CONTAINER PRINCIPAL
+   ======================================== */
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* ========================================
+   EMPTY STATE
+   ======================================== */
+
+.empty-state {
+  text-align: center;
+  padding: 80px 40px;
+  color: var(--regma-gray);
+}
+
+.empty-state-icon {
+  font-size: 100px;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.empty-state-text {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* ========================================
+   SCROLLBAR PERSONALIZADO
+   ======================================== */
+
+.content-body::-webkit-scrollbar,
+.modal-content::-webkit-scrollbar {
+  width: 10px;
+}
+
+.content-body::-webkit-scrollbar-track {
+  background: #f0f0f0;
+}
+
+.content-body::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ff6600 0%, #ff9944 100%);
+  border-radius: 10px;
+}
+
+.content-body::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #e55a00 0%, #ff6600 100%);
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: var(--regma-cream);
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: var(--regma-orange);
+  border-radius: 10px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: var(--regma-dark-orange);
+}

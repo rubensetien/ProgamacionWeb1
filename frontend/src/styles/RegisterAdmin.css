@@ -1,0 +1,463 @@
+/* ========================================
+   REGISTER ADMIN - MODAL Y FORMULARIOS
+   ======================================== */
+
+.register-admin-modal {
+  max-width: 600px;
+}
+
+.register-admin-form,
+.register-form,
+.verification-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.register-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.register-form label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--regma-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 20px;
+}
+
+.register-form label::before {
+  content: '';
+  width: 3px;
+  height: 16px;
+  background: linear-gradient(180deg, var(--regma-orange), var(--regma-dark-orange));
+  border-radius: 2px;
+}
+
+.register-form input {
+  width: 100%;
+  padding: 14px 18px;
+  border: 2px solid var(--regma-light-gray);
+  border-radius: 12px;
+  font-size: 15px;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  background: white;
+  box-sizing: border-box;
+}
+
+.register-form input:focus {
+  outline: none;
+  border-color: var(--regma-orange);
+  box-shadow: 0 0 0 4px rgba(255, 102, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.register-form input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* ========================================
+   INFO CARD
+   ======================================== */
+
+.info-card {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  padding: 16px 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-left: 4px solid #2196f3;
+  animation: slideInDown 0.4s ease;
+}
+
+.info-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.info-card p {
+  margin: 0;
+  font-size: 14px;
+  color: #1565c0;
+  line-height: 1.5;
+}
+
+/* ========================================
+   PASSWORD STRENGTH INDICATOR
+   ======================================== */
+
+.password-strength-card,
+.password-requirements {
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px solid #e0e0e0;
+  margin-top: 12px;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.strength-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.strength-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.strength-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.strength-badge.strong {
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+  color: white;
+}
+
+.strength-badge.weak {
+  background: linear-gradient(135deg, #ff9800 0%, #ffa726 100%);
+  color: white;
+}
+
+.strength-requirements,
+.password-requirements ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.password-requirements small {
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #666;
+}
+
+.requirement-item,
+.password-requirements li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #999;
+  transition: all 0.3s ease;
+  padding: 8px 12px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border-left: 3px solid #ff6600;
+}
+
+.requirement-item.met,
+.password-requirements li.valid {
+  color: #4caf50;
+  font-weight: 600;
+  border-left-color: #4caf50;
+  background: #e8f5e9;
+}
+
+.requirement-icon {
+  font-size: 16px;
+  font-weight: 700;
+  width: 20px;
+  text-align: center;
+}
+
+/* ========================================
+   MATCH INDICATOR
+   ======================================== */
+
+.match-indicator,
+.password-match-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  animation: fadeIn 0.3s ease;
+}
+
+.match-indicator.match,
+.password-match-indicator.match {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  color: #2e7d32;
+  border: 2px solid #4caf50;
+}
+
+.match-indicator.no-match,
+.password-match-indicator.no-match {
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  color: #c62828;
+  border: 2px solid #f44336;
+}
+
+.match-icon,
+.password-match-indicator .icon {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.match-text {
+  flex: 1;
+}
+
+/* ========================================
+   VERIFICATION ALERT
+   ======================================== */
+
+.verification-alert {
+  background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+  padding: 24px;
+  border-radius: 16px;
+  border-left: 5px solid #ff9800;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  animation: slideInDown 0.4s ease;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.alert-icon-wrapper {
+  background: white;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.2);
+}
+
+.alert-icon {
+  font-size: 28px;
+}
+
+.alert-content h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  color: #e65100;
+  font-weight: 800;
+}
+
+.alert-content p {
+  margin: 0;
+  font-size: 14px;
+  color: #f57c00;
+  line-height: 1.5;
+}
+
+/* ========================================
+   ADMIN SUMMARY CARD
+   ======================================== */
+
+.admin-summary-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  border: 2px solid #e0e0e0;
+}
+
+.admin-summary-card h4 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  color: var(--regma-dark);
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.summary-item:last-child {
+  border-bottom: none;
+}
+
+.summary-label {
+  font-weight: 600;
+  color: #666;
+  font-size: 14px;
+}
+
+.summary-value {
+  font-weight: 700;
+  color: var(--regma-dark);
+  font-size: 14px;
+}
+
+/* ========================================
+   CURRENT ADMIN CARD
+   ======================================== */
+
+.current-admin-card {
+  background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+  padding: 16px 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.current-admin-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--regma-orange) 0%, var(--regma-dark-orange) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 800;
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 102, 0, 0.4);
+  flex-shrink: 0;
+}
+
+.current-admin-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.current-admin-label {
+  font-size: 12px;
+  color: #666;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.current-admin-email {
+  font-size: 15px;
+  color: var(--regma-dark);
+  font-weight: 700;
+}
+
+/* ========================================
+   VERIFICATION INPUT
+   ======================================== */
+
+.verification-input {
+  border: 2px solid var(--regma-orange) !important;
+  background: linear-gradient(135deg, #fff5ee 0%, white 100%);
+}
+
+.verification-input:focus {
+  border-color: var(--regma-dark-orange) !important;
+  box-shadow: 0 0 0 4px rgba(255, 102, 0, 0.2) !important;
+}
+
+/* ========================================
+   RECAPTCHA
+   ======================================== */
+
+.recaptcha-container {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+  background: #f9f9f9;
+  border-radius: 12px;
+  border: 2px dashed #e0e0e0;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+  .register-admin-modal {
+    width: 95%;
+    max-height: 90vh;
+  }
+
+  .strength-requirements,
+  .password-requirements ul {
+    grid-template-columns: 1fr;
+  }
+
+  .verification-alert {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .alert-icon-wrapper {
+    margin: 0 auto;
+  }
+
+  .recaptcha-container {
+    transform: scale(0.9);
+  }
+}
+
+@media (max-width: 480px) {
+  .recaptcha-container {
+    transform: scale(0.85);
+  }
+
+  .register-form label {
+    font-size: 12px;
+  }
+
+  .password-requirements ul {
+    gap: 8px;
+  }
+}

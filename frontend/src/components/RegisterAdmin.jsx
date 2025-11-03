@@ -127,7 +127,7 @@ export default function RegisterAdmin({ onClose }) {
       <div className="modal-content register-admin-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>
-            {mostrarVerificacion ? '🔐 Verificación de Seguridad' : '👨‍💼 Registrar Nuevo Administrador'}
+            {mostrarVerificacion ? 'Verificación de Seguridad' : 'Registrar Nuevo Administrador'}
           </h2>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
