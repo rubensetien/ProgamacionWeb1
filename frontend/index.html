@@ -2,11 +2,123 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Viewport para PWA -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+    
+    <!-- Meta tags PWA -->
+    <meta name="theme-color" content="#4F46E5" />
+    <meta name="description" content="Aplicación de gestión de productos con chat en tiempo real y sistema de roles para Catálogo Regma" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Regma" />
+    
+    <!-- Título -->
     <title>Catálogo Regma</title>
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Iconos -->
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png" />
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+    
+    <!-- Splash screens para iOS -->
+    <link rel="apple-touch-startup-image" href="/splash/iphone5_splash.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)" />
+    <link rel="apple-touch-startup-image" href="/splash/iphone6_splash.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" />
+    <link rel="apple-touch-startup-image" href="/splash/iphoneplus_splash.png" media="(device-width: 621px) and (device-height: 1104px) and (-webkit-device-pixel-ratio: 3)" />
+    <link rel="apple-touch-startup-image" href="/splash/iphonex_splash.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)" />
+    <link rel="apple-touch-startup-image" href="/splash/iphonexr_splash.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2)" />
+    <link rel="apple-touch-startup-image" href="/splash/iphonexsmax_splash.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3)" />
+    <link rel="apple-touch-startup-image" href="/splash/ipad_splash.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2)" />
+    <link rel="apple-touch-startup-image" href="/splash/ipadpro1_splash.png" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2)" />
+    <link rel="apple-touch-startup-image" href="/splash/ipadpro2_splash.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)" />
+    
+    <!-- Microsoft -->
+    <meta name="msapplication-TileColor" content="#4F46E5" />
+    <meta name="msapplication-TileImage" content="/icons/icon-144x144.png" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://progamacionweb1-1.onrender.com/" />
+    <meta property="og:title" content="Catálogo Regma" />
+    <meta property="og:description" content="Aplicación de gestión de productos con chat en tiempo real" />
+    <meta property="og:image" content="https://progamacionweb1-1.onrender.com/icons/icon-512x512.png" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://progamacionweb1-1.onrender.com/" />
+    <meta property="twitter:title" content="Catálogo Regma" />
+    <meta property="twitter:description" content="Aplicación de gestión de productos con chat en tiempo real" />
+    <meta property="twitter:image" content="https://progamacionweb1-1.onrender.com/icons/icon-512x512.png" />
+    
+    <!-- Preconnect para optimización -->
+    <link rel="preconnect" href="https://progamacionweb1.onrender.com" />
+    <link rel="dns-prefetch" href="https://progamacionweb1.onrender.com" />
+    
+    <!-- Prevenir zoom en inputs en iOS -->
+    <style>
+      input, select, textarea {
+        font-size: 16px !important;
+      }
+      
+      /* Estilos para PWA instalada */
+      body.pwa-installed {
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+      }
+      
+      /* Prevenir pull-to-refresh */
+      body {
+        overscroll-behavior-y: contain;
+      }
+    </style>
+    
+    <!-- Script de detección de instalación -->
+    <script>
+      // Detectar si es PWA instalada
+      if (window.matchMedia('(display-mode: standalone)').matches) {
+        document.documentElement.classList.add('pwa-mode');
+      }
+      
+      // Prevenir comportamiento por defecto de gestos
+      document.addEventListener('gesturestart', function(e) {
+        e.preventDefault();
+      });
+      
+      // Registrar estado inicial de conexión
+      window.addEventListener('load', () => {
+        const status = navigator.onLine ? 'online' : 'offline';
+        console.log(`Estado de conexión inicial: ${status}`);
+      });
+    </script>
   </head>
   <body>
+    <noscript>
+      <div style="
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        padding: 20px;
+        text-align: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-family: system-ui, -apple-system, sans-serif;
+      ">
+        <div>
+          <h1 style="font-size: 2em; margin-bottom: 0.5em;">⚠️ JavaScript Requerido</h1>
+          <p style="font-size: 1.2em;">
+            Esta aplicación requiere JavaScript para funcionar correctamente.
+            <br>Por favor, habilita JavaScript en tu navegador.
+          </p>
+        </div>
+      </div>
+    </noscript>
+    
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

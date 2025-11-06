@@ -6,7 +6,7 @@ import { reproducirNotificacion } from '../utils/soundUtils';
 import '../styles/Chat.css';
 
 const ChatAdmin = () => {
-  const { usuario } = useAuth();
+   const { usuario, API_URL } = useAuth();
   const [socket, setSocket] = useState(null);
   const [salasActivas, setSalasActivas] = useState([]);
   const [salaSeleccionada, setSalaSeleccionada] = useState(null);
