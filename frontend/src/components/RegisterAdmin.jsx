@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
-const API_URL = 'http://localhost:3001/api';
-
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 export default function RegisterAdmin({ onClose }) {
   const { crearHeaderAuth, usuario } = useAuth();
   const [formData, setFormData] = useState({
@@ -84,7 +83,7 @@ export default function RegisterAdmin({ onClose }) {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_URL}/auth/register-admin`, {
+      const res = await fetch(`${API_URL}/api/auth/register-admin`, {
         method: 'POST',
         headers: crearHeaderAuth(),
         credentials: 'include',

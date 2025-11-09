@@ -7,6 +7,7 @@ import '../styles/Chat.css';
 
 const ChatUsuario = () => {
   const { usuario } = useAuth();
+  const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
   const [socket, setSocket] = useState(null);
   const [chatAbierto, setChatAbierto] = useState(false);
   const [mensajes, setMensajes] = useState([]);
@@ -16,7 +17,7 @@ const ChatUsuario = () => {
   const mensajesEndRef = useRef(null);
 
   useEffect(() => {
-    const newSocket = io('http://localhost:3001');
+    const newSocket = io(SOCKET_URL);
     setSocket(newSocket);
 
     newSocket.on('connect', () => {

@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 
-const API_URL = 'http://localhost:3001/api';
-const BASE_URL = 'http://localhost:3001';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export default function ProductosList() {
   const { usuario, logout, crearHeaderAuth, manejarError401 } = useAuth();
@@ -37,7 +37,7 @@ export default function ProductosList() {
   const cargarProductos = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/productos`, { 
+      const res = await fetch(`${API_URL}/api/productos`, { 
         headers: crearHeaderAuth(),
         credentials: 'include'
       });
@@ -65,7 +65,7 @@ export default function ProductosList() {
     }
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/productos?busqueda=${encodeURIComponent(valor)}`, { 
+      const res = await fetch(`${API_URL}/api/productos?busqueda=${encodeURIComponent(valor)}`, { 
         headers: crearHeaderAuth(),
         credentials: 'include'
       });
@@ -153,7 +153,7 @@ const handleCrear = async (e) => {
     }
 
     const token = localStorage.getItem('accessToken');
-    const res = await fetch(`${API_URL}/productos`, {
+    const res = await fetch(`${API_URL}/api/productos`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -184,7 +184,7 @@ const handleCrear = async (e) => {
     if (!window.confirm('¿Seguro que deseas eliminar este producto?')) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/productos/${id}`, { 
+      const res = await fetch(`${API_URL}/api/productos/${id}`, { 
         method: 'DELETE', 
         headers: crearHeaderAuth(),
         credentials: 'include'
@@ -233,7 +233,7 @@ const handleCrear = async (e) => {
       }
 
       const token = localStorage.getItem('accessToken');
-      const res = await fetch(`${API_URL}/productos/${id}`, {
+      const res = await fetch(`${API_URL}/api/productos/${id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

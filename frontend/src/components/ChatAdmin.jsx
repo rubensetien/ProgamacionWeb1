@@ -7,6 +7,7 @@ import '../styles/Chat.css';
 
 const ChatAdmin = () => {
    const { usuario, API_URL } = useAuth();
+   const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
   const [socket, setSocket] = useState(null);
   const [salasActivas, setSalasActivas] = useState([]);
   const [salaSeleccionada, setSalaSeleccionada] = useState(null);
@@ -18,7 +19,7 @@ const ChatAdmin = () => {
 
   // 🔔 Solicitar permiso para notificaciones al montar
  useEffect(() => {
-  const newSocket = io('http://localhost:3001');
+  const newSocket = io(SOCKET_URL);
   setSocket(newSocket);
 
   newSocket.on('connect', () => {

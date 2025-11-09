@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import ReCAPTCHA from 'react-google-recaptcha';
 
-const API_URL = 'http://localhost:3001/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 const RECAPTCHA_SITE_KEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'; // TEMPORAL: Clave de prueba de Google
 
 export default function RegisterForm({ onVolver }) {
@@ -80,7 +80,7 @@ export default function RegisterForm({ onVolver }) {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_URL}/auth/register`, {
+      const res = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
