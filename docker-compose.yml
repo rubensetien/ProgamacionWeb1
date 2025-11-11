@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: regma-backend
+    restart: unless-stopped
+    # ✅ Usar network_mode host en Linux
+    network_mode: "host"
+    environment:
+      PORT: 3001
+      NODE_ENV: development
+      # ✅ Ahora puede usar localhost directamente
+      MONGODB_URI: mongodb://localhost:27017/productos
+      MONGO_URI: mongodb://localhost:27017/productos
+      JWT_SECRET: tu_clave_secreta_muy_segura_2024
+      JWT_REFRESH_SECRET: tu_clave_refresh_muy_segura_2024
+    volumes:
+      - ./backend/uploads:/app/uploads
+
+    # ❌ QUITAR networks cuando usas network_mode: host
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:3001
+    container_name: regma-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    networks:
+      - regma-network
+
+networks:
+  regma-network:
+    driver: bridge
+
+volumes:
+  backend_uploads:

@@ -1,9 +1,11 @@
 {
   "name": "practica4-backend",
   "version": "1.0.0",
+  "type": "module",
   "description": "API REST de productos",
   "main": "server.js",
   "scripts": {
+    
     "dev": "nodemon server.js",
     "start": "node server.js",
     "test": "jest --coverage",

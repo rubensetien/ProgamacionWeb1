@@ -58,6 +58,33 @@ app.get('/', (req, res) => {
   res.json({ mensaje: 'API de Productos funcionando ✅' });
 });
 
+
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  const mongoStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+  
+  const healthCheck = {
+    uptime: process.uptime(),
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    mongodb: mongoStatus,
+    port: process.env.PORT || 3001
+  };
+
+  if (mongoStatus === 'disconnected') {
+    return res.status(503).json({
+      ...healthCheck,
+      status: 'ERROR',
+      message: 'Database connection failed'
+    });
+  }
+
+  res.status(200).json(healthCheck);
+});
+
+
 // Socket.IO - Sistema de Chat con Persistencia
 const usuariosConectados = new Map();
 const salasActivas = new Map();
