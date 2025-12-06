@@ -1,0 +1,683 @@
+/* ========================================
+   MIS PEDIDOS PREMIUM
+   ======================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&display=swap');
+
+:root {
+  --primary: #ff6600;
+  --primary-dark: #e65c00;
+  --success: #27ae60;
+  --danger: #e74c3c;
+  --warning: #f39c12;
+  --info: #3498db;
+  --secondary: #2c3e50;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mis-pedidos-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px;
+  min-height: 100vh;
+  background: #fafafa;
+}
+
+/* Icon Styles */
+.icon-small {
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+}
+
+.icon-mini {
+  width: 14px;
+  height: 14px;
+}
+
+.icon-large {
+  width: 32px;
+  height: 32px;
+}
+
+.icon-huge {
+  width: 64px;
+  height: 64px;
+}
+
+.icon-inline {
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+.icon-section {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+  vertical-align: sub;
+  color: #666;
+}
+
+/* Header & Back Button */
+.header-top {
+  margin-bottom: 1rem;
+}
+
+.btn-volver-landing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 8px 16px;
+  margin-left: -16px;
+  transition: color 0.2s;
+}
+
+.btn-volver-landing:hover {
+  color: #333;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+/* ========== HEADER ========== */
+.pedidos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  padding: 40px;
+  background: linear-gradient(135deg, var(--secondary) 0%, #34495e 100%);
+  border-radius: 24px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.pedidos-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(255, 102, 0, 0.1) 0%, transparent 70%);
+  animation: float 15s ease-in-out infinite;
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  50% {
+    transform: translate(20px, 20px);
+  }
+}
+
+.pedidos-header>div {
+  position: relative;
+  z-index: 1;
+}
+
+.pedidos-header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 42px;
+  font-weight: 900;
+  margin: 0 0 8px 0;
+  letter-spacing: -1px;
+}
+
+.pedidos-subtitulo {
+  font-size: 16px;
+  margin: 0;
+  opacity: 0.9;
+}
+
+.btn-nuevo-pedido {
+  position: relative;
+  z-index: 1;
+  padding: 16px 32px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: var(--transition);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(10px);
+}
+
+.btn-nuevo-pedido:hover {
+  background: white;
+  color: var(--primary);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.3);
+}
+
+/* ========== FILTROS ========== */
+.pedidos-filtros {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
+.filtro-btn {
+  padding: 14px 28px;
+  background: white;
+  border: 2px solid #e8ecef;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #7f8c8d;
+  cursor: pointer;
+  transition: var(--transition);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filtro-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.filtro-btn.activo {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+/* ========== VACÍO ========== */
+.pedidos-vacio {
+  text-align: center;
+  padding: 100px 40px;
+  background: white;
+  border-radius: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.icono-vacio {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 32px;
+  background: linear-gradient(135deg, #fff5ee 0%, #ffe8d9 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 60px;
+  opacity: 0.5;
+}
+
+.pedidos-vacio h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--secondary);
+  margin: 0 0 12px 0;
+  letter-spacing: -0.5px;
+}
+
+.pedidos-vacio p {
+  font-size: 16px;
+  color: #7f8c8d;
+  margin: 0 0 40px 0;
+}
+
+.btn-ir-productos {
+  padding: 18px 48px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 6px 20px rgba(255, 102, 0, 0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-ir-productos:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(255, 102, 0, 0.45);
+}
+
+/* ========== LISTA ========== */
+.pedidos-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ========== CARD ========== */
+.pedido-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.pedido-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-4px);
+}
+
+/* Header del pedido */
+.pedido-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 28px 32px;
+  cursor: pointer;
+  background: #f8f9fa;
+  border-bottom: 2px solid #e8ecef;
+  transition: background 0.3s;
+}
+
+.pedido-header:hover {
+  background: #f0f2f5;
+}
+
+.pedido-header-info {
+  display: flex;
+  gap: 40px;
+  align-items: center;
+}
+
+.pedido-numero {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.numero-label {
+  font-size: 11px;
+  color: #95a5a6;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+.numero-valor {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--secondary);
+  letter-spacing: -0.5px;
+}
+
+.pedido-fecha {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fecha-label {
+  font-size: 11px;
+  color: #95a5a6;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+}
+
+.fecha-valor {
+  font-size: 14px;
+  color: var(--secondary);
+  font-weight: 700;
+}
+
+.pedido-header-estado {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.pedido-estado-badge {
+  padding: 10px 24px;
+  border-radius: 50px;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-expandir {
+  width: 40px;
+  height: 40px;
+  border: 2px solid #e8ecef;
+  background: white;
+  border-radius: 50%;
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--secondary);
+}
+
+.btn-expandir:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: scale(1.1);
+}
+
+/* Contenido expandible */
+.pedido-contenido {
+  padding: 32px;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pedido-seccion {
+  margin-bottom: 28px;
+}
+
+.pedido-seccion:last-child {
+  margin-bottom: 0;
+}
+
+.pedido-seccion h3 {
+  font-size: 16px;
+  color: var(--secondary);
+  margin: 0 0 16px 0;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-box {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 12px;
+  border-left: 5px solid var(--primary);
+}
+
+.info-principal {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--secondary);
+  margin: 0 0 6px 0;
+}
+
+.info-secundaria {
+  font-size: 14px;
+  color: #7f8c8d;
+  margin: 6px 0 0 0;
+  font-weight: 500;
+}
+
+.info-destacada {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 10px 0 0 0;
+  padding: 12px;
+  background: rgba(39, 174, 96, 0.1);
+  border-radius: 8px;
+}
+
+/* Items */
+.pedido-items {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.pedido-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: white;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  transition: var(--transition);
+}
+
+.pedido-item:hover {
+  transform: translateX(4px);
+  box-shadow: var(--shadow-sm);
+}
+
+.pedido-item:last-child {
+  margin-bottom: 0;
+}
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.item-nombre {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--secondary);
+}
+
+.item-formato {
+  font-size: 13px;
+  color: var(--primary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.item-cantidad {
+  font-size: 14px;
+  color: #7f8c8d;
+  margin: 0 20px;
+  font-weight: 700;
+}
+
+.item-precio {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--secondary);
+}
+
+/* Totales */
+.pedido-totales {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.total-linea {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  font-size: 16px;
+  color: #7f8c8d;
+  font-weight: 600;
+}
+
+.total-linea.descuento {
+  color: var(--success);
+}
+
+.total-linea.total-final {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--secondary);
+  border-top: 2px solid #e8ecef;
+  margin-top: 12px;
+  padding-top: 20px;
+  font-family: 'Playfair Display', serif;
+  letter-spacing: -1px;
+}
+
+/* Estado de pago */
+.estado-pago-badge {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 50px;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 8px;
+}
+
+/* Acciones */
+.pedido-acciones {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+  padding-top: 28px;
+  border-top: 2px solid #f0f2f5;
+}
+
+.btn-cancelar-pedido {
+  padding: 14px 28px;
+  background: white;
+  color: var(--danger);
+  border: 2px solid var(--danger);
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-cancelar-pedido:hover {
+  background: var(--danger);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.btn-calificar {
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #f39c12 0%, #f1c40f 100%);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+}
+
+.btn-calificar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(243, 156, 18, 0.4);
+}
+
+/* ========== LOADING ========== */
+.pedidos-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 24px;
+}
+
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 5px solid #f0f0f0;
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .mis-pedidos-container {
+    padding: 20px;
+  }
+
+  .pedidos-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 28px;
+  }
+
+  .pedidos-header h1 {
+    font-size: 32px;
+  }
+
+  .pedido-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 24px;
+  }
+
+  .pedido-header-info {
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .pedido-header-estado {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .pedido-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .item-cantidad {
+    margin: 0;
+  }
+
+  .pedido-acciones {
+    flex-direction: column;
+  }
+}

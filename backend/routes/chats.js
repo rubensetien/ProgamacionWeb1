@@ -1,12 +1,12 @@
 import express from 'express';
 import Chat from '../models/Chat.js';
 import  authBasic  from '../middlewares/authBasic.js';
-import { authorizeRole } from '../middlewares/authorizeRole.js';
+import { isAdminRole } from '../middlewares/isAdminRole.js';
 
 const router = express.Router();
 
 // Obtener todos los chats (solo admin)
-router.get('/', authBasic, authorizeRole(['admin']), async (req, res, next) => {
+router.get('/', authBasic, isAdminRole(['admin']), async (req, res, next) => {
   try {
     const chats = await Chat.find({ activo: true })
       .sort({ ultimaActividad: -1 })
@@ -41,7 +41,7 @@ router.get('/:userId', authBasic, async (req, res, next) => {
 });
 
 // Eliminar un chat (solo admin)
-router.delete('/:userId', authBasic, authorizeRole(['admin']), async (req, res, next) => {
+router.delete('/:userId', authBasic, isAdminRole(['admin']), async (req, res, next) => {
   try {
     const { userId } = req.params;
     const chat = await Chat.findOneAndDelete({ userId });

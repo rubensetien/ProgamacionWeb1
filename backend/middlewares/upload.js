@@ -1,12 +1,22 @@
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
-// Crear carpeta uploads si no existe
-const uploadsDir = './uploads';
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir);
-}
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Crear carpetas si no existen
+const uploadsDir = path.join(__dirname, '../uploads');
+const subdirs = ['productos', 'sabores', 'categorias', 'formatos', 'usuarios', 'brand', 'landing'];
+
+subdirs.forEach(subdir => {
+  const dirPath = path.join(uploadsDir, subdir);
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+});
 
 // Función para limpiar el nombre (quitar tildes, espacios, caracteres especiales)
 const limpiarNombre = (nombre) => {
@@ -22,36 +32,49 @@ const limpiarNombre = (nombre) => {
 // Configuración de almacenamiento
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+    // Determinar carpeta según la ruta
+    let folder = 'uploads/productos/'; // Default
+    
+    if (req.baseUrl.includes('variante') || req.path.includes('variante')) {
+      folder = 'uploads/sabores/';
+    } else if (req.baseUrl.includes('categoria') || req.path.includes('categoria')) {
+      folder = 'uploads/categorias/';
+    } else if (req.baseUrl.includes('formato') || req.path.includes('formato')) {
+      folder = 'uploads/formatos/';
+    } else if (req.baseUrl.includes('usuario') || req.path.includes('usuario')) {
+      folder = 'uploads/usuarios/';
+    }
+    
+    cb(null, folder);
   },
   filename: (req, file, cb) => {
-    // Obtener nombre del producto del body
-    const nombreProducto = req.body.nombre || 'producto';
+    // Obtener nombre del body
+    const nombre = req.body.nombre || 'archivo';
     
     // Limpiar el nombre
-    const nombreLimpio = limpiarNombre(nombreProducto);
+    const nombreLimpio = limpiarNombre(nombre);
     
     // Obtener extensión
     const ext = path.extname(file.originalname).toLowerCase();
     
-    // Añadir timestamp para evitar duplicados si hay dos productos con mismo nombre
+    // Añadir timestamp
     const timestamp = Date.now();
     
-    // Nombre final: nata-1234567890.jpg
+    // Nombre final: chocolate-1234567890.jpg
     cb(null, `${nombreLimpio}-${timestamp}${ext}`);
   }
 });
 
 // Filtro de archivos (solo imágenes)
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|webp/;
+  const allowedTypes = /jpeg|jpg|png|webp|gif/;
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
   const mimetype = allowedTypes.test(file.mimetype);
 
   if (extname && mimetype) {
     cb(null, true);
   } else {
-    cb(new Error('Solo se permiten imágenes (JPG, PNG, WEBP)'));
+    cb(new Error('Solo se permiten imágenes (JPG, PNG, WEBP, GIF)'));
   }
 };
 

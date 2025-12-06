@@ -1,0 +1,564 @@
+/* ========================================
+   ADMIN LAYOUT - DISEÑO PROFESIONAL
+   ======================================== */
+
+.admin-layout {
+  display: flex;
+  height: 100vh;
+  background: #fafafa;
+  overflow: hidden;
+}
+
+/* ========== SIDEBAR ========== */
+.admin-sidebar {
+  width: 300px;
+  background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+}
+
+.sidebar-header {
+  padding: 25px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ✅ Logo Clickeable - SIN FONDO BLANCO */
+.logo-container {
+  margin-bottom: 25px;
+  text-align: center;
+  padding: 15px;
+  background: transparent; /* ✅ Eliminado fondo blanco */
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer; /* ✅ Añadido cursor pointer */
+  position: relative;
+}
+
+.logo-container:hover {
+  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.logo-container::after {
+  content: '🏠 Ir al Landing';
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: rgba(255, 102, 0, 0.95);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.logo-container:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.logo-oficial {
+  width: 100%;
+  max-width: 220px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  filter: brightness(0) invert(1); /* ✅ Logo blanco */
+  transition: all 0.3s ease;
+}
+
+.logo-container:hover .logo-oficial {
+  filter: brightness(0) invert(1) drop-shadow(0 0 10px rgba(255, 102, 0, 0.6));
+}
+
+/* Info Admin */
+.admin-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  transition: all 0.3s;
+}
+
+.admin-info:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.admin-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff6600 0%, #ff9944 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 800;
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 102, 0, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.avatar-letter {
+  position: relative;
+  z-index: 1;
+}
+
+.status-indicator {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 14px;
+  height: 14px;
+  background: #27ae60;
+  border: 3px solid #2c3e50;
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.admin-avatar::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
+}
+
+.admin-details {
+  flex: 1;
+}
+
+.admin-nombre {
+  margin: 0 0 6px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+}
+
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 102, 0, 0.2);
+  color: #ff9944;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(255, 102, 0, 0.3);
+}
+
+/* ========== NAVEGACIÓN ========== */
+.sidebar-nav {
+  flex: 1;
+  padding: 20px 15px;
+  overflow-y: auto;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.nav-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 20px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 8px;
+  text-align: left;
+  position: relative;
+  border-left: 3px solid transparent;
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  transform: translateX(5px);
+  border-left-color: rgba(255, 102, 0, 0.3);
+}
+
+.nav-item.active {
+  background: linear-gradient(90deg, rgba(255, 102, 0, 0.2), transparent);
+  color: white;
+  box-shadow: 0 4px 15px rgba(255, 102, 0, 0.15);
+  transform: translateX(5px);
+  border-left-color: #ff6600;
+}
+
+.nav-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.nav-text {
+  flex: 1;
+}
+
+.nav-shortcut {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 600;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+}
+
+.nav-badge {
+  background: #e74c3c;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 20px;
+  text-align: center;
+}
+
+.nav-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 15px 0;
+}
+
+/* ========== FOOTER SIN STATS FALSOS ========== */
+.sidebar-footer {
+  padding: 20px 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ✅ ELIMINADAS LAS QUICK-STATS */
+
+.btn-logout {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px 20px;
+  background: rgba(231, 76, 60, 0.1);
+  border: 2px solid rgba(231, 76, 60, 0.3);
+  color: #ff6b6b;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-logout:hover {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  color: white;
+  border-color: transparent;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+}
+
+.logout-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logout-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ========== CONTENIDO ========== */
+.admin-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fafafa;
+}
+
+.content-header {
+  padding: 30px 40px;
+  background: white;
+  border-bottom: 2px solid #f0f0f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.content-header h1 {
+  font-size: 32px;
+  font-weight: 800;
+  color: #2c3e50;
+  margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.content-subtitle {
+  font-size: 15px;
+  color: #7f8c8d;
+  margin: 0;
+  font-weight: 500;
+}
+
+.content-body {
+  flex: 1;
+  overflow-y: auto;
+  background: #fafafa;
+}
+
+.content-body::-webkit-scrollbar {
+  width: 10px;
+}
+
+.content-body::-webkit-scrollbar-track {
+  background: #f0f0f0;
+}
+
+.content-body::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 5px;
+}
+
+.content-body::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1024px) {
+  .admin-sidebar {
+    width: 80px;
+  }
+
+  .logo-oficial {
+    max-width: 50px;
+  }
+
+  .admin-info {
+    flex-direction: column;
+    text-align: center;
+    padding: 10px;
+  }
+
+  .admin-details {
+    display: none;
+  }
+
+  .nav-text,
+  .nav-shortcut {
+    display: none;
+  }
+
+  .nav-item {
+    justify-content: center;
+    padding: 15px;
+  }
+
+  .btn-logout span:not(.logout-icon) {
+    display: none;
+  }
+
+  .content-header {
+    padding: 20px 30px;
+  }
+
+  .content-header h1 {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-layout {
+    flex-direction: column;
+  }
+
+  .admin-sidebar {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    overflow-x: auto;
+  }
+
+  .sidebar-header {
+    display: none;
+  }
+
+  .sidebar-nav {
+    display: flex;
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .nav-item {
+    flex-direction: column;
+    min-width: 80px;
+    padding: 10px;
+    text-align: center;
+  }
+
+  .nav-text {
+    display: block;
+    font-size: 12px;
+  }
+
+  .sidebar-footer {
+    display: flex;
+    align-items: center;
+    border-top: none;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 10px;
+  }
+
+  .btn-logout {
+    padding: 10px 20px;
+  }
+
+  .content-header {
+    padding: 20px;
+  }
+
+  .content-header h1 {
+    font-size: 20px;
+  }
+
+  .content-subtitle {
+    font-size: 14px;
+  }
+}
+
+/* ========================================
+   FIX: TRANSICIONES SUAVES AL CAMBIAR VISTA
+   ======================================== */
+
+/* Evitar parpadeo del sidebar */
+.admin-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  will-change: transform;
+}
+
+/* Contenido principal con margen fijo */
+.admin-content {
+  margin-left: 300px;
+  width: calc(100% - 300px);
+  transition: none; /* Sin transición que cause parpadeo */
+}
+
+/* Fade-in suave para el contenido que carga */
+.admin-content > * {
+  animation: fadeInContent 0.3s ease;
+}
+
+@keyframes fadeInContent {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading overlay para transiciones */
+.content-loading {
+  position: relative;
+  min-height: 200px;
+}
+
+.content-loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+/* Skeleton loading para productos */
+.gestion-productos.loading,
+.content-body.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Responsive fix */
+@media (max-width: 1024px) {
+  .admin-content {
+    margin-left: 80px;
+    width: calc(100% - 80px);
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-sidebar {
+    position: relative;
+  }
+  
+  .admin-content {
+    margin-left: 0;
+    width: 100%;
+  }
+}

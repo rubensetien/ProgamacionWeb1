@@ -1,4 +1,4 @@
-// Genera un color basado en el email del usuario (consistente)
+// Generar color basado en email
 export const getColorFromEmail = (email) => {
   if (!email) return '#ff6600';
   
@@ -8,24 +8,27 @@ export const getColorFromEmail = (email) => {
   }
   
   const colors = [
-    '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
-    '#F7DC6F', '#BB8FCE', '#85C1E2', '#F8B739', '#52B788',
-    '#E63946', '#A8DADC', '#457B9D', '#F4A261', '#2A9D8F'
+    '#ff6600', '#ff8e53', '#e74c3c', '#3498db', 
+    '#2ecc71', '#9b59b6', '#f39c12', '#1abc9c',
+    '#e67e22', '#16a085'
   ];
   
   return colors[Math.abs(hash) % colors.length];
 };
 
-// Obtiene las iniciales del nombre o email
+// Obtener iniciales del nombre o email
 export const getInitials = (name, email) => {
-  if (name && name !== email) {
-    const parts = name.split(' ');
+  if (name && name.trim()) {
+    const parts = name.trim().split(' ');
     if (parts.length >= 2) {
       return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     }
     return name.substring(0, 2).toUpperCase();
   }
   
-  // Si solo tenemos email
-  return email.substring(0, 2).toUpperCase();
+  if (email) {
+    return email.substring(0, 2).toUpperCase();
+  }
+  
+  return 'U';
 };

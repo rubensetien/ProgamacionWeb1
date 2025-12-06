@@ -1,41 +1,133 @@
-import { useState } from 'react';
-import { AuthProvider, useAuth } from './context/AuthContext.jsx';
-import LoginForm from './components/LoginForm.jsx';
-import RegisterForm from './components/RegisterForm.jsx';
-import ProductosList from './components/ProductosList.jsx';
-import ChatUsuario from './components/ChatUsuario.jsx';
-import AdminLayout from './components/AdminLayout.jsx';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { CarritoProvider } from './context/CarritoContext';
+import LandingPage from './components/public/LandingPage';
+import LoginForm from './components/common/LoginForm';
+import RegisterForm from './components/common/RegisterForm';
+import ProductosList from './components/cliente/ProductosList';
+import Carrito from './components/cliente/Carrito';
+import FinalizarPedido from './components/cliente/FinalizarPedido';
+import MisPedidos from './components/cliente/MisPedidos';
+import AdminLayout from './components/admin/AdminLayout';
 import './App.css';
 
-function AppContent() {
-  const { autenticado, usuario } = useAuth();
-  const [vista, setVista] = useState('login'); // 'login' | 'register'
-  
+// Componente para proteger rutas que SÍ requieren autenticación
+const ProtectedRoute = ({ children, rolesPermitidos }) => {
+  const { autenticado, usuario, cargando } = useAuth();
+
+  if (cargando) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        fontSize: '20px',
+        color: '#7f8c8d'
+      }}>
+        Cargando...
+      </div>
+    );
+  }
+
   if (!autenticado) {
-    if (vista === 'register') {
-      return <RegisterForm onVolver={() => setVista('login')} />;
-    }
-    return <LoginForm onRegistro={() => setVista('register')} />;
+    return <Navigate to="/login" replace />;
   }
 
-  // Si es admin, mostrar el layout completo con menú
-  if (usuario?.rol === 'admin') {
-    return <AdminLayout />;
+  if (rolesPermitidos && !rolesPermitidos.includes(usuario?.rol)) {
+    return <Navigate to="/" replace />;
   }
 
-  // Si es usuario normal, mostrar catálogo + chat flotante
+  return children;
+};
+
+function AppContent() {
+  const { autenticado, usuario, cargando } = useAuth();
+
+  if (cargando) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        fontSize: '20px',
+        color: '#7f8c8d'
+      }}>
+        Cargando...
+      </div>
+    );
+  }
+
   return (
-    <>
-      <ProductosList />
-      <ChatUsuario />
-    </>
+    <Router>
+      <Routes>
+        {/* Rutas públicas */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/productos" element={<ProductosList />} />
+        
+        <Route 
+          path="/login" 
+          element={autenticado ? <Navigate to={usuario?.rol === 'admin' || usuario?.rol === 'gestor' ? '/admin' : '/productos'} /> : <LoginForm />} 
+        />
+        <Route 
+          path="/register" 
+          element={autenticado ? <Navigate to="/productos" /> : <RegisterForm />} 
+        />
+
+        {/* Rutas que requieren autenticación */}
+        <Route
+          path="/carrito"
+          element={
+            <ProtectedRoute>
+              <Carrito />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/finalizar-pedido"
+          element={
+            <ProtectedRoute>
+              <FinalizarPedido />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/mis-pedidos"
+          element={
+            <ProtectedRoute>
+              <MisPedidos />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Rutas de administrador */}
+        <Route
+          path="/admin/*"
+          element={
+            <ProtectedRoute rolesPermitidos={['admin', 'gestor']}>
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Redirección por defecto */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Router>
   );
 }
 
-export default function App() {
+function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <CarritoProvider>
+        <AppContent />
+      </CarritoProvider>
     </AuthProvider>
   );
 }
+
+export default App;

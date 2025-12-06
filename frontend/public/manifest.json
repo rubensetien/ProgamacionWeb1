@@ -1,0 +1,20 @@
+{
+  "name": "Catálogo REGMA - Sistema de Gestión",
+  "short_name": "REGMA",
+  "description": "Sistema de gestión de productos, inventario y chat interno para REGMA",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ff6600",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,594 @@
+/* ========================================
+   GESTIÓN DE SABORES - ESTILOS ESPECÍFICOS
+   ======================================== */
+
+/* Variables */
+:root {
+  --color-primary: #ff6600;
+  --color-primary-dark: #ff8533;
+  --color-success: #27ae60;
+  --color-danger: #e74c3c;
+  --color-warning: #f39c12;
+  --color-info: #3498db;
+  --color-text: #2c3e50;
+  --color-text-light: #7f8c8d;
+  --color-border: #e8e8e8;
+  --color-bg: #f8f9fa;
+}
+
+.gestion-variantes {
+  padding: 0;
+}
+
+/* ========== HEADER ========== */
+.gestion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding: 25px 30px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.gestion-header > div {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.gestion-header h2 {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #ff6600, #ff8e53);
+  color: white;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(255, 102, 0, 0.25);
+}
+
+.btn-nuevo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #ff6600, #ff8e53);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+}
+
+.btn-nuevo:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 102, 0, 0.4);
+}
+
+.btn-nuevo svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ========== FILTROS MEJORADOS ========== */
+.filtros-container {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+/* Buscador Moderno con Icono */
+.filtro-busqueda {
+  flex: 1;
+  min-width: 320px;
+  position: relative;
+}
+
+.filtro-busqueda::before {
+  content: '🔍';
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 20px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.filtro-busqueda input {
+  width: 100%;
+  padding: 16px 20px 16px 52px;
+  border: 2px solid #e8e8e8;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-text);
+  background: white;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.filtro-busqueda input::placeholder {
+  color: #b0b0b0;
+  font-weight: 500;
+}
+
+.filtro-busqueda input:hover {
+  border-color: #ff9966;
+  box-shadow: 0 4px 12px rgba(255, 102, 0, 0.08);
+}
+
+.filtro-busqueda input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(255, 102, 0, 0.12);
+  transform: translateY(-1px);
+}
+
+/* Select Moderno */
+.filtro-select {
+  padding: 16px 48px 16px 20px;
+  border: 2px solid #e8e8e8;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 220px;
+  appearance: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23ff6600' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 22px;
+}
+
+.filtro-select:hover {
+  border-color: #ff9966;
+  box-shadow: 0 4px 12px rgba(255, 102, 0, 0.08);
+}
+
+.filtro-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(255, 102, 0, 0.12);
+  transform: translateY(-1px);
+}
+
+/* ========== GRID DE SABORES ========== */
+.variantes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+/* ========== CARDS DE SABORES ========== */
+.variante-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.variante-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+}
+
+.variante-color-bar {
+  height: 6px;
+  width: 100%;
+}
+
+.variante-imagen {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.variante-imagen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.variante-card:hover .variante-imagen img {
+  transform: scale(1.08);
+}
+
+.variante-contenido {
+  padding: 24px;
+}
+
+.variante-contenido h3 {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-text);
+  margin: 0 0 8px 0;
+}
+
+.variante-categoria {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #fff5ee;
+  color: var(--color-primary);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.variante-descripcion {
+  font-size: 14px;
+  color: var(--color-text-light);
+  line-height: 1.6;
+  margin: 12px 0;
+}
+
+.variante-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.variante-tags .tag {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.tag-vegano {
+  background: #d4edda;
+  color: var(--color-success);
+}
+
+.tag-sin-gluten {
+  background: #fff3cd;
+  color: var(--color-warning);
+}
+
+.tag-sin-lactosa {
+  background: #cfe2ff;
+  color: var(--color-info);
+}
+
+.variante-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.variante-precio {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--color-success);
+}
+
+/* ========== ACCIONES ========== */
+.variante-acciones {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-accion {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-accion svg {
+  width: 18px;
+  height: 18px;
+}
+
+.btn-accion.editar {
+  background: #e3f2fd;
+  color: var(--color-info);
+}
+
+.btn-accion.editar:hover {
+  background: var(--color-info);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.btn-accion.eliminar {
+  background: #ffebee;
+  color: var(--color-danger);
+}
+
+.btn-accion.eliminar:hover {
+  background: var(--color-danger);
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* ========== MODAL ========== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 20px;
+  max-width: 700px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.modal-content h2 {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--color-text);
+  margin: 0;
+  padding: 24px 32px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.btn-cerrar {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+  border: none;
+  border-radius: 12px;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 1;
+}
+
+.btn-cerrar:hover {
+  background: var(--color-danger);
+  color: white;
+  transform: rotate(90deg);
+}
+
+.modal-content form {
+  padding: 0 32px 32px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 8px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--color-border);
+  border-radius: 10px;
+  font-size: 15px;
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+  font-family: inherit;
+}
+
+.colores-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+
+.color-opcion {
+  width: 48px;
+  height: 48px;
+  border: 3px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.color-opcion:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.color-opcion.selected {
+  border-color: #2c3e50;
+  transform: scale(1.2);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.checkbox-label:hover {
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--color-primary);
+}
+
+.modal-acciones {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 2px solid #f0f0f0;
+}
+
+.btn-cancelar {
+  flex: 1;
+  padding: 14px 24px;
+  background: #f8f9fa;
+  color: var(--color-text-light);
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-cancelar:hover {
+  background: #e9ecef;
+}
+
+.btn-guardar {
+  flex: 1;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, var(--color-success), #2ecc71);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+}
+
+.btn-guardar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(39, 174, 96, 0.4);
+}
+
+/* ========== NOTIFICACIÓN ========== */
+.notificacion {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10000;
+}
+
+.notificacion.success {
+  background: var(--color-success);
+  color: white;
+}
+
+.notificacion.error {
+  background: var(--color-danger);
+  color: white;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .variantes-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filtros-container {
+    flex-direction: column;
+  }
+
+  .filtro-busqueda {
+    min-width: 100%;
+  }
+
+  .filtro-select {
+    width: 100%;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-content {
+    width: 95%;
+    max-width: 95%;
+  }
+}

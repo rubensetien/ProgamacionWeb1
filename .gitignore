@@ -18,3 +18,13 @@ node_modules/
 # OS
 Thumbs.db
 
+# Local Data & Scripts
+backend/scripts/
+backend/data/
+backend/seedUbicaciones.js
+backend/uploads/temp/
+
+# Scratchpad & Backups
+*.txt
+*.backup*
+.vercel/

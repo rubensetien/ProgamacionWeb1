@@ -1,9 +1,25 @@
-@import './styles/global.css';
-@import './styles/Header.css';
-@import './styles/AdminLayout.css';
-@import './styles/LoginForm.css';
-@import './styles/ProductosList.css';
-@import './styles/Formulario.css';
-@import './styles/Modal.css';
-@import './styles/RegisterAdmin.css';
-@import './styles/Utils.css';
+/* App.css - NO importar CSS aquí, cada componente importa su propio CSS */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ff6600;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ff8e53;
+}

@@ -1,0 +1,126 @@
+.pedidos-admin {
+  padding: 30px 40px;
+}
+
+.pedidos-header {
+  margin-bottom: 30px;
+}
+
+.pedidos-header h1 {
+  font-size: 32px;
+  font-weight: 800;
+  color: #2c3e50;
+  margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pedidos-header h1 svg {
+  width: 32px;
+  height: 32px;
+  color: #ff6600;
+}
+
+.pedidos-subtitle {
+  font-size: 15px;
+  color: #7f8c8d;
+  margin: 0;
+}
+
+.pedidos-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.pedidos-empty svg {
+  width: 80px;
+  height: 80px;
+  color: #bdc3c7;
+  margin-bottom: 20px;
+}
+
+.pedidos-empty p {
+  font-size: 18px;
+  font-weight: 600;
+  color: #7f8c8d;
+  margin: 0 0 24px 0;
+}
+
+.pedidos-lista-admin {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.tabla-pedidos {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla-pedidos th {
+  background: #f8f9fa;
+  padding: 16px 24px;
+  text-align: left;
+  font-weight: 600;
+  color: #7f8c8d;
+  font-size: 14px;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.tabla-pedidos td {
+  padding: 16px 24px;
+  border-bottom: 1px solid #eef2f7;
+  color: #2c3e50;
+  font-size: 15px;
+}
+
+.tabla-pedidos tr:last-child td {
+  border-bottom: none;
+}
+
+.estado-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.estado-badge.pendiente {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.estado-badge.confirmado {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.estado-badge.preparando {
+  background: #ffe5d0;
+  color: #fd7e14;
+}
+
+.estado-badge.listo {
+  background: #d4edda;
+  color: #155724;
+}
+
+.estado-badge.entregado {
+  background: #e2e3e5;
+  color: #383d41;
+}
+
+.estado-badge.cancelado {
+  background: #f8d7da;
+  color: #721c24;
+}
