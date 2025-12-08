@@ -65,8 +65,8 @@ export default function MisPedidos() {
     }
 
     try {
-      const response = await fetch(`${API_URL}/api/pedidos/${pedidoId}`, {
-        method: 'DELETE',
+      const response = await fetch(`${API_URL}/api/pedidos/${pedidoId}/cancelar`, {
+        method: 'PUT',
         headers: getAuthHeaders(),
         body: JSON.stringify({
           motivo: 'Cancelado por el cliente'

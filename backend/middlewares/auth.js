@@ -19,7 +19,7 @@ export const auth = async (req, res, next) => {
 
     // 1. Intentar obtener de Redis
     try {
-      if (redisClient.isOpen) {
+      if (redisClient.isReady) {
         const cachedUser = await redisClient.get(redisKey);
         if (cachedUser) {
           const userObj = JSON.parse(cachedUser);
@@ -48,7 +48,7 @@ export const auth = async (req, res, next) => {
 
     // 3. Guardar en Redis (1 hora)
     try {
-      if (redisClient.isOpen) {
+      if (redisClient.isReady) {
         // Convertir a objeto plano para guardar
         const userToCache = usuario.toObject();
         // Asegurar que _id sea string para consistencia

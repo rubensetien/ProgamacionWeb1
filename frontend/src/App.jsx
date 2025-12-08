@@ -8,6 +8,7 @@ import ProductosList from './components/cliente/ProductosList';
 import Carrito from './components/cliente/Carrito';
 import FinalizarPedido from './components/cliente/FinalizarPedido';
 import MisPedidos from './components/cliente/MisPedidos';
+import PerfilCliente from './components/cliente/PerfilCliente';
 import AdminLayout from './components/admin/AdminLayout';
 import './App.css';
 
@@ -65,14 +66,14 @@ function AppContent() {
         {/* Rutas públicas */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/productos" element={<ProductosList />} />
-        
-        <Route 
-          path="/login" 
-          element={autenticado ? <Navigate to={usuario?.rol === 'admin' || usuario?.rol === 'gestor' ? '/admin' : '/productos'} /> : <LoginForm />} 
+
+        <Route
+          path="/login"
+          element={autenticado ? <Navigate to={usuario?.rol === 'admin' || usuario?.rol === 'gestor' ? '/admin' : '/productos'} /> : <LoginForm />}
         />
-        <Route 
-          path="/register" 
-          element={autenticado ? <Navigate to="/productos" /> : <RegisterForm />} 
+        <Route
+          path="/register"
+          element={autenticado ? <Navigate to="/productos" /> : <RegisterForm />}
         />
 
         {/* Rutas que requieren autenticación */}
@@ -99,6 +100,15 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <MisPedidos />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/perfil"
+          element={
+            <ProtectedRoute>
+              <PerfilCliente />
             </ProtectedRoute>
           }
         />

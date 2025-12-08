@@ -20,6 +20,7 @@ export default function FinalizarPedido() {
   const [carrito, setCarrito] = useState(null);
   const [tipoEntrega, setTipoEntrega] = useState('recogida');
   const [puntosVenta, setPuntosVenta] = useState([]);
+  // eslint-disable-next-line no-unused-vars
   const [obrador, setObrador] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [procesando, setProcesando] = useState(false);
@@ -244,8 +245,6 @@ export default function FinalizarPedido() {
         datosPedido.distanciaKm = formulario.distanciaKm;
       }
 
-      console.log('📦 Datos del pedido a enviar:', datosPedido);
-
       const response = await fetch(`${API_URL}/api/pedidos`, {
         method: 'POST',
         headers: getAuthHeaders(),
@@ -253,7 +252,6 @@ export default function FinalizarPedido() {
       });
 
       const data = await response.json();
-      console.log('📬 Respuesta del servidor:', data);
 
       if (!response.ok) {
         throw new Error(data.message || 'Error al crear el pedido');
@@ -265,12 +263,12 @@ export default function FinalizarPedido() {
           headers: getAuthHeaders()
         });
 
-        alert('✅ Pedido realizado con éxito');
+        // alert('Pedido realizado con éxito'); // Removing intrusive alert
         navigate('/mis-pedidos');
       }
 
     } catch (err) {
-      console.error('❌ Error confirmando pedido:', err);
+      console.error('Error confirmando pedido:', err);
       setError(err.message || 'Error al procesar el pedido.');
     } finally {
       setProcesando(false);
@@ -302,23 +300,21 @@ export default function FinalizarPedido() {
     return (
       <div className="finalizar-loading">
         <div className="spinner"></div>
-        <p>Cargando opciones de entrega...</p>
+        <p>Cargando opciones...</p>
       </div>
     );
   }
 
   if (!carrito || !carrito.items || carrito.items.length === 0) {
     return (
-      <div className="finalizar-container">
+      <div className="finalizar-container empty-state">
         <div className="carrito-vacio">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="9" cy="21" r="1" />
-            <circle cx="20" cy="21" r="1" />
-            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+          <svg className="icon-empty" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z" />
           </svg>
           <h2>Tu carrito está vacío</h2>
-          <p>Añade productos para finalizar tu pedido</p>
-          <button onClick={() => navigate('/productos')} className="btn-volver-catalogo">
+          <p>Descubre nuestros productos artesanales.</p>
+          <button onClick={() => navigate('/productos')} className="btn-primary">
             Ver catálogo
           </button>
         </div>
@@ -328,362 +324,375 @@ export default function FinalizarPedido() {
 
   return (
     <div className="finalizar-container">
-      <div className="finalizar-header">
-        <h1>Finalizar Pedido</h1>
-        <button onClick={() => navigate('/carrito')} className="btn-volver">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-          Volver al carrito
-        </button>
+      {/* Hero Header Section */}
+      <div className="checkout-hero">
+        <div className="hero-content">
+          <div className="hero-top-bar">
+            <div className="brand-wrapper">
+              <img
+                src="https://regma.es/wp-content/uploads/2024/09/240503-regma-logotipo-rgb-logo-con-tagline-e1721651920696.png"
+                alt="REGMA"
+                className="hero-logo"
+              />
+            </div>
+            <div className="hero-actions">
+              <button onClick={() => navigate('/productos')} className="btn-hero-text">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+                Seguir comprando
+              </button>
+            </div>
+          </div>
+          <h1 className="hero-title">Finalizar Pedido</h1>
+          <p className="hero-subtitle">Completa los datos para recibir tu pedido Regma</p>
+        </div>
       </div>
 
-      {error && (
-        <div className="alert alert-error">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="15" y1="9" x2="9" y2="15" />
-            <line x1="9" y1="9" x2="15" y2="15" />
-          </svg>
-          {error}
-        </div>
-      )}
+      <div className="checkout-content">
+        {error && (
+          <div className="alert alert-error">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <span>{error}</span>
+          </div>
+        )}
 
-      <div className="finalizar-content">
-        <div className="finalizar-form-section">
-          <form onSubmit={handleConfirmarPedido}>
-            <div className="tipo-entrega-selector">
-              <h3>Tipo de entrega</h3>
-              <div className="tipo-opciones">
-                <button
-                  type="button"
-                  className={`tipo-opcion ${tipoEntrega === 'recogida' ? 'active' : ''}`}
-                  onClick={() => handleTipoEntrega('recogida')}
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                    <polyline points="9 22 9 12 15 12 15 22" />
-                  </svg>
-                  <span className="tipo-texto">
-                    <strong>Recogida en tienda</strong>
-                    <small>Gratis - Disponible en 24-48h</small>
-                  </span>
-                </button>
+        <div className="checkout-grid">
+          <div className="checkout-form-section">
+            <form onSubmit={handleConfirmarPedido}>
+              {/* Sección Tipo de Entrega */}
+              <section className="form-section">
+                <h3 className="section-title">
+                  <span className="step-number">1</span>
+                  Método de entrega
+                </h3>
+                <div className="delivery-options">
+                  <label className={`delivery-option ${tipoEntrega === 'recogida' ? 'active' : ''}`}>
+                    <input
+                      type="radio"
+                      name="tipoEntrega"
+                      value="recogida"
+                      checked={tipoEntrega === 'recogida'}
+                      onChange={() => handleTipoEntrega('recogida')}
+                    />
+                    <div className="option-content">
+                      <div className="option-icon-wrapper">
+                        <svg className="option-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                          <polyline points="9 22 9 12 15 12 15 22" />
+                        </svg>
+                      </div>
+                      <div className="option-info">
+                        <span className="option-name">Recogida en tienda</span>
+                        <span className="option-detail">Gratis • Listo en 24-48h</span>
+                      </div>
+                      <div className="check-circle"></div>
+                    </div>
+                  </label>
 
-                <button
-                  type="button"
-                  className={`tipo-opcion ${tipoEntrega === 'domicilio' ? 'active' : ''}`}
-                  onClick={() => handleTipoEntrega('domicilio')}
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="1" y="3" width="15" height="13" />
-                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
-                    <circle cx="5.5" cy="18.5" r="2.5" />
-                    <circle cx="18.5" cy="18.5" r="2.5" />
-                  </svg>
-                  <span className="tipo-texto">
-                    <strong>Envío a domicilio</strong>
-                    <small>Radio 50km desde obrador</small>
-                  </span>
+                  <label className={`delivery-option ${tipoEntrega === 'domicilio' ? 'active' : ''}`}>
+                    <input
+                      type="radio"
+                      name="tipoEntrega"
+                      value="domicilio"
+                      checked={tipoEntrega === 'domicilio'}
+                      onChange={() => handleTipoEntrega('domicilio')}
+                    />
+                    <div className="option-content">
+                      <div className="option-icon-wrapper">
+                        <svg className="option-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                          <rect x="1" y="3" width="15" height="13" rx="2" />
+                          <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+                          <circle cx="5.5" cy="18.5" r="2.5" />
+                          <circle cx="18.5" cy="18.5" r="2.5" />
+                        </svg>
+                      </div>
+                      <div className="option-info">
+                        <span className="option-name">Envío a domicilio</span>
+                        <span className="option-detail">Radio 50km • Envío calculado</span>
+                      </div>
+                      <div className="check-circle"></div>
+                    </div>
+                  </label>
+                </div>
+              </section>
+
+              {/* Sección Contacto */}
+              <section className="form-section">
+                <h3 className="section-title">
+                  <span className="step-number">2</span>
+                  Datos de contacto
+                </h3>
+                <div className="form-group">
+                  <label>Teléfono de contacto</label>
+                  <div className="input-with-icon">
+                    <svg className="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                    </svg>
+                    <input
+                      type="tel"
+                      value={formulario.telefono}
+                      onChange={(e) => setFormulario({ ...formulario, telefono: e.target.value })}
+                      placeholder="600 000 000"
+                      required
+                      className="input-field pl-10"
+                    />
+                  </div>
+                </div>
+              </section>
+
+              {/* Sección Detalles Específicos */}
+              {tipoEntrega === 'recogida' && (
+                <section className="form-section animate-fade-in">
+                  <h3 className="section-title">
+                    <span className="step-number">3</span>
+                    Punto de recogida
+                  </h3>
+                  <div className="form-group">
+                    <label>Selecciona Tienda</label>
+                    <div className="select-wrapper">
+                      <select
+                        value={formulario.puntoVenta}
+                        onChange={(e) => setFormulario({ ...formulario, puntoVenta: e.target.value })}
+                        required
+                        className="select-field"
+                      >
+                        <option value="">-- Selecciona un punto --</option>
+                        {puntosVenta.map(punto => (
+                          <option key={punto._id} value={punto._id}>
+                            {punto.nombre} — {punto.direccion?.calle}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group half">
+                      <label>Fecha</label>
+                      <div className="select-wrapper">
+                        <select
+                          value={formulario.fechaRecogida}
+                          onChange={(e) => setFormulario({ ...formulario, fechaRecogida: e.target.value })}
+                          required
+                          className="select-field"
+                        >
+                          <option value="">Día</option>
+                          {generarFechasDisponibles().map(fecha => (
+                            <option key={fecha} value={fecha}>
+                              {new Date(fecha + 'T12:00:00').toLocaleDateString('es-ES', {
+                                weekday: 'short',
+                                day: 'numeric',
+                                month: 'short'
+                              })}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="form-group half">
+                      <label>Hora</label>
+                      <div className="select-wrapper">
+                        <select
+                          value={formulario.horaRecogida}
+                          onChange={(e) => setFormulario({ ...formulario, horaRecogida: e.target.value })}
+                          required
+                          className="select-field"
+                        >
+                          <option value="">Hora</option>
+                          {generarHorariosDisponibles().map(hora => (
+                            <option key={hora} value={hora}>{hora}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {tipoEntrega === 'domicilio' && (
+                <section className="form-section animate-fade-in">
+                  <h3 className="section-title">
+                    <span className="step-number">3</span>
+                    Dirección de envío
+                  </h3>
+                  <div className="form-row to-3-1">
+                    <div className="form-group">
+                      <label>Calle</label>
+                      <input
+                        type="text"
+                        value={formulario.calle}
+                        onChange={(e) => setFormulario({ ...formulario, calle: e.target.value, direccionValidada: false })}
+                        placeholder="Av. Libertad"
+                        required
+                        className="input-field"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Nº</label>
+                      <input
+                        type="text"
+                        value={formulario.numero}
+                        onChange={(e) => setFormulario({ ...formulario, numero: e.target.value, direccionValidada: false })}
+                        placeholder="10"
+                        required
+                        className="input-field"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Piso/Puerta</label>
+                      <input
+                        type="text"
+                        value={formulario.piso}
+                        onChange={(e) => setFormulario({ ...formulario, piso: e.target.value })}
+                        placeholder="2º C"
+                        className="input-field"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>C. Postal</label>
+                      <input
+                        type="text"
+                        value={formulario.codigoPostal}
+                        onChange={(e) => setFormulario({ ...formulario, codigoPostal: e.target.value, direccionValidada: false })}
+                        placeholder="39001"
+                        required
+                        className="input-field"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Ciudad</label>
+                      <input
+                        type="text"
+                        value={formulario.ciudad}
+                        onChange={(e) => setFormulario({ ...formulario, ciudad: e.target.value, direccionValidada: false })}
+                        placeholder="Santander"
+                        required
+                        className="input-field"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Provincia</label>
+                      <input
+                        type="text"
+                        value={formulario.provincia}
+                        onChange={(e) => setFormulario({ ...formulario, provincia: e.target.value, direccionValidada: false })}
+                        placeholder="Cantabria"
+                        required
+                        className="input-field"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    className={`btn-validate ${formulario.direccionValidada ? 'valid' : ''}`}
+                    onClick={validarDireccion}
+                    disabled={!formulario.calle || !formulario.numero || !formulario.codigoPostal || !formulario.ciudad}
+                  >
+                    {formulario.direccionValidada ? (
+                      <>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        Dirección Verificada
+                      </>
+                    ) : 'Verificar disponibilidad de envío'}
+                  </button>
+                </section>
+              )}
+
+              <div className="form-section no-border">
+                <div className="form-group">
+                  <label>Notas para el repartidor (Opcional)</label>
+                  <textarea
+                    value={formulario.notas}
+                    onChange={(e) => setFormulario({ ...formulario, notas: e.target.value })}
+                    placeholder="Ej: El timbre no funciona..."
+                    rows="2"
+                    className="textarea-field"
+                  />
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <div className="checkout-summary-section">
+            <div className="summary-card">
+              <div className="summary-header">
+                <h3>Resumen del Pedido</h3>
+                <button onClick={() => navigate('/carrito')} className="btn-edit-cart">
+                  Editar
                 </button>
               </div>
-            </div>
 
-            <div className="form-group">
-              <label>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                </svg>
-                Teléfono de contacto *
-              </label>
-              <input
-                type="tel"
-                value={formulario.telefono}
-                onChange={(e) => setFormulario({ ...formulario, telefono: e.target.value })}
-                placeholder="Ej: 611 222 333"
-                required
-              />
-              <small>Te contactaremos si hay algún problema con tu pedido</small>
-            </div>
+              <div className="summary-items">
+                {carrito.items.map((item) => (
+                  <div key={item._id} className="summary-item">
+                    <div className="item-details">
+                      <span className="item-name">{item.nombreVariante}</span>
+                      <span className="item-format">{item.nombreFormato}</span>
+                    </div>
+                    <div className="item-price-qty">
+                      <span className="item-qty">x{item.cantidad}</span>
+                      <span className="item-price">{item.subtotal?.toFixed(2)}€</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-            {tipoEntrega === 'recogida' && (
-              <>
-                <div className="form-group">
-                  <label>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                      <circle cx="12" cy="10" r="3" />
-                    </svg>
-                    Punto de recogida *
-                  </label>
-                  <select
-                    value={formulario.puntoVenta}
-                    onChange={(e) => setFormulario({ ...formulario, puntoVenta: e.target.value })}
-                    required
-                  >
-                    <option value="">Selecciona un punto de venta</option>
-                    {puntosVenta.map(punto => (
-                      <option key={punto._id} value={punto._id}>
-                        {punto.nombre} - {punto.direccion?.calle}, {punto.direccion?.ciudad}
-                      </option>
-                    ))}
-                  </select>
+              <div className="summary-totals">
+                <div className="total-row">
+                  <span>Subtotal</span>
+                  <span>{carrito.subtotal?.toFixed(2)}€</span>
                 </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                        <line x1="16" y1="2" x2="16" y2="6" />
-                        <line x1="8" y1="2" x2="8" y2="6" />
-                        <line x1="3" y1="10" x2="21" y2="10" />
-                      </svg>
-                      Fecha de recogida *
-                    </label>
-                    <select
-                      value={formulario.fechaRecogida}
-                      onChange={(e) => setFormulario({ ...formulario, fechaRecogida: e.target.value })}
-                      required
-                    >
-                      <option value="">Selecciona una fecha</option>
-                      {generarFechasDisponibles().map(fecha => (
-                        <option key={fecha} value={fecha}>
-                          {new Date(fecha + 'T12:00:00').toLocaleDateString('es-ES', {
-                            weekday: 'long',
-                            day: 'numeric',
-                            month: 'long'
-                          })}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="form-group">
-                    <label>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="12" cy="12" r="10" />
-                        <polyline points="12 6 12 12 16 14" />
-                      </svg>
-                      Hora de recogida *
-                    </label>
-                    <select
-                      value={formulario.horaRecogida}
-                      onChange={(e) => setFormulario({ ...formulario, horaRecogida: e.target.value })}
-                      required
-                    >
-                      <option value="">Selecciona una hora</option>
-                      {generarHorariosDisponibles().map(hora => (
-                        <option key={hora} value={hora}>{hora}</option>
-                      ))}
-                    </select>
-                  </div>
+                <div className="total-row">
+                  <span>Envío</span>
+                  <span className={tipoEntrega === 'recogida' ? 'text-success' : ''}>
+                    {tipoEntrega === 'recogida' ? 'Gratis' : 'Calculado'}
+                  </span>
                 </div>
-              </>
-            )}
-
-            {tipoEntrega === 'domicilio' && (
-              <>
-                <div className="form-row">
-                  <div className="form-group" style={{ flex: 3 }}>
-                    <label>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                      </svg>
-                      Calle *
-                    </label>
-                    <input
-                      type="text"
-                      value={formulario.calle}
-                      onChange={(e) => setFormulario({ ...formulario, calle: e.target.value, direccionValidada: false })}
-                      placeholder="Ej: Calle Mayor"
-                      required
-                    />
-                  </div>
-
-                  <div className="form-group" style={{ flex: 1 }}>
-                    <label>Número *</label>
-                    <input
-                      type="text"
-                      value={formulario.numero}
-                      onChange={(e) => setFormulario({ ...formulario, numero: e.target.value, direccionValidada: false })}
-                      placeholder="123"
-                      required
-                    />
-                  </div>
+                <div className="total-row main-total">
+                  <span>Total</span>
+                  <span className="total-amount">{carrito.total?.toFixed(2)}€</span>
                 </div>
+              </div>
 
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Piso / Puerta</label>
-                    <input
-                      type="text"
-                      value={formulario.piso}
-                      onChange={(e) => setFormulario({ ...formulario, piso: e.target.value })}
-                      placeholder="Ej: 3º A"
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Código Postal *</label>
-                    <input
-                      type="text"
-                      value={formulario.codigoPostal}
-                      onChange={(e) => setFormulario({ ...formulario, codigoPostal: e.target.value, direccionValidada: false })}
-                      placeholder="28001"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Ciudad *</label>
-                    <input
-                      type="text"
-                      value={formulario.ciudad}
-                      onChange={(e) => setFormulario({ ...formulario, ciudad: e.target.value, direccionValidada: false })}
-                      placeholder="Madrid"
-                      required
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Provincia *</label>
-                    <input
-                      type="text"
-                      value={formulario.provincia}
-                      onChange={(e) => setFormulario({ ...formulario, provincia: e.target.value, direccionValidada: false })}
-                      placeholder="Madrid"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  className={`btn-validar-direccion ${formulario.direccionValidada ? 'validada' : ''}`}
-                  onClick={validarDireccion}
-                  disabled={!formulario.calle || !formulario.numero || !formulario.codigoPostal || !formulario.ciudad}
-                >
-                  {formulario.direccionValidada ? (
-                    <>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                      Dirección validada ({formulario.distanciaKm} km)
-                    </>
-                  ) : (
-                    <>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                        <circle cx="12" cy="10" r="3" />
-                      </svg>
-                      Validar dirección
-                    </>
-                  )}
-                </button>
-              </>
-            )}
-
-            <div className="form-group">
-              <label>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                </svg>
-                Notas adicionales (opcional)
-              </label>
-              <textarea
-                value={formulario.notas}
-                onChange={(e) => setFormulario({ ...formulario, notas: e.target.value })}
-                placeholder="Instrucciones especiales para la entrega..."
-                rows="3"
-              />
-            </div>
-
-            <div className="form-actions">
               <button
-                type="button"
-                className="btn-cancelar-form"
-                onClick={() => navigate('/carrito')}
-                disabled={procesando}
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                className="btn-confirmar"
+                onClick={handleConfirmarPedido}
+                className="btn-confirm-order"
                 disabled={procesando || (tipoEntrega === 'domicilio' && !formulario.direccionValidada)}
               >
                 {procesando ? (
-                  <>
-                    <div className="spinner-small"></div>
-                    Procesando...
-                  </>
+                  <span className="spinner-loader"></span>
                 ) : (
                   <>
-                    Confirmar pedido
+                    Confirmar y Pagar
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polyline points="20 6 9 17 4 12" />
+                      <path d="M5 12h14M12 5l7 7-7 7" />
                     </svg>
                   </>
                 )}
               </button>
-            </div>
-          </form>
-        </div>
 
-        <div className="finalizar-resumen-section">
-          <div className="resumen-card">
-            <h2>Resumen del pedido</h2>
-
-            <div className="resumen-items">
-              {carrito.items.map((item) => (
-                <div key={item._id} className="resumen-item">
-                  <div className="resumen-item-info">
-                    <span className="resumen-item-nombre">{item.nombreVariante}</span>
-                    <span className="resumen-item-formato">{item.nombreFormato}</span>
-                  </div>
-                  <div className="resumen-item-precio">
-                    <span className="resumen-cantidad">x{item.cantidad}</span>
-                    <span className="resumen-subtotal">
-                      {item.subtotal?.toFixed(2)}€
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="resumen-totales">
-              <div className="resumen-linea">
-                <span>Subtotal:</span>
-                <span>{carrito.subtotal?.toFixed(2)}€</span>
+              <div className="secure-checkout-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                <span>Pago 100% Seguro</span>
               </div>
-              <div className="resumen-linea">
-                <span>Envío:</span>
-                <span>Gratis</span>
-              </div>
-              <div className="resumen-linea total">
-                <span>Total:</span>
-                <span>{carrito.total?.toFixed(2)}€</span>
-              </div>
-            </div>
-
-            <div className="resumen-avisos">
-              {tipoEntrega === 'recogida' && (
-                <div className="aviso-importante">
-                  <strong>Recogida en tienda</strong>
-                  <p>Tu pedido estará listo en el punto de venta seleccionado en la fecha y hora indicadas.</p>
-                </div>
-              )}
-
-              {tipoEntrega === 'domicilio' && formulario.direccionValidada && (
-                <div className="aviso-secundario">
-                  <strong>Envío a domicilio</strong>
-                  <p>Entregaremos tu pedido en un plazo de 24-48 horas. Te contactaremos para coordinar la entrega.</p>
-                </div>
-              )}
             </div>
           </div>
         </div>

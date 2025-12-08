@@ -10,7 +10,7 @@ const router = express.Router();
 // Helper para invalidar caché
 const invalidarCacheProductos = async () => {
   try {
-    if (redisClient.isOpen) {
+    if (redisClient.isReady) {
       const keys = await redisClient.keys('productos:query:*');
       if (keys.length > 0) {
         await redisClient.del(keys);
@@ -29,7 +29,7 @@ router.get('/', async (req, res) => {
     const cacheKey = `productos:query:${JSON.stringify(req.query)}`;
 
     try {
-      if (redisClient.isOpen) {
+      if (redisClient.isReady) {
         const cachedData = await redisClient.get(cacheKey);
         if (cachedData) {
           return res.json(JSON.parse(cachedData));
@@ -93,7 +93,7 @@ router.get('/', async (req, res) => {
 
     // Guardar en caché (30 min)
     try {
-      if (redisClient.isOpen) {
+      if (redisClient.isReady) {
         await redisClient.set(cacheKey, JSON.stringify(responseData), {
           EX: 1800
         });
