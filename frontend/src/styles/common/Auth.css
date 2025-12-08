@@ -43,16 +43,21 @@
 }
 
 @keyframes float-particle {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translate(0, 0);
     opacity: 0;
   }
+
   10% {
     opacity: 1;
   }
+
   90% {
     opacity: 1;
   }
+
   100% {
     transform: translate(calc(var(--x) - 50vw), calc(var(--y) - 50vh));
     opacity: 0;
@@ -95,12 +100,16 @@
 }
 
 @keyframes float-orb {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translate(0, 0) scale(1);
   }
+
   33% {
     transform: translate(50px, -50px) scale(1.1);
   }
+
   66% {
     transform: translate(-30px, 30px) scale(0.9);
   }
@@ -120,6 +129,7 @@
     opacity: 0;
     transform: translateY(40px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -132,7 +142,7 @@
   backdrop-filter: blur(20px);
   border-radius: 32px;
   padding: 48px 40px;
-  box-shadow: 
+  box-shadow:
     0 30px 60px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -147,12 +157,10 @@
   left: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent,
-    rgba(255, 102, 0, 0.03),
-    transparent
-  );
+  background: linear-gradient(45deg,
+      transparent,
+      rgba(255, 102, 0, 0.03),
+      transparent);
   animation: card-shine 3s infinite;
 }
 
@@ -160,6 +168,7 @@
   0% {
     transform: translateX(-100%) translateY(-100%) rotate(45deg);
   }
+
   100% {
     transform: translateX(100%) translateY(100%) rotate(45deg);
   }
@@ -186,9 +195,12 @@
 }
 
 @keyframes logoFloat {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-10px);
   }
@@ -207,10 +219,13 @@
 }
 
 @keyframes glow-pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 0.5;
     transform: translate(-50%, -50%) scale(1);
   }
+
   50% {
     opacity: 0.8;
     transform: translate(-50%, -50%) scale(1.1);
@@ -230,15 +245,24 @@
   animation: word-appear 0.6s cubic-bezier(0.4, 0, 0.2, 1) backwards;
 }
 
-.title-word:nth-child(1) { animation-delay: 0.1s; }
-.title-word:nth-child(2) { animation-delay: 0.2s; }
-.title-word:nth-child(3) { animation-delay: 0.3s; }
+.title-word:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.title-word:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.title-word:nth-child(3) {
+  animation-delay: 0.3s;
+}
 
 @keyframes word-appear {
   from {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -260,8 +284,13 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* ========== ERROR ========== */
@@ -289,8 +318,15 @@
 }
 
 @keyframes pulse-error {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.02); }
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.02);
+  }
 }
 
 /* ========== FORMULARIO CON FLOAT LABELS ========== */
@@ -323,7 +359,7 @@
 
 .float-label input {
   width: 100%;
-  padding: 20px 20px 20px 56px;
+  padding: 20px 20px 20px 56px !important;
   border: 2px solid #e0e0e0;
   border-radius: 16px;
   font-size: 16px;
@@ -345,10 +381,10 @@
 }
 
 /* Float effect */
-.float-label input:focus + label,
-.float-label input:not(:placeholder-shown) + label {
+.float-label input:focus+label,
+.float-label input:not(:placeholder-shown)+label {
   top: -10px;
-  left: 16px;
+  left: 48px;
   font-size: 12px;
   color: #ff6600;
   background: white;
@@ -362,7 +398,7 @@
   transform: translateY(-2px);
 }
 
-.float-label input:focus ~ .input-icon {
+.float-label input:focus~.input-icon {
   color: #ff6600;
   transform: translateY(-50%) scale(1.1);
 }
@@ -377,7 +413,7 @@
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.float-label input:focus ~ .input-border {
+.float-label input:focus~.input-border {
   width: 100%;
 }
 
@@ -442,12 +478,10 @@
   left: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent,
-    rgba(255, 255, 255, 0.3),
-    transparent
-  );
+  background: linear-gradient(45deg,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent);
   transform: translateX(-100%) translateY(-100%) rotate(45deg);
   transition: transform 0.6s;
 }
@@ -485,7 +519,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ========== FOOTER ========== */
@@ -559,12 +595,10 @@
   left: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.5) 50%,
-    transparent 70%
-  );
+  background: linear-gradient(45deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.5) 50%,
+      transparent 70%);
   animation: shimmer 3s infinite;
 }
 
@@ -572,6 +606,7 @@
   0% {
     transform: translateX(-100%) translateY(-100%) rotate(45deg);
   }
+
   100% {
     transform: translateX(100%) translateY(100%) rotate(45deg);
   }
@@ -659,6 +694,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
