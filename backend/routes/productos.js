@@ -4,6 +4,7 @@ import Categoria from '../models/Categoria.js';
 import Variante from '../models/Variante.js';
 import Formato from '../models/Formato.js';
 import redisClient from '../config/redis.js';
+import upload from '../middlewares/upload.js'; // Importar middleware de upload
 
 const router = express.Router();
 
@@ -256,8 +257,12 @@ router.get('/sku/:sku', async (req, res) => {
 });
 
 // POST /api/productos - Crear un producto
-router.post('/', async (req, res) => {
+router.post('/', upload.single('imagen'), async (req, res) => {
   try {
+    // Si hay imagen, asignar la ruta
+    if (req.file) {
+      req.body.imagenPrincipal = `/uploads/productos/${req.file.filename}`;
+    }
     // Verificar que existe la categoría
     const categoria = await Categoria.findById(req.body.categoria);
     if (!categoria) {
@@ -316,8 +321,12 @@ router.post('/', async (req, res) => {
 });
 
 // PUT /api/productos/:id - Actualizar un producto
-router.put('/:id', async (req, res) => {
+router.put('/:id', upload.single('imagen'), async (req, res) => {
   try {
+    // Si hay nueva imagen, asignar la ruta
+    if (req.file) {
+      req.body.imagenPrincipal = `/uploads/productos/${req.file.filename}`;
+    }
     const producto = await Producto.findByIdAndUpdate(
       req.params.id,
       req.body,

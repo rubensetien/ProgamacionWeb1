@@ -35,7 +35,7 @@ const ubicacionSchema = new mongoose.Schema({
     email: { type: String, lowercase: true, trim: true },
     horario: { type: String }
   },
-  
+
   // ✅ AÑADIDO: Horarios detallados para puntos de venta
   horarios: {
     lunes: { apertura: String, cierre: String },
@@ -46,7 +46,7 @@ const ubicacionSchema = new mongoose.Schema({
     sabado: { apertura: String, cierre: String },
     domingo: { apertura: String, cierre: String }
   },
-  
+
   responsable: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Usuario'
@@ -59,7 +59,7 @@ const ubicacionSchema = new mongoose.Schema({
     cantidad: { type: Number },
     unidad: { type: String }
   },
-  
+
   // ✅ AÑADIDO: Para pedidos con recogida
   aceptaPedidos: {
     type: Boolean,
@@ -70,12 +70,12 @@ const ubicacionSchema = new mongoose.Schema({
     default: 50,
     comment: 'Pedidos máximos por día'
   },
-  
+
   activo: {
     type: Boolean,
     default: true
   },
-  
+
   // ✅ AÑADIDO: Metadata útil
   descripcion: {
     type: String
@@ -94,25 +94,26 @@ ubicacionSchema.index({ activo: 1 });
 ubicacionSchema.index({ 'coordenadas.latitud': 1, 'coordenadas.longitud': 1 });
 
 // ✅ Índice geoespacial para búsquedas por radio
-ubicacionSchema.index({ 
-  coordenadas: '2dsphere' 
-});
+// ✅ Índice geoespacial para búsquedas por radio
+ubicacionSchema.index({
+  coordenadas: '2dsphere'
+}, { sparse: true });
 
 // ✅ MÉTODO: Calcular distancia a otra ubicación
-ubicacionSchema.methods.calcularDistancia = function(lat, lng) {
+ubicacionSchema.methods.calcularDistancia = function (lat, lng) {
   if (!this.coordenadas.latitud || !this.coordenadas.longitud) {
     return null;
   }
-  
+
   const R = 6371; // Radio de la Tierra en km
   const dLat = (lat - this.coordenadas.latitud) * Math.PI / 180;
   const dLon = (lng - this.coordenadas.longitud) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(this.coordenadas.latitud * Math.PI / 180) * 
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(this.coordenadas.latitud * Math.PI / 180) *
     Math.cos(lat * Math.PI / 180) *
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c; // Distancia en km
 };
 

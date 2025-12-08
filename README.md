@@ -48,8 +48,12 @@ ProgamacionWeb1/
     │   ├── components/
     │   │   ├── admin/         # Panel de Control (Administrador Global)
     │   │   │   ├── DashboardAdmin.jsx  # Vista principal y métricas generales
-    │   │   │   ├── PedidosAdmin.jsx    # Gestión centralizada de pedidos
-    │   │   │   └── ProductosAdmin.jsx  # ABM de catálogo y precios
+    │   │   │   ├── AdminLayout.jsx     # Estructura base del panel
+    │   │   │   └── gestion/       # Módulos de gestión detallada
+    │   │   │       ├── GestionProductos.jsx # ABM de catálogo con paginación
+    │   │   │       ├── GestionTurnos.jsx    # Gestión de horarios y trabajadores
+    │   │   │       ├── GestionInventario.jsx # Control de stock
+    │   │   │       └── GestionVariantes.jsx  # Sabores y Atributos
     │   │   ├── gestor/        # [BETA] Gestión de Punto de Venta (Gerentes)
     │   │   │   ├── GestorLayout.jsx    # Layout con menú de tienda
     │   │   │   ├── PanelTienda.jsx     # Métricas locales y caja
@@ -61,17 +65,19 @@ ProgamacionWeb1/
     │   │   │   ├── TrabajadorObrador.jsx # Pantalla de producción
     │   │   │   └── TrabajadorOficina.jsx # Tareas administrativas
     │   │   ├── cliente/       # Área Pública/Privada (Clientes)
+    │   │   │   ├── ProductosList.jsx   # Catálogo visual ("Living Glass") con filtros
     │   │   │   ├── MisPedidos.jsx      # Historial y tracking en tiempo real
     │   │   │   ├── FinalizarPedido.jsx # Checkout y pasarela de pago
-    │   │   │   └── Carrito.jsx         # Sidebar de compra rápida
-    │   │   ├── public/        # Landing y Catálogo
-    │   │   │   └── LandingPage.jsx     # Home, escaparate y filtros
+    │   │   │   └── Carrito.jsx         # Página de carrito sincronizada
+    │   │   ├── public/        # Landing y Catálogo Público
+    │   │   │   ├── LandingPage.jsx     # Home, escaparate y estadísticas
+    │   │   │   └── StoreLocator.jsx    # Buscador de tiendas
     │   │   └── common/        # Componentes Transversales
     │   │       ├── LoginForm.jsx       # Formulario de acceso universal
     │   │       └── Avatar.jsx          # Componente visual de usuario
     │   ├── context/
     │   │   ├── AuthContext.jsx    # Estado global de sesión y persistencia
-    │   │   └── CarritoContext.jsx # Lógica de carrito (localStorage)
+    │   │   └── CarritoContext.jsx # Sincronización Carrito (API + Optimistic UI)
     │   ├── services/          # Capa de comunicación con API (Fetch/Axios)
     │   ├── styles/            # CSS Modules y estilos globales
     │   ├── App.jsx            # Enrutamiento principal (React Router)
@@ -79,6 +85,13 @@ ProgamacionWeb1/
     ├── vite.config.js         # Configuración de compilación
     └── .env                   # Variables de entorno frontend
 ```
+
+## 🔄 Registro de Cambios (Recientes)
+
+*   **Sincronización de Carrito**: Unificación de la arquitectura de carrito. `CarritoContext` ahora actúa como fuente única de verdad, sincronizando automáticamente el estado local con la base de datos al autenticarse, resolviendo inconsistencias en el contador de items.
+*   **Gestión de Productos**: Implementación de paginación configurable (items por página) y mejoras visuales en el listado de administración (`GestionProductos.jsx`).
+*   **Gestión de Turnos**: Corrección de errores de autenticación (401) mediante la exposición adecuada del token JWT en el contexto global y mejoras en el filtrado de trabajadores.
+*   **UI/UX**: Rediseño "Living Glass" en el catálogo de clientes, textos promocionales actualizados en Landing Page ("+80 Años") y mejoras de visibilidad en formularios.
 
 ---
 

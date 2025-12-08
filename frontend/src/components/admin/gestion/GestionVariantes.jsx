@@ -28,7 +28,7 @@ const GestionVariantes = () => {
   });
 
   const coloresDisponibles = [
-    '#3498db', '#e74c3c', '#2ecc71', '#f39c12', 
+    '#3498db', '#e74c3c', '#2ecc71', '#f39c12',
     '#9b59b6', '#1abc9c', '#34495e', '#e67e22',
     '#95a5a6', '#d35400'
   ];
@@ -76,7 +76,7 @@ const GestionVariantes = () => {
         nombre: variante.nombre,
         categoria: variante.categoria._id,
         descripcion: variante.descripcion || '',
-        precio: variante.precio,
+        precio: variante.precio || '',
         color: variante.color || '#3498db',
         imagen: variante.imagen || '',
         vegano: variante.vegano || false,
@@ -114,7 +114,7 @@ const GestionVariantes = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const url = modoEdicion 
+      const url = modoEdicion
         ? `${API_URL}/api/variantes/${varianteActual._id}`
         : `${API_URL}/api/variantes`;
 
@@ -178,7 +178,7 @@ const GestionVariantes = () => {
 
   const variantesFiltradas = variantes.filter(v => {
     const matchCategoria = !filtroCategoria || v.categoria._id === filtroCategoria;
-    const matchBusqueda = !busqueda || 
+    const matchBusqueda = !busqueda ||
       v.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
       v.descripcion?.toLowerCase().includes(busqueda.toLowerCase());
     return matchCategoria && matchBusqueda;
@@ -193,8 +193,8 @@ const GestionVariantes = () => {
         </div>
         <button className="btn-nuevo" onClick={() => abrirModal()}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
           Nuevo Sabor
         </button>
@@ -224,7 +224,7 @@ const GestionVariantes = () => {
         {variantesFiltradas.map(variante => (
           <div key={variante._id} className="variante-card">
             <div className="variante-color-bar" style={{ backgroundColor: variante.color }} />
-            
+
             {variante.imagen && (
               <div className="variante-imagen">
                 <img src={`${API_URL}${variante.imagen}`} alt={variante.nombre} />
@@ -237,7 +237,7 @@ const GestionVariantes = () => {
               {variante.descripcion && (
                 <p className="variante-descripcion">{variante.descripcion}</p>
               )}
-              
+
               <div className="variante-tags">
                 {variante.vegano && <span className="tag tag-vegano">🌱 Vegano</span>}
                 {variante.sinGluten && <span className="tag tag-sin-gluten">🌾 Sin Gluten</span>}
@@ -249,14 +249,14 @@ const GestionVariantes = () => {
                 <div className="variante-acciones">
                   <button className="btn-accion editar" onClick={() => abrirModal(variante)}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                     </svg>
                   </button>
                   <button className="btn-accion eliminar" onClick={() => eliminarVariante(variante._id)}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polyline points="3 6 5 6 21 6"/>
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                     </svg>
                   </button>
                 </div>
@@ -279,7 +279,7 @@ const GestionVariantes = () => {
                   <input
                     type="text"
                     value={formData.nombre}
-                    onChange={(e) => setFormData({...formData, nombre: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
                     required
                   />
                 </div>
@@ -288,7 +288,7 @@ const GestionVariantes = () => {
                   <label>Categoría *</label>
                   <select
                     value={formData.categoria}
-                    onChange={(e) => setFormData({...formData, categoria: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
                     required
                   >
                     <option value="">Seleccionar...</option>
@@ -303,7 +303,7 @@ const GestionVariantes = () => {
                 <label>Descripción</label>
                 <textarea
                   value={formData.descripcion}
-                  onChange={(e) => setFormData({...formData, descripcion: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
                   rows="3"
                 />
               </div>
@@ -311,7 +311,7 @@ const GestionVariantes = () => {
               <ImageUploader
                 tipo="variante"
                 imagenActual={formData.imagen ? `${API_URL}${formData.imagen}` : null}
-                onImagenCargada={(url) => setFormData({...formData, imagen: url})}
+                onImagenCargada={(url) => setFormData({ ...formData, imagen: url })}
                 nombre={formData.nombre}
               />
 
@@ -322,7 +322,7 @@ const GestionVariantes = () => {
                     type="number"
                     step="0.01"
                     value={formData.precio}
-                    onChange={(e) => setFormData({...formData, precio: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, precio: e.target.value })}
                     required
                   />
                 </div>
@@ -336,7 +336,7 @@ const GestionVariantes = () => {
                         type="button"
                         className={`color-opcion ${formData.color === color ? 'selected' : ''}`}
                         style={{ backgroundColor: color }}
-                        onClick={() => setFormData({...formData, color})}
+                        onClick={() => setFormData({ ...formData, color })}
                       />
                     ))}
                   </div>
@@ -348,7 +348,7 @@ const GestionVariantes = () => {
                   <input
                     type="checkbox"
                     checked={formData.vegano}
-                    onChange={(e) => setFormData({...formData, vegano: e.target.checked})}
+                    onChange={(e) => setFormData({ ...formData, vegano: e.target.checked })}
                   />
                   🌱 Vegano
                 </label>
@@ -359,7 +359,7 @@ const GestionVariantes = () => {
                   <input
                     type="checkbox"
                     checked={formData.sinGluten}
-                    onChange={(e) => setFormData({...formData, sinGluten: e.target.checked})}
+                    onChange={(e) => setFormData({ ...formData, sinGluten: e.target.checked })}
                   />
                   🌾 Sin Gluten
                 </label>
@@ -370,7 +370,7 @@ const GestionVariantes = () => {
                   <input
                     type="checkbox"
                     checked={formData.sinLactosa}
-                    onChange={(e) => setFormData({...formData, sinLactosa: e.target.checked})}
+                    onChange={(e) => setFormData({ ...formData, sinLactosa: e.target.checked })}
                   />
                   🥛 Sin Lactosa
                 </label>
@@ -381,7 +381,7 @@ const GestionVariantes = () => {
                   <input
                     type="checkbox"
                     checked={formData.disponible}
-                    onChange={(e) => setFormData({...formData, disponible: e.target.checked})}
+                    onChange={(e) => setFormData({ ...formData, disponible: e.target.checked })}
                   />
                   Disponible
                 </label>

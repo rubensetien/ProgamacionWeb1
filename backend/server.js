@@ -45,7 +45,7 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-  origin: function(origin, callback) {
+  origin: function (origin, callback) {
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
@@ -66,8 +66,8 @@ mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
-.then(() => console.log('✅ Conectado a MongoDB Atlas'))
-.catch(err => console.error('❌ Error conectando a MongoDB:', err));
+  .then(() => console.log('✅ Conectado a MongoDB Atlas'))
+  .catch(err => console.error('❌ Error conectando a MongoDB:', err));
 
 // ========== RUTAS ==========
 import authRoutes from './routes/auth.js';
@@ -96,9 +96,18 @@ app.use('/api/mensajes', mensajesRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/carrito', carritoRoutes);
 
+import turnosRoutes from './routes/turnos.js';
+app.use('/api/turnos', turnosRoutes);
+
+import solicitudesRoutes from './routes/solicitudes.js';
+app.use('/api/solicitudes', solicitudesRoutes);
+
+import dashboardRoutes from './routes/dashboard.js';
+app.use('/api/dashboard', dashboardRoutes);
+
 // Ruta de prueba
 app.get('/', (req, res) => {
-  res.json({ 
+  res.json({
     message: '🍦 API REGMA funcionando',
     socketConnected: io.engine.clientsCount,
     timestamp: new Date().toISOString()

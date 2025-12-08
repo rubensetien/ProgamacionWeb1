@@ -16,7 +16,7 @@ const productoSchema = new mongoose.Schema({
     ref: 'Formato',
     default: null
   },
-  
+
   // Identificación
   nombre: {
     type: String,
@@ -33,11 +33,11 @@ const productoSchema = new mongoose.Schema({
     uppercase: true
   },
   codigoBarras: String,
-  
+
   // Descripción
   descripcionCorta: String,
   descripcionLarga: String,
-  
+
   // Precio
   precioBase: {
     type: Number,
@@ -48,7 +48,7 @@ const productoSchema = new mongoose.Schema({
     type: Number,
     default: null
   },
-  
+
   // Descuentos
   descuento: {
     tipo: {
@@ -63,7 +63,7 @@ const productoSchema = new mongoose.Schema({
     vigenciaDesde: Date,
     vigenciaHasta: Date
   },
-  
+
   // Stock
   gestionaStock: {
     type: Boolean,
@@ -77,11 +77,11 @@ const productoSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  
+
   // Imágenes
   imagenPrincipal: String,
   imagenesSecundarias: [String],
-  
+
   // Canales de venta
   seVendeOnline: {
     type: Boolean,
@@ -95,7 +95,7 @@ const productoSchema = new mongoose.Schema({
     type: String,
     enum: ['heladeria', 'pasteleria', 'cafeteria', 'ecommerce']
   }],
-  
+
   // Estado
   activo: {
     type: Boolean,
@@ -122,7 +122,7 @@ const productoSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  
+
   // Producción
   lugarProduccion: {
     type: String,
@@ -132,7 +132,7 @@ const productoSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  
+
   // Logística
   peso: Number,
   requiereRefrigeracion: {
@@ -140,7 +140,7 @@ const productoSchema = new mongoose.Schema({
     default: false
   },
   diasCaducidad: Number,
-  
+
   // Estadísticas
   ventasTotales: {
     type: Number,
@@ -158,12 +158,12 @@ const productoSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  
+
   // SEO
   metaTitle: String,
   metaDescription: String,
   keywords: [String],
-  
+
   // Notas
   notasInternas: {
     type: String,
@@ -174,7 +174,7 @@ const productoSchema = new mongoose.Schema({
 });
 
 // ========== VALIDACIÓN CONDICIONAL: Variante obligatoria para Helados ==========
-productoSchema.pre('validate', async function(next) {
+productoSchema.pre('validate', async function (next) {
   // 1. Generar slug si no existe
   if (!this.slug && this.nombre) {
     this.slug = this.nombre
@@ -185,13 +185,20 @@ productoSchema.pre('validate', async function(next) {
       .trim()
       .replace(/\s+/g, '-');
   }
-  
+
+  // 1.b Generar SKU si no existe
+  if (!this.sku) {
+    const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const prefix = this.nombre ? this.nombre.substring(0, 3).toUpperCase() : 'PROD';
+    this.sku = `${prefix}-${random}`;
+  }
+
   // 2. Validar variante según categoría
   if (this.isModified('categoria') || this.isModified('variante')) {
     try {
       const Categoria = mongoose.model('Categoria');
       const categoria = await Categoria.findById(this.categoria);
-      
+
       if (categoria && categoria.requiereSabor && !this.variante) {
         return next(new Error(`La categoría "${categoria.nombre}" requiere un sabor/variante`));
       }
@@ -199,7 +206,7 @@ productoSchema.pre('validate', async function(next) {
       console.error('Error validando categoría:', error);
     }
   }
-  
+
   next();
 });
 
@@ -211,7 +218,7 @@ productoSchema.index({ ventasTotales: -1 });
 productoSchema.index({ canales: 1 });
 
 // Virtual: precio final
-productoSchema.virtual('precioFinal').get(function() {
+productoSchema.virtual('precioFinal').get(function () {
   if (this.descuento && this.descuento.tipo !== 'ninguno') {
     if (this.descuento.tipo === 'porcentaje') {
       return this.precioBase * (1 - this.descuento.valor / 100);
@@ -223,7 +230,7 @@ productoSchema.virtual('precioFinal').get(function() {
 });
 
 // Virtual: disponible
-productoSchema.virtual('disponible').get(function() {
+productoSchema.virtual('disponible').get(function () {
   if (!this.activo) return false;
   if (!this.gestionaStock) return true;
   if (this.stock === null) return true;
@@ -231,26 +238,26 @@ productoSchema.virtual('disponible').get(function() {
 });
 
 // Virtual: agotado
-productoSchema.virtual('agotado').get(function() {
+productoSchema.virtual('agotado').get(function () {
   if (!this.gestionaStock) return false;
   if (this.stock === null) return false;
   return this.stock === 0;
 });
 
 // ========== MÉTODO ESTÁTICO: Nombre completo del producto ==========
-productoSchema.methods.obtenerNombreCompleto = async function() {
+productoSchema.methods.obtenerNombreCompleto = async function () {
   await this.populate('variante formato');
-  
+
   let nombreCompleto = this.nombre;
-  
+
   if (this.variante) {
     nombreCompleto = `${this.variante.nombre}`;
   }
-  
+
   if (this.formato) {
     nombreCompleto += ` ${this.formato.nombre}`;
   }
-  
+
   return nombreCompleto;
 };
 

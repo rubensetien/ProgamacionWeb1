@@ -9,6 +9,8 @@ import Carrito from './components/cliente/Carrito';
 import FinalizarPedido from './components/cliente/FinalizarPedido';
 import MisPedidos from './components/cliente/MisPedidos';
 import PerfilCliente from './components/cliente/PerfilCliente';
+import MisSolicitudes from './components/trabajador/MisSolicitudes';
+import StoreLocator from './components/public/StoreLocator'; // ✅ Correctly placed
 import AdminLayout from './components/admin/AdminLayout';
 import './App.css';
 
@@ -63,8 +65,11 @@ function AppContent() {
   return (
     <Router>
       <Routes>
+
+
         {/* Rutas públicas */}
         <Route path="/" element={<LandingPage />} />
+        <Route path="/tiendas" element={<StoreLocator />} /> {/* ✅ NEW */}
         <Route path="/productos" element={<ProductosList />} />
 
         <Route

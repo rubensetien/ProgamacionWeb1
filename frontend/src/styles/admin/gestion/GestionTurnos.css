@@ -1,0 +1,152 @@
+.grid-turnos {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 900px;
+    /* Asegurar scroll horizontal en móviles */
+}
+
+.grid-header-row {
+    display: flex;
+    background: linear-gradient(135deg, #ff6600, #ff8533);
+    color: white;
+    border-radius: 12px 12px 0 0;
+}
+
+.grid-cell-header {
+    padding: 16px;
+    font-weight: 700;
+    text-align: center;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.worker-col {
+    flex: 0 0 250px;
+    text-align: left;
+}
+
+.day-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.day-name {
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+.day-date {
+    font-size: 18px;
+    opacity: 0.9;
+}
+
+.grid-row {
+    display: flex;
+    border-bottom: 1px solid #eee;
+    transition: background 0.2s;
+}
+
+.grid-row:hover {
+    background: #fffbf7;
+    /* Light orange tint */
+}
+
+.grid-cell {
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    border-right: 1px solid #eee;
+}
+
+.worker-name {
+    flex: 0 0 250px;
+    gap: 12px;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.turno-cell {
+    flex: 1;
+    justify-content: center;
+}
+
+.avatar-mini {
+    width: 32px;
+    height: 32px;
+    background: #f0f0f0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #555;
+    font-size: 14px;
+}
+
+.turno-select {
+    width: 100%;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    appearance: none;
+    transition: all 0.2s;
+    font-size: 13px;
+}
+
+.turno-select:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 102, 0, 0.2);
+}
+
+.week-selector {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: white;
+    padding: 10px 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.btn-nav-week {
+    background: none;
+    border: none;
+    color: var(--color-primary);
+    font-weight: 700;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.btn-nav-week:hover {
+    background: rgba(255, 102, 0, 0.1);
+}
+
+.current-week {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--color-text);
+}
+
+.select-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.select-container label {
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.empty-state-row {
+    padding: 40px;
+    text-align: center;
+    color: #999;
+}

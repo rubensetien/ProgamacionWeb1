@@ -1,161 +1,26 @@
-import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCarrito } from '../../context/CarritoContext';
 import '../../styles/cliente/Carrito.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('token');
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`
-  };
-};
-
 export default function Carrito() {
-  const [carrito, setCarrito] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const {
+    cartData,
+    loading,
+    actualizarCantidad,
+    eliminarCartItem,
+    limpiarCarrito
+  } = useCarrito();
+
   const navigate = useNavigate();
 
-  useEffect(() => {
-    cargarCarrito();
-  }, []);
+  // Helper for notifications (simplified, or import Swal/Toast if available in project)
+  // Since context handles core logic, we assume context handles errors or we rely on UI state.
+  // We can add a simple toast helper here if needed, or use the one from ProductosList if it was global.
+  // For now, we'll keep it simple.
 
-  const cargarCarrito = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const response = await fetch(`${API_URL}/api/carrito`, {
-        headers: getAuthHeaders()
-      });
-
-      // Si es 404, significa carrito vacío
-      if (response.status === 404) {
-        setCarrito({
-          items: [],
-          subtotal: 0,
-          descuentos: 0,
-          total: 0
-        });
-        setLoading(false);
-        return;
-      }
-
-      const contentType = response.headers.get('content-type');
-
-      // Verificar que sea JSON
-      if (!contentType || !contentType.includes('application/json')) {
-        console.error('Respuesta no es JSON:', await response.text());
-        throw new Error('El servidor no devolvió datos válidos');
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        setCarrito(data.data || {
-          items: [],
-          subtotal: 0,
-          descuentos: 0,
-          total: 0
-        });
-      } else {
-        // Si no hay carrito, crear uno vacío
-        setCarrito({
-          items: [],
-          subtotal: 0,
-          descuentos: 0,
-          total: 0
-        });
-      }
-    } catch (err) {
-      console.error('Error cargando carrito:', err);
-      // En caso de error, mostrar carrito vacío en lugar de error
-      setCarrito({
-        items: [],
-        subtotal: 0,
-        descuentos: 0,
-        total: 0
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const actualizarCantidad = async (itemId, nuevaCantidad) => {
-    try {
-      const response = await fetch(`${API_URL}/api/carrito/item/${itemId}`, {
-        method: 'PUT',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ cantidad: nuevaCantidad })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setCarrito(data.data);
-      } else {
-        mostrarNotificacion(data.message, 'error');
-      }
-    } catch (err) {
-      console.error('Error actualizando cantidad:', err);
-      mostrarNotificacion('Error al actualizar la cantidad', 'error');
-    }
-  };
-
-  const eliminarItem = async (itemId) => {
-    if (!confirm('¿Eliminar este producto del carrito?')) return;
-
-    try {
-      const response = await fetch(`${API_URL}/api/carrito/item/${itemId}`, {
-        method: 'DELETE',
-        headers: getAuthHeaders()
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setCarrito(data.data);
-        mostrarNotificacion('Producto eliminado del carrito');
-      } else {
-        mostrarNotificacion(data.message, 'error');
-      }
-    } catch (err) {
-      console.error('Error eliminando item:', err);
-      mostrarNotificacion('Error al eliminar el producto', 'error');
-    }
-  };
-
-  const vaciarCarrito = async () => {
-    if (!confirm('¿Estás seguro de que quieres vaciar todo el carrito?')) return;
-
-    try {
-      const response = await fetch(`${API_URL}/api/carrito`, {
-        method: 'DELETE',
-        headers: getAuthHeaders()
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setCarrito(data.data || {
-          items: [],
-          subtotal: 0,
-          descuentos: 0,
-          total: 0
-        });
-        mostrarNotificacion('Carrito vaciado correctamente');
-      } else {
-        mostrarNotificacion(data.message, 'error');
-      }
-    } catch (err) {
-      console.error('Error vaciando carrito:', err);
-      mostrarNotificacion('Error al vaciar el carrito', 'error');
-    }
-  };
-
-  const mostrarNotificacion = (mensaje, tipo = 'success') => {
+  const mostrarNotificacion = (mensaje, tipo = 'success') => { // Legacy local helper if needed
     const notif = document.createElement('div');
     notif.className = `notificacion ${tipo}`;
     notif.textContent = mensaje;
@@ -169,6 +34,18 @@ export default function Carrito() {
       notif.classList.remove('show');
       setTimeout(() => notif.remove(), 300);
     }, 3000);
+  };
+
+  const handleEliminar = async (itemId) => {
+    if (!confirm('¿Eliminar este producto del carrito?')) return;
+    await eliminarCartItem(itemId);
+    mostrarNotificacion('Producto eliminado del carrito');
+  };
+
+  const handleVaciar = async () => {
+    if (!confirm('¿Estás seguro de que quieres vaciar todo el carrito?')) return;
+    await limpiarCarrito();
+    mostrarNotificacion('Carrito vaciado correctamente');
   };
 
   const irACheckout = () => {
@@ -186,23 +63,10 @@ export default function Carrito() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="carrito-container">
-        <div className="carrito-error">
-          <p>{error}</p>
-          <button onClick={cargarCarrito} className="btn-seguir-comprando">
-            Reintentar
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const items = carrito?.items || [];
-  const total = carrito?.total || 0;
-  const subtotal = carrito?.subtotal || 0;
-  const descuentos = carrito?.descuentos || 0;
+  const items = cartData?.items || [];
+  const total = cartData?.total || 0;
+  const subtotal = cartData?.subtotal || 0;
+  const descuentos = cartData?.descuentos || 0;
 
   return (
     <div className="carrito-page">
@@ -230,7 +94,7 @@ export default function Carrito() {
               </p>
             </div>
             {items.length > 0 && (
-              <button className="btn-vaciar" onClick={vaciarCarrito}>
+              <button className="btn-vaciar" onClick={handleVaciar}>
                 Vaciar todo
               </button>
             )}
@@ -263,13 +127,14 @@ export default function Carrito() {
             {/* Items */}
             <div className="carrito-items">
               {items.map(item => (
-                <div key={item._id} className="carrito-item">
+                <div key={item._id || `${item.producto._id}-${item.variante?._id}`} className="carrito-item">
                   {/* Imagen */}
                   <div className="item-imagen">
-                    {item.imagenVariante ? (
+                    {/* Handle both API structure (imagenVariante) and Local structure (item.variante.imagen) */}
+                    {(item.imagenVariante || item.variante?.imagen || item.producto?.imagen) ? (
                       <img
-                        src={`${API_URL}${item.imagenVariante}`}
-                        alt={item.nombreVariante}
+                        src={`${API_URL}${item.imagenVariante || item.variante?.imagen || item.producto?.imagen}`}
+                        alt={item.nombreVariante || item.producto?.nombre}
                       />
                     ) : (
                       <div className="item-placeholder">
@@ -283,10 +148,10 @@ export default function Carrito() {
 
                   {/* Info */}
                   <div className="item-info">
-                    <h3>{item.nombreVariante}</h3>
-                    <p className="item-formato">{item.nombreFormato}</p>
+                    <h3>{item.nombreVariante || item.producto?.nombre}</h3>
+                    <p className="item-formato">{item.nombreFormato || item.formato?.nombre}</p>
                     <p className="item-precio-unitario">
-                      {item.precioUnitario?.toFixed(2)}€ por unidad
+                      {(item.precioUnitario || item.producto?.precioFinal || item.producto?.precioBase || 0).toFixed(2)}€ por unidad
                     </p>
                   </div>
 
@@ -310,14 +175,17 @@ export default function Carrito() {
                     </div>
 
                     <div className="item-subtotal">
-                      <p className="subtotal-valor">{item.subtotal?.toFixed(2)}€</p>
+                      <p className="subtotal-valor">
+                        {/* Calculate subtotal if not present (guest mode) */}
+                        {(item.subtotal || ((item.precioUnitario || item.producto?.precioFinal || 0) * item.cantidad)).toFixed(2)}€
+                      </p>
                     </div>
                   </div>
 
                   {/* Eliminar */}
                   <button
                     className="btn-eliminar-item"
-                    onClick={() => eliminarItem(item._id)}
+                    onClick={() => handleEliminar(item._id)}
                     title="Eliminar producto"
                   >
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

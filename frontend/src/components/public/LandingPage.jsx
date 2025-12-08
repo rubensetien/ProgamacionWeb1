@@ -139,6 +139,20 @@ export default function LandingPage() {
                         <button
                           className="dropdown-item"
                           onClick={() => {
+                            navigate('/tiendas');
+                            setMostrarMenuUsuario(false);
+                          }}
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                          </svg>
+                          <span>Tiendas</span>
+                        </button>
+
+                        <button
+                          className="dropdown-item"
+                          onClick={() => {
                             navigate('/carrito');
                             setMostrarMenuUsuario(false);
                           }}
@@ -230,11 +244,11 @@ export default function LandingPage() {
 
           <div className="hero-stats-inline">
             <div className="stat-inline">
-              <span className="stat-value">80+</span>
+              <span className="stat-value">+80</span>
               <span className="stat-text">Años</span>
             </div>
             <div className="stat-inline">
-              <span className="stat-value">20+</span>
+              <span className="stat-value">+20</span>
               <span className="stat-text">Sabores</span>
             </div>
             <div className="stat-inline">
@@ -244,6 +258,40 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* 📍 FLOATING ACTION BUTTON - ACCESO DIRECTO A TIENDAS */}
+      <button
+        onClick={() => navigate('/tiendas')}
+        style={{
+          position: 'fixed',
+          bottom: '30px',
+          right: '30px',
+          backgroundColor: '#ff6600',
+          color: 'white',
+          border: 'none',
+          borderRadius: '50px',
+          padding: '12px 24px',
+          boxShadow: '0 4px 20px rgba(255, 102, 0, 0.4)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          cursor: 'pointer',
+          fontSize: '1rem',
+          fontWeight: '600',
+          transform: scrollY > 100 ? 'translateY(0)' : 'translateY(100px)', // Animate in
+          opacity: scrollY > 100 ? 1 : 0,
+          transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+        }}
+        onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(0) scale(1.05)'; }}
+        onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0) scale(1)'; }}
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+          <circle cx="12" cy="10" r="3"></circle>
+        </svg>
+        <span>Ubícanos</span>
+      </button>
 
       {/* Categorías con tus imágenes */}
       <section className="categorias-showcase">
@@ -405,6 +453,9 @@ export default function LandingPage() {
             <h4>Contacto</h4>
             <p>info@regma.es</p>
             <p>Revilla de Camargo, Cantabria</p>
+            <a href="#" onClick={(e) => { e.preventDefault(); navigate('/tiendas'); }} style={{ color: 'inherit', display: 'block', marginTop: '10px' }}>
+              Localizar Tiendas
+            </a>
           </div>
         </div>
 

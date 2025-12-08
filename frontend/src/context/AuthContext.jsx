@@ -5,25 +5,29 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export const AuthProvider = ({ children }) => {
   const [usuario, setUsuario] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('token')); // [NEW] Token state
   const [autenticado, setAutenticado] = useState(false);
   const [cargando, setCargando] = useState(true);
 
   // Cargar usuario desde localStorage al iniciar
   useEffect(() => {
     const verificarSesion = async () => {
-      const token = localStorage.getItem('token');
-      
-      if (!token) {
+      const tokenStorage = localStorage.getItem('token');
+
+      if (!tokenStorage) {
+        setToken(null);
         setCargando(false);
         setAutenticado(false);
         setUsuario(null);
         return;
       }
 
+      setToken(tokenStorage); // Ensure state is synced
+
       try {
         const res = await fetch(`${API_URL}/api/auth/me`, {
           headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${tokenStorage}` // Use the variable, not state, to be safe in async
           }
         });
 
@@ -64,13 +68,14 @@ export const AuthProvider = ({ children }) => {
       }
 
       const userData = data.data;
-      
+
       if (!userData.token || !userData._id) {
         throw new Error('Respuesta de login incompleta');
       }
 
       localStorage.setItem('token', userData.token);
-      
+      setToken(userData.token); // Update state
+
       const usuarioFormateado = {
         _id: userData._id,
         nombre: userData.nombre,
@@ -83,7 +88,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('usuario', JSON.stringify(usuarioFormateado));
       setUsuario(usuarioFormateado);
       setAutenticado(true);
-      
+
       return true;
     } catch (err) {
       console.error('Error en login:', err);
@@ -106,13 +111,14 @@ export const AuthProvider = ({ children }) => {
       }
 
       const userData = data.data;
-      
+
       if (!userData.token || !userData._id) {
         throw new Error('Respuesta de registro incompleta');
       }
 
       localStorage.setItem('token', userData.token);
-      
+      setToken(userData.token); // Update state
+
       const usuarioFormateado = {
         _id: userData._id,
         nombre: userData.nombre,
@@ -125,7 +131,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('usuario', JSON.stringify(usuarioFormateado));
       setUsuario(usuarioFormateado);
       setAutenticado(true);
-      
+
       return true;
     } catch (err) {
       console.error('Error en registro:', err);
@@ -136,6 +142,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
+    setToken(null); // Clear state
     setUsuario(null);
     setAutenticado(false);
   };
@@ -144,6 +151,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         usuario,
+        token, // Expose token
         autenticado,
         cargando,
         login,

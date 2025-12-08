@@ -19,9 +19,11 @@ router.get('/trabajadores', async (req, res) => {
       rol: { $in: ['admin', 'gestor', 'trabajador', 'gestor-tienda'] },
       activo: true
     })
-    .select('nombre email rol ubicacion telefono')
-    .sort({ nombre: 1 })
-    .lean();
+      .populate('ubicacionAsignada.referencia') // ✅ Fix: Poblar ubicacion
+      .populate('tiendaAsignada')
+      .select('nombre email rol ubicacionAsignada tiendaAsignada telefono activo') // ✅ Fix: Campos correctos
+      .sort({ nombre: 1 })
+      .lean();
 
     res.json({
       success: true,
@@ -41,14 +43,14 @@ router.get('/trabajadores', async (req, res) => {
 router.get('/', onlyAdmin, async (req, res) => {
   try {
     const { rol, activo, tipoTrabajador, ubicacionTipo, search } = req.query;
-    
+
     const filtro = {};
-    
+
     if (rol) filtro.rol = rol;
     if (activo !== undefined) filtro.activo = activo === 'true';
     if (tipoTrabajador) filtro.tipoTrabajador = tipoTrabajador;
     if (ubicacionTipo) filtro['ubicacionAsignada.tipo'] = ubicacionTipo;
-    
+
     // Búsqueda por nombre o email
     if (search) {
       filtro.$or = [
@@ -56,13 +58,13 @@ router.get('/', onlyAdmin, async (req, res) => {
         { email: { $regex: search, $options: 'i' } }
       ];
     }
-    
+
     const usuarios = await Usuario.find(filtro)
       .populate('ubicacionAsignada.referencia')
       .populate('tiendaAsignada')
       .select('-password')
       .sort({ nombre: 1 });
-    
+
     res.json({
       success: true,
       data: usuarios,
@@ -88,7 +90,7 @@ router.get('/staff', onlyAdmin, async (req, res) => {
       .populate('tiendaAsignada')
       .select('-password')
       .sort({ nombre: 1 });
-    
+
     res.json({
       success: true,
       data: usuarios,
@@ -108,7 +110,7 @@ router.get('/staff', onlyAdmin, async (req, res) => {
 router.get('/trabajadores/:ubicacionTipo/:ubicacionId', onlyAdmin, async (req, res) => {
   try {
     const { ubicacionTipo, ubicacionId } = req.params;
-    
+
     const usuarios = await Usuario.find({
       'ubicacionAsignada.tipo': ubicacionTipo,
       'ubicacionAsignada.referencia': ubicacionId,
@@ -116,7 +118,7 @@ router.get('/trabajadores/:ubicacionTipo/:ubicacionId', onlyAdmin, async (req, r
     })
       .select('-password')
       .sort({ nombre: 1 });
-    
+
     res.json({
       success: true,
       data: usuarios,
@@ -139,14 +141,14 @@ router.get('/:id', onlyAdmin, async (req, res) => {
       .populate('ubicacionAsignada.referencia')
       .populate('tiendaAsignada')
       .select('-password');
-    
+
     if (!usuario) {
       return res.status(404).json({
         success: false,
         message: 'Usuario no encontrado'
       });
     }
-    
+
     res.json({
       success: true,
       data: usuario
@@ -175,7 +177,7 @@ router.post('/', onlyAdmin, async (req, res) => {
       tiendaAsignada,
       permisos
     } = req.body;
-    
+
     // Validar campos requeridos
     if (!nombre || !email || !password || !rol) {
       return res.status(400).json({
@@ -183,7 +185,7 @@ router.post('/', onlyAdmin, async (req, res) => {
         message: 'Nombre, email, password y rol son requeridos'
       });
     }
-    
+
     // Verificar si el email ya existe
     const usuarioExiste = await Usuario.findOne({ email });
     if (usuarioExiste) {
@@ -192,7 +194,7 @@ router.post('/', onlyAdmin, async (req, res) => {
         message: 'El email ya está registrado'
       });
     }
-    
+
     // Crear datos del usuario
     const datosUsuario = {
       nombre,
@@ -202,32 +204,32 @@ router.post('/', onlyAdmin, async (req, res) => {
       rol,
       activo: true
     };
-    
+
     // Añadir campos específicos según rol
     if (rol === 'trabajador' && tipoTrabajador) {
       datosUsuario.tipoTrabajador = tipoTrabajador;
     }
-    
+
     if (ubicacionAsignada) {
       datosUsuario.ubicacionAsignada = ubicacionAsignada;
     }
-    
+
     if (rol === 'gestor-tienda' && tiendaAsignada) {
       datosUsuario.tiendaAsignada = tiendaAsignada;
     }
-    
+
     // Permisos personalizados (si se proporcionan)
     if (permisos) {
       datosUsuario.permisos = permisos;
     }
-    
+
     // Crear usuario
     const usuario = await Usuario.create(datosUsuario);
-    
+
     // Poblar referencias
     await usuario.populate('ubicacionAsignada.referencia');
     await usuario.populate('tiendaAsignada');
-    
+
     res.status(201).json({
       success: true,
       message: 'Usuario creado exitosamente',
@@ -247,33 +249,33 @@ router.post('/', onlyAdmin, async (req, res) => {
 router.put('/:id', onlyAdmin, async (req, res) => {
   try {
     const { password, ...datosActualizacion } = req.body;
-    
+
     const usuario = await Usuario.findById(req.params.id);
-    
+
     if (!usuario) {
       return res.status(404).json({
         success: false,
         message: 'Usuario no encontrado'
       });
     }
-    
+
     // Actualizar campos permitidos
     Object.keys(datosActualizacion).forEach(key => {
       if (datosActualizacion[key] !== undefined) {
         usuario[key] = datosActualizacion[key];
       }
     });
-    
+
     // Si se proporciona password, actualizarlo
     if (password) {
       usuario.password = password;
     }
-    
+
     await usuario.save();
-    
+
     await usuario.populate('ubicacionAsignada.referencia');
     await usuario.populate('tiendaAsignada');
-    
+
     res.json({
       success: true,
       message: 'Usuario actualizado exitosamente',
@@ -293,32 +295,32 @@ router.put('/:id', onlyAdmin, async (req, res) => {
 router.patch('/:id/permisos', onlyAdmin, async (req, res) => {
   try {
     const { permisos } = req.body;
-    
+
     if (!permisos) {
       return res.status(400).json({
         success: false,
         message: 'Los permisos son requeridos'
       });
     }
-    
+
     const usuario = await Usuario.findById(req.params.id);
-    
+
     if (!usuario) {
       return res.status(404).json({
         success: false,
         message: 'Usuario no encontrado'
       });
     }
-    
+
     // Actualizar permisos
     Object.keys(permisos).forEach(permiso => {
       if (usuario.permisos.hasOwnProperty(permiso)) {
         usuario.permisos[permiso] = permisos[permiso];
       }
     });
-    
+
     await usuario.save();
-    
+
     res.json({
       success: true,
       message: 'Permisos actualizados exitosamente',
@@ -338,17 +340,17 @@ router.patch('/:id/permisos', onlyAdmin, async (req, res) => {
 router.patch('/:id/toggle-active', onlyAdmin, async (req, res) => {
   try {
     const usuario = await Usuario.findById(req.params.id);
-    
+
     if (!usuario) {
       return res.status(404).json({
         success: false,
         message: 'Usuario no encontrado'
       });
     }
-    
+
     usuario.activo = !usuario.activo;
     await usuario.save();
-    
+
     res.json({
       success: true,
       message: `Usuario ${usuario.activo ? 'activado' : 'desactivado'} exitosamente`,
@@ -368,26 +370,26 @@ router.patch('/:id/toggle-active', onlyAdmin, async (req, res) => {
 router.patch('/:id/bloquear', onlyAdmin, async (req, res) => {
   try {
     const { motivo } = req.body;
-    
+
     const usuario = await Usuario.findById(req.params.id);
-    
+
     if (!usuario) {
       return res.status(404).json({
         success: false,
         message: 'Usuario no encontrado'
       });
     }
-    
+
     usuario.bloqueado = !usuario.bloqueado;
-    
+
     if (usuario.bloqueado && motivo) {
       usuario.motivoBloqueo = motivo;
     } else {
       usuario.motivoBloqueo = null;
     }
-    
+
     await usuario.save();
-    
+
     res.json({
       success: true,
       message: `Usuario ${usuario.bloqueado ? 'bloqueado' : 'desbloqueado'} exitosamente`,
@@ -407,14 +409,14 @@ router.patch('/:id/bloquear', onlyAdmin, async (req, res) => {
 router.delete('/:id', onlyAdmin, async (req, res) => {
   try {
     const usuario = await Usuario.findById(req.params.id);
-    
+
     if (!usuario) {
       return res.status(404).json({
         success: false,
         message: 'Usuario no encontrado'
       });
     }
-    
+
     // No permitir eliminar al propio admin
     if (usuario._id.toString() === req.usuario._id.toString()) {
       return res.status(400).json({
@@ -422,9 +424,9 @@ router.delete('/:id', onlyAdmin, async (req, res) => {
         message: 'No puedes eliminarte a ti mismo'
       });
     }
-    
+
     await usuario.deleteOne();
-    
+
     res.json({
       success: true,
       message: 'Usuario eliminado exitosamente'

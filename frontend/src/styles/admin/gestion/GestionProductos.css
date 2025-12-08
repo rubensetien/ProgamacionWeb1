@@ -73,6 +73,48 @@
   height: 20px;
 }
 
+/* ========== SUBMENU TABS ========== */
+.gestion-submenu {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+  background: white;
+  padding: 8px;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+
+.submenu-tab {
+  padding: 12px 24px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-light);
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.submenu-tab:hover {
+  background: #f8f9fa;
+  color: var(--color-primary);
+}
+
+.submenu-tab.active {
+  background: linear-gradient(135deg, var(--color-primary), #ff8533);
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 102, 0, 0.2);
+}
+
+.submenu-tab svg {
+  width: 18px;
+  height: 18px;
+}
+
 /* ========== STATS BAR ========== */
 .stats-bar {
   display: grid;
@@ -220,7 +262,8 @@
 }
 
 .tabla-productos thead {
-  background: linear-gradient(135deg, #2c3e50, #34495e);
+  background: linear-gradient(135deg, #ff6600, #ff8533);
+  /* Orange Brand Gradient */
 }
 
 .tabla-productos th {
@@ -343,15 +386,17 @@
 }
 
 .btn-editar {
-  background: #e3f2fd;
-  color: var(--color-info);
+  background: #fff3e0;
+  /* Light Orange */
+  color: var(--color-primary);
+  /* Orange Text */
 }
 
 .btn-editar:hover {
-  background: var(--color-info);
+  background: var(--color-primary);
   color: white;
   transform: translateY(-2px) rotate(5deg);
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
 }
 
 .btn-eliminar {
@@ -411,6 +456,8 @@
   overflow-y: auto;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   position: relative;
+  border-top: 5px solid var(--color-primary);
+  /* Orange Accent */
 }
 
 .modal-header {
@@ -538,7 +585,8 @@
 
 .btn-guardar {
   padding: 14px 24px;
-  background: linear-gradient(135deg, var(--color-success), #2ecc71);
+  background: linear-gradient(135deg, var(--color-primary), #ff8533) !important;
+  /* Orange Gradient Forced */
   color: white;
   border: none;
   border-radius: 12px;
@@ -546,12 +594,13 @@
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 102, 0, 0.3);
+  /* Orange Shadow */
 }
 
 .btn-guardar:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(39, 174, 96, 0.4);
+  box-shadow: 0 6px 16px rgba(255, 102, 0, 0.4);
 }
 
 /* Alert styles */
@@ -644,6 +693,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -654,16 +704,30 @@
   animation: fadeIn 0.3s ease backwards;
 }
 
-.tabla-productos tbody tr:nth-child(1) { animation-delay: 0.05s; }
-.tabla-productos tbody tr:nth-child(2) { animation-delay: 0.1s; }
-.tabla-productos tbody tr:nth-child(3) { animation-delay: 0.15s; }
-.tabla-productos tbody tr:nth-child(4) { animation-delay: 0.2s; }
-.tabla-productos tbody tr:nth-child(5) { animation-delay: 0.25s; }
+.tabla-productos tbody tr:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.tabla-productos tbody tr:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.tabla-productos tbody tr:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.tabla-productos tbody tr:nth-child(4) {
+  animation-delay: 0.2s;
+}
+
+.tabla-productos tbody tr:nth-child(5) {
+  animation-delay: 0.25s;
+}
 
 /* ========== FIX DEFINITIVO: SVG GIGANTE ========== */
 
 /* Forzar tamaño del SVG dentro de search-box */
-.search-box > svg {
+.search-box>svg {
   position: absolute !important;
   left: 16px !important;
   top: 50% !important;
@@ -683,6 +747,6 @@
 }
 
 /* Input debe tener padding izquierdo para el icono */
-.search-box > input {
+.search-box>input {
   padding-left: 48px !important;
 }

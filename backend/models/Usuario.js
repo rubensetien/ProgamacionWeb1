@@ -30,7 +30,7 @@ const usuarioSchema = new mongoose.Schema({
     type: String,
     default: null
   },
-  
+
   // ========== ROL Y TIPO ==========
   rol: {
     type: String,
@@ -38,14 +38,14 @@ const usuarioSchema = new mongoose.Schema({
     default: 'cliente',
     required: true
   },
-  
+
   // Solo para rol 'trabajador'
   tipoTrabajador: {
     type: String,
     enum: ['tienda', 'obrador', 'oficina'],
     default: null
   },
-  
+
   // ========== UBICACIÓN ASIGNADA ==========
   ubicacionAsignada: {
     tipo: {
@@ -55,7 +55,7 @@ const usuarioSchema = new mongoose.Schema({
     },
     referencia: {
       type: mongoose.Schema.Types.ObjectId,
-      refPath: 'ubicacionAsignada.tipo',
+      ref: 'Ubicacion', // ✅ FIX: Referencia estática al modelo correcto
       default: null
     },
     nombre: String,
@@ -76,14 +76,14 @@ const usuarioSchema = new mongoose.Schema({
       default: null
     }
   },
-  
+
   // Solo para gestor-tienda (compatibilidad)
   tiendaAsignada: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'PuntoVenta',
+    ref: 'Ubicacion', // ✅ FIX: Referencia a Ubicacion, 'PuntoVenta' no existe
     default: null
   },
-  
+
   // ========== PERMISOS GRANULARES ==========
   permisos: {
     // Catálogo
@@ -91,7 +91,7 @@ const usuarioSchema = new mongoose.Schema({
       type: Boolean,
       default: false
     },
-    
+
     // Inventario
     verStockObrador: {
       type: Boolean,
@@ -109,7 +109,7 @@ const usuarioSchema = new mongoose.Schema({
       type: Boolean,
       default: false
     },
-    
+
     // Pedidos
     verPedidosTodos: {
       type: Boolean,
@@ -123,7 +123,7 @@ const usuarioSchema = new mongoose.Schema({
       type: Boolean,
       default: false
     },
-    
+
     // Producción
     verProduccion: {
       type: Boolean,
@@ -137,7 +137,7 @@ const usuarioSchema = new mongoose.Schema({
       type: Boolean,
       default: false
     },
-    
+
     // Chat
     accederChatEmpresarial: {
       type: Boolean,
@@ -147,7 +147,7 @@ const usuarioSchema = new mongoose.Schema({
       type: Boolean,
       default: false
     },
-    
+
     // Reportes
     verReportesVentas: {
       type: Boolean,
@@ -161,7 +161,7 @@ const usuarioSchema = new mongoose.Schema({
       type: Boolean,
       default: false
     },
-    
+
     // Usuarios
     gestionarUsuarios: {
       type: Boolean,
@@ -172,7 +172,7 @@ const usuarioSchema = new mongoose.Schema({
       default: false
     }
   },
-  
+
   // ========== HORARIOS Y TURNOS ==========
   horarios: [{
     diaSemana: {
@@ -188,7 +188,7 @@ const usuarioSchema = new mongoose.Schema({
       default: 'mañana'
     }
   }],
-  
+
   // ========== ESTADO ==========
   activo: {
     type: Boolean,
@@ -203,7 +203,7 @@ const usuarioSchema = new mongoose.Schema({
     default: false
   },
   motivoBloqueo: String,
-  
+
   // ========== METADATA LABORAL ==========
   fechaContratacion: {
     type: Date,
@@ -214,7 +214,7 @@ const usuarioSchema = new mongoose.Schema({
     default: null
   },
   motivoBaja: String,
-  
+
   // ========== METADATA TÉCNICA ==========
   fechaUltimoAcceso: {
     type: Date,
@@ -222,7 +222,7 @@ const usuarioSchema = new mongoose.Schema({
   },
   tokenRecuperacion: String,
   tokenExpiracion: Date,
-  
+
   // ========== NOTIFICACIONES ==========
   notificaciones: {
     email: {
@@ -249,27 +249,27 @@ usuarioSchema.index({ 'ubicacionAsignada.tipo': 1, 'ubicacionAsignada.referencia
 usuarioSchema.index({ tiendaAsignada: 1 });
 
 // ========== MIDDLEWARE: Encriptar contraseña ==========
-usuarioSchema.pre('save', async function(next) {
+usuarioSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
-  
+
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 
 // ========== MIDDLEWARE: Asignar permisos por defecto según rol ==========
-usuarioSchema.pre('save', function(next) {
+usuarioSchema.pre('save', function (next) {
   if (!this.isNew) return next();
-  
+
   // Permisos por defecto según rol
-  switch(this.rol) {
+  switch (this.rol) {
     case 'admin':
       // Admin tiene todos los permisos
       Object.keys(this.permisos).forEach(key => {
         this.permisos[key] = true;
       });
       break;
-      
+
     case 'gestor-tienda':
       this.permisos.verStockTienda = true;
       this.permisos.gestionarStock = true;
@@ -279,11 +279,11 @@ usuarioSchema.pre('save', function(next) {
       this.permisos.accederChatEmpresarial = true;
       this.permisos.verReportesVentas = true;
       break;
-      
+
     case 'trabajador':
       // Permisos básicos para trabajadores
       this.permisos.accederChatEmpresarial = true;
-      
+
       // Permisos según tipo de trabajador
       if (this.tipoTrabajador === 'tienda') {
         this.permisos.verStockTienda = true;
@@ -298,46 +298,46 @@ usuarioSchema.pre('save', function(next) {
         this.permisos.verReportesProduccion = true;
       }
       break;
-      
+
     case 'cliente':
       // Cliente no tiene permisos empresariales
       break;
   }
-  
+
   next();
 });
 
 // ========== MÉTODOS ==========
 
 // Comparar contraseña
-usuarioSchema.methods.compararPassword = async function(passwordIngresado) {
+usuarioSchema.methods.compararPassword = async function (passwordIngresado) {
   return await bcrypt.compare(passwordIngresado, this.password);
 };
 
 // Verificar si tiene un permiso específico
-usuarioSchema.methods.tienePermiso = function(permiso) {
+usuarioSchema.methods.tienePermiso = function (permiso) {
   if (this.rol === 'admin') return true;
   return this.permisos[permiso] === true;
 };
 
 // Verificar si puede acceder a una ubicación
-usuarioSchema.methods.puedeAccederUbicacion = function(tipo, idUbicacion) {
+usuarioSchema.methods.puedeAccederUbicacion = function (tipo, idUbicacion) {
   if (this.rol === 'admin') return true;
-  
+
   if (this.rol === 'gestor-tienda' && tipo === 'tienda') {
     return this.tiendaAsignada?.toString() === idUbicacion?.toString();
   }
-  
+
   if (this.rol === 'trabajador') {
-    return this.ubicacionAsignada?.tipo === tipo && 
-           this.ubicacionAsignada?.referencia?.toString() === idUbicacion?.toString();
+    return this.ubicacionAsignada?.tipo === tipo &&
+      this.ubicacionAsignada?.referencia?.toString() === idUbicacion?.toString();
   }
-  
+
   return false;
 };
 
 // Obtener información pública del usuario
-usuarioSchema.methods.toPublicJSON = function() {
+usuarioSchema.methods.toPublicJSON = function () {
   return {
     id: this._id,
     nombre: this.nombre,
@@ -349,23 +349,23 @@ usuarioSchema.methods.toPublicJSON = function() {
 };
 
 // ========== VIRTUALS ==========
-usuarioSchema.virtual('nombreCompleto').get(function() {
+usuarioSchema.virtual('nombreCompleto').get(function () {
   return this.nombre;
 });
 
-usuarioSchema.virtual('esAdmin').get(function() {
+usuarioSchema.virtual('esAdmin').get(function () {
   return this.rol === 'admin';
 });
 
-usuarioSchema.virtual('esGestorTienda').get(function() {
+usuarioSchema.virtual('esGestorTienda').get(function () {
   return this.rol === 'gestor-tienda';
 });
 
-usuarioSchema.virtual('esTrabajador').get(function() {
+usuarioSchema.virtual('esTrabajador').get(function () {
   return this.rol === 'trabajador';
 });
 
-usuarioSchema.virtual('esCliente').get(function() {
+usuarioSchema.virtual('esCliente').get(function () {
   return this.rol === 'cliente';
 });
 

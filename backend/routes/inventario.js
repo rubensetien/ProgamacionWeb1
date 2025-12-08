@@ -5,9 +5,32 @@ import { auth, isAdmin } from '../middlewares/auth.js';
 
 const router = express.Router();
 
-// GET /api/inventario - Obtener todo el inventario
+// GET /api/inventario - Obtener todo el inventario (y sincronizar productos nuevos)
 router.get('/', auth, async (req, res) => {
   try {
+    // 1. Obtener todos los IDs de productos que ya tienen inventario
+    const inventariosExistentes = await Inventario.find().select('producto');
+    const idsConInventario = inventariosExistentes.map(inv => inv.producto?.toString()).filter(Boolean);
+
+    // 2. Buscar productos activos que NO tienen inventario
+    const productosSinInventario = await Producto.find({
+      _id: { $nin: idsConInventario },
+      activo: true
+    });
+
+    // 3. Crear entradas de inventario para los nuevos productos
+    if (productosSinInventario.length > 0) {
+      console.log(`📡 Sincronizando ${productosSinInventario.length} productos al inventario...`);
+      const nuevosInventarios = productosSinInventario.map(prod => ({
+        producto: prod._id,
+        stockActual: 0,
+        stockMinimo: 5,
+        ubicacion: 'Obrador principal'
+      }));
+      await Inventario.insertMany(nuevosInventarios);
+    }
+
+    // 4. Devolver todo el inventario poblado
     const inventarios = await Inventario.find()
       .populate({
         path: 'producto',
@@ -18,7 +41,7 @@ router.get('/', auth, async (req, res) => {
         ]
       })
       .sort({ stockActual: 1 });
-    
+
     res.json({
       success: true,
       count: inventarios.length,
@@ -43,9 +66,9 @@ router.get('/alertas', auth, async (req, res) => {
         { alertaSinStock: true }
       ]
     })
-    .populate('producto', 'nombre sku imagen')
-    .sort({ stockActual: 1 });
-    
+      .populate('producto', 'nombre sku imagen')
+      .sort({ stockActual: 1 });
+
     res.json({
       success: true,
       count: inventarios.length,
@@ -73,14 +96,14 @@ router.get('/:id', auth, async (req, res) => {
           { path: 'formato', select: 'nombre' }
         ]
       });
-    
+
     if (!inventario) {
       return res.status(404).json({
         success: false,
         message: 'Inventario no encontrado'
       });
     }
-    
+
     res.json({
       success: true,
       data: inventario
@@ -99,14 +122,14 @@ router.get('/:id', auth, async (req, res) => {
 router.post('/', auth, isAdmin, async (req, res) => {
   try {
     const { producto, stockActual, stockMinimo, ubicacion } = req.body;
-    
+
     if (!producto) {
       return res.status(400).json({
         success: false,
         message: 'El producto es requerido'
       });
     }
-    
+
     // Verificar que el producto existe
     const productoExiste = await Producto.findById(producto);
     if (!productoExiste) {
@@ -115,7 +138,7 @@ router.post('/', auth, isAdmin, async (req, res) => {
         message: 'Producto no encontrado'
       });
     }
-    
+
     // Verificar que no existe ya
     const existe = await Inventario.findOne({ producto });
     if (existe) {
@@ -124,16 +147,16 @@ router.post('/', auth, isAdmin, async (req, res) => {
         message: 'Ya existe un inventario para este producto'
       });
     }
-    
+
     const inventario = await Inventario.create({
       producto,
       stockActual: stockActual || 0,
       stockMinimo: stockMinimo || 5,
       ubicacion: ubicacion || 'Obrador principal'
     });
-    
+
     await inventario.populate('producto');
-    
+
     res.status(201).json({
       success: true,
       message: 'Inventario creado correctamente',
@@ -153,10 +176,10 @@ router.post('/', auth, isAdmin, async (req, res) => {
 router.patch('/:id', auth, isAdmin, async (req, res) => {
   try {
     const { tipoMovimiento, cantidad, motivo } = req.body;
-    
+
     // ✅ FIX: Obtener usuarioId de forma segura
     const usuarioId = req.user && req.user._id ? req.user._id : null;
-    
+
     if (!tipoMovimiento || cantidad === undefined || cantidad === null) {
       return res.status(400).json({
         success: false,
@@ -165,7 +188,7 @@ router.patch('/:id', auth, isAdmin, async (req, res) => {
     }
 
     const inventario = await Inventario.findById(req.params.id);
-    
+
     if (!inventario) {
       return res.status(404).json({
         success: false,
@@ -222,22 +245,22 @@ router.patch('/:id', auth, isAdmin, async (req, res) => {
 router.put('/:id', auth, isAdmin, async (req, res) => {
   try {
     const { stockMinimo, ubicacion } = req.body;
-    
+
     const inventario = await Inventario.findById(req.params.id);
-    
+
     if (!inventario) {
       return res.status(404).json({
         success: false,
         message: 'Inventario no encontrado'
       });
     }
-    
+
     if (stockMinimo !== undefined) inventario.stockMinimo = stockMinimo;
     if (ubicacion !== undefined) inventario.ubicacion = ubicacion;
-    
+
     await inventario.save();
     await inventario.populate('producto');
-    
+
     res.json({
       success: true,
       message: 'Configuración actualizada correctamente',
@@ -257,16 +280,16 @@ router.put('/:id', auth, isAdmin, async (req, res) => {
 router.delete('/:id', auth, isAdmin, async (req, res) => {
   try {
     const inventario = await Inventario.findById(req.params.id);
-    
+
     if (!inventario) {
       return res.status(404).json({
         success: false,
         message: 'Inventario no encontrado'
       });
     }
-    
+
     await inventario.deleteOne();
-    
+
     res.json({
       success: true,
       message: 'Inventario eliminado correctamente'
