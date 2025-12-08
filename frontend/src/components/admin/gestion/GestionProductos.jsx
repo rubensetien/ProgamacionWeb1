@@ -395,13 +395,13 @@ export default function GestionProductos() {
                       <td className="td-sku">{producto.sku || '-'}</td>
                       <td className="td-producto">
                         <div className="producto-info">
-                          {producto.imagen && (
+                          {producto.imagenPrincipal || producto.imagen ? (
                             <img
-                              src={`${API_URL}${producto.imagen}`}
+                              src={`${API_URL}${producto.imagenPrincipal || producto.imagen}`}
                               alt={producto.nombre}
                               className="producto-thumbnail"
                             />
-                          )}
+                          ) : null}
                           <span>{producto.nombre}</span>
                         </div>
                       </td>

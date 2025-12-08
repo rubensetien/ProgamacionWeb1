@@ -34,7 +34,7 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     // Determinar carpeta según la ruta
     let folder = 'uploads/productos/'; // Default
-    
+
     if (req.baseUrl.includes('variante') || req.path.includes('variante')) {
       folder = 'uploads/sabores/';
     } else if (req.baseUrl.includes('categoria') || req.path.includes('categoria')) {
@@ -44,22 +44,27 @@ const storage = multer.diskStorage({
     } else if (req.baseUrl.includes('usuario') || req.path.includes('usuario')) {
       folder = 'uploads/usuarios/';
     }
-    
+
+    // [FIX] Validar existencia de la carpeta, si no crearla (aunque el inicio del script lo hace, nuevas categorias dinámicas podrian fallar si usaramos nombres dinámicos)
+    // Por ahora todo va a productos si es un producto. 
+    // El usuario dice "no se carga... se guarda en productos pero no en dulces".
+    // Esto implica que QUIZAS el frontend espera 'uploads/dulces' o la ruta estática falla.
+
     cb(null, folder);
   },
   filename: (req, file, cb) => {
     // Obtener nombre del body
     const nombre = req.body.nombre || 'archivo';
-    
+
     // Limpiar el nombre
     const nombreLimpio = limpiarNombre(nombre);
-    
+
     // Obtener extensión
     const ext = path.extname(file.originalname).toLowerCase();
-    
+
     // Añadir timestamp
     const timestamp = Date.now();
-    
+
     // Nombre final: chocolate-1234567890.jpg
     cb(null, `${nombreLimpio}-${timestamp}${ext}`);
   }

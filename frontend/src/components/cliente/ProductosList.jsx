@@ -88,7 +88,7 @@ const ProductosList = () => {
           id: groupKey,
           nombrePrincipal: prod.variante ? prod.variante.nombre : prod.nombre,
           descripcion: prod.descripcion,
-          imagen: prod.imagen || prod.variante?.imagen,
+          imagen: prod.imagenPrincipal || prod.imagen || prod.variante?.imagen,
           categoria: prod.categoria,
           variante: prod.variante,
           productos: []
@@ -337,7 +337,7 @@ const ProductosList = () => {
                 <div key={grupo.id} className="product-card-glass">
                   <div className="card-image-container">
                     <img
-                      src={getImageUrl(activeProd.imagen || activeProd.variante?.imagen)}
+                      src={getImageUrl(activeProd.imagenPrincipal || activeProd.imagen || activeProd.variante?.imagen)}
                       alt={activeProd.nombre}
                       className="product-image"
                       loading="lazy"
