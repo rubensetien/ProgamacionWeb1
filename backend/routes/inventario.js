@@ -8,44 +8,40 @@ const router = express.Router();
 // GET /api/inventario - Obtener todo el inventario (y sincronizar productos nuevos)
 router.get('/', auth, async (req, res) => {
   try {
-    // 1. Obtener todos los IDs de productos que ya tienen inventario
-    const inventariosExistentes = await Inventario.find().select('producto');
-    const idsConInventario = inventariosExistentes.map(inv => inv.producto?.toString()).filter(Boolean);
+    // OPTIMIZACIÓN: Se ha desactivado la sincronización automática en GET / para evitar sobrecarga con grandes volúmenes de datos.
+    // La sincronización debe moverse a un proceso en segundo plano o un endpoint específico POST /sync.
 
-    // 2. Buscar productos activos que NO tienen inventario
-    const productosSinInventario = await Producto.find({
-      _id: { $nin: idsConInventario },
-      activo: true
-    });
+    const limitVal = parseInt(req.query.limit) || 100;
+    const pageVal = parseInt(req.query.page) || 1;
+    const MAX_LIMIT = 100;
+    const limit = Math.min(limitVal, MAX_LIMIT);
+    const page = Math.max(1, pageVal);
+    const skip = (page - 1) * limit;
 
-    // 3. Crear entradas de inventario para los nuevos productos
-    if (productosSinInventario.length > 0) {
-      console.log(`📡 Sincronizando ${productosSinInventario.length} productos al inventario...`);
-      const nuevosInventarios = productosSinInventario.map(prod => ({
-        producto: prod._id,
-        stockActual: 0,
-        stockMinimo: 5,
-        ubicacion: 'Obrador principal'
-      }));
-      await Inventario.insertMany(nuevosInventarios);
-    }
-
-    // 4. Devolver todo el inventario poblado
-    const inventarios = await Inventario.find()
-      .populate({
-        path: 'producto',
-        populate: [
-          { path: 'categoria', select: 'nombre' },
-          { path: 'variante', select: 'nombre' },
-          { path: 'formato', select: 'nombre' }
-        ]
-      })
-      .sort({ stockActual: 1 });
+    const [inventarios, total] = await Promise.all([
+      Inventario.find()
+        .populate({
+          path: 'producto',
+          populate: [
+            { path: 'categoria', select: 'nombre' },
+            { path: 'variante', select: 'nombre' },
+            { path: 'formato', select: 'nombre' }
+          ]
+        })
+        .sort({ stockActual: 1 })
+        .limit(limit)
+        .skip(skip),
+      Inventario.countDocuments()
+    ]);
 
     res.json({
       success: true,
       count: inventarios.length,
-      data: inventarios
+      data: inventarios,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+      limit
     });
   } catch (error) {
     console.error('Error obteniendo inventario:', error);

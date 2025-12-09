@@ -59,16 +59,31 @@ router.get('/', onlyAdmin, async (req, res) => {
       ];
     }
 
-    const usuarios = await Usuario.find(filtro)
-      .populate('ubicacionAsignada.referencia')
-      .populate('tiendaAsignada')
-      .select('-password')
-      .sort({ nombre: 1 });
+    const limitVal = parseInt(req.query.limit) || 100;
+    const pageVal = parseInt(req.query.page) || 1;
+    const MAX_LIMIT = 100;
+    const limit = Math.min(limitVal, MAX_LIMIT);
+    const page = Math.max(1, pageVal);
+    const skip = (page - 1) * limit;
+
+    const [usuarios, total] = await Promise.all([
+      Usuario.find(filtro)
+        .populate('ubicacionAsignada.referencia')
+        .populate('tiendaAsignada')
+        .select('-password')
+        .sort({ nombre: 1 })
+        .limit(limit)
+        .skip(skip),
+      Usuario.countDocuments(filtro)
+    ]);
 
     res.json({
       success: true,
       data: usuarios,
-      total: usuarios.length
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+      limit
     });
   } catch (error) {
     console.error('Error obteniendo usuarios:', error);

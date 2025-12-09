@@ -359,13 +359,17 @@ pedidoSchema.statics.getByUsuario = function (usuarioId, opciones = {}) {
     query.estado = opciones.estado;
   }
 
+  const limit = opciones.limit || 50;
+  const skip = opciones.skip || 0;
+
   return this.find(query)
     .populate('puntoVenta', 'nombre direccion contacto')
     .populate('items.producto')
     .populate('items.variante')
     .populate('items.formato')
     .sort({ fechaPedido: -1 })
-    .limit(opciones.limit || 50);
+    .limit(limit)
+    .skip(skip);
 };
 
 // ========== VIRTUALS ==========

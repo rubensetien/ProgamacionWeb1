@@ -156,15 +156,31 @@ router.get('/', async (req, res) => {
     if (tipo) filtros.tipo = tipo;
     if (activo !== undefined) filtros.activo = activo === 'true';
 
-    const ubicaciones = await Ubicacion.find(filtros)
-      .populate('responsable', 'nombre email')
-      .populate('obradorAsignado', 'nombre codigo')
-      .sort({ tipo: 1, nombre: 1 });
+    const limitVal = parseInt(req.query.limit) || 100;
+    const pageVal = parseInt(req.query.page) || 1;
+    const MAX_LIMIT = 100;
+    const limit = Math.min(limitVal, MAX_LIMIT);
+    const page = Math.max(1, pageVal);
+    const skip = (page - 1) * limit;
+
+    const [ubicaciones, total] = await Promise.all([
+      Ubicacion.find(filtros)
+        .populate('responsable', 'nombre email')
+        .populate('obradorAsignado', 'nombre codigo')
+        .sort({ tipo: 1, nombre: 1 })
+        .limit(limit)
+        .skip(skip),
+      Ubicacion.countDocuments(filtros)
+    ]);
 
     res.json({
       success: true,
       count: ubicaciones.length,
-      data: ubicaciones
+      data: ubicaciones,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+      limit
     });
   } catch (error) {
     console.error('Error obteniendo ubicaciones:', error);

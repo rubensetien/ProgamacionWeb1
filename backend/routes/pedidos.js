@@ -101,11 +101,11 @@ router.post('/', auth, async (req, res) => {
     if (tipoEntrega === 'recogida') {
       // Combinar fecha y hora en un solo objeto Date
       const fechaCompleta = new Date(`${fechaRecogida}T${horaRecogida}:00`);
-      
+
       datosPedido.puntoVenta = puntoVenta;
       datosPedido.fechaRecogida = fechaCompleta;
       datosPedido.horaRecogida = horaRecogida;
-      
+
       console.log('✅ Fecha de recogida combinada:', fechaCompleta);
     } else {
       datosPedido.direccionEnvio = direccionEnvio;
@@ -146,12 +146,26 @@ router.post('/', auth, async (req, res) => {
 // @access  Private
 router.get('/mis-pedidos', auth, async (req, res) => {
   try {
-    const pedidos = await Pedido.getByUsuario(req.usuario.id);
+    const limitVal = parseInt(req.query.limit) || 50;
+    const pageVal = parseInt(req.query.page) || 1;
+    const MAX_LIMIT = 100;
+    const limit = Math.min(limitVal, MAX_LIMIT);
+    const page = Math.max(1, pageVal);
+    const skip = (page - 1) * limit;
+
+    const [pedidos, total] = await Promise.all([
+      Pedido.getByUsuario(req.usuario.id, { limit, skip }),
+      Pedido.countDocuments({ usuario: req.usuario.id })
+    ]);
 
     res.json({
       success: true,
       count: pedidos.length,
-      data: pedidos
+      data: pedidos,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+      limit
     });
   } catch (error) {
     console.error('Error obteniendo pedidos:', error);

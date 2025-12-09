@@ -48,10 +48,16 @@ router.get('/', async (req, res) => {
       destacado,
       canal,
       seVendeOnline,
-      buscar,
-      limit = 100,
-      page = 1
+      buscar
     } = req.query;
+
+    const limitVal = parseInt(req.query.limit) || 100;
+    const pageVal = parseInt(req.query.page) || 1;
+
+    // Enforce MAX limit to prevent scraping/performance issues
+    const MAX_LIMIT = 100;
+    const limit = Math.min(limitVal, MAX_LIMIT);
+    const page = Math.max(1, pageVal);
 
     const filtro = {};
 
@@ -71,7 +77,7 @@ router.get('/', async (req, res) => {
       ];
     }
 
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const skip = (page - 1) * limit;
 
     const [productos, total] = await Promise.all([
       Producto.find(filtro)
@@ -79,7 +85,7 @@ router.get('/', async (req, res) => {
         .populate('variante', 'nombre slug descripcion imagen color alergenos')
         .populate('formato', 'nombre slug capacidad unidad precioBase tipoVenta')
         .sort({ orden: 1, nombre: 1 })
-        .limit(parseInt(limit))
+        .limit(limit)
         .skip(skip),
       Producto.countDocuments(filtro)
     ]);
@@ -88,8 +94,9 @@ router.get('/', async (req, res) => {
       success: true,
       data: productos,
       total,
-      page: parseInt(page),
-      pages: Math.ceil(total / parseInt(limit))
+      page: page,
+      pages: Math.ceil(total / limit),
+      limit: limit // Inform client of actual limit used
     };
 
     // Guardar en caché (30 min)

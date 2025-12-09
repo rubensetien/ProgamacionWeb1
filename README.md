@@ -87,6 +87,13 @@ Los límites son totalmente configurables sin tocar el código, permitiendo ajus
 *   **Login Estricto**: Bloquea IPs tras exceder los intentos fallidos permitidos, protegiendo las cuentas de usuario.
 *   **API General**: Previene el abuso de recursos y el scraping agresivo, garantizando la disponibilidad del servicio para todos los usuarios.
 
+### 2. Protección de Carga (Pagination Cap)
+Para asegurar el rendimiento con grandes volúmenes de datos (ej. millones de registros), la API impone límites estrictos en la paginación de **todas las entidades principales**:
+*   **Alcance**: Aplicado en Productos, Usuarios, Inventario, Ubicaciones y Pedidos.
+*   **Límite Máximo**: El parámetro `limit` está capado a un **máximo de 100 items** por página.
+*   **Comportamiento**: Cualquier petición que solicite más de 100 items (ej. `?limit=5000`) será forzada automáticamente a devolver solo 100, evitando bloqueos de memoria en el servidor.
+*   **Metadata**: Todas las respuestas paginadas incluyen `total`, `page`, `pages` y el `limit` real aplicado.
+
 ### 2. Autenticación y Autorización
 *   **JWT (JSON Web Tokens)**: Autenticación sin estado. Los tokens tienen fecha de expiración y se validan en cada petición protegida.
 *   **BCrypt**: Las contraseñas nunca se almacenan en texto plano. Se utiliza `bcryptjs` con salt generado automáticamente para hasheadas antes de guardarlas en la base de datos.
@@ -100,6 +107,13 @@ El sistema oculta detalles técnicos del servidor para dificultar la identificac
 ### 4. Seguridad de Datos
 *   **Sanitización**: Validación de entrada estricta en el backend para prevenir inyección NoSQL.
 *   **CORS Configurado**: Lista blanca estricta de orígenes permitidos (frontend local y producción) para prevenir peticiones no autorizadas desde otros dominios.
+
+### 5. Observabilidad y Logging (Winston)
+Para garantizar la operación profesional en producción, se ha reemplazado `console.log` por un sistema robusto basado en **Winston**:
+*   **Por qué**: `console.log` es bloqueante (síncrono), no persistente y difícil de filtrar. Winston soluciona esto con streams asíncronos y niveles de severidad.
+*   **Rotación de Logs**: Implementación de `winston-daily-rotate-file` para generar archivos diarios (`error-YYYY-MM-DD.log` y `combined-YYYY-MM-DD.log`), evitando que un solo archivo crezca indefinidamente y sature el disco.
+*   **Logging Estructurado**: Los logs en archivo se guardan en formato **JSON**, facilitando su ingesta futura por herramientas de monitoreo como ELK Stack o Datadog.
+*   **Middleware HTTP**: Integración con `morgan` para registrar automáticamente cada petición HTTP (Método, URL, Status, Tiempo de respuesta) directamente en el sistema de logs.
 
 ---
 

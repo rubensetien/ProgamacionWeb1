@@ -36,7 +36,9 @@ import('./socketHandlers.js').then(module => module.default(io));
 
 // ========== SEGURIDAD ==========
 import helmet from 'helmet';
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 app.disable('x-powered-by'); // Desactivar cabecera explícitamente como respaldo
 
 // ========== MIDDLEWARES ==========
@@ -60,6 +62,11 @@ app.use(cors({
   credentials: true
 }));
 
+import httpLogger from './middlewares/httpLogger.js';
+import logger from './config/logger.js';
+
+app.use(httpLogger);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -69,8 +76,8 @@ app.use('/uploads', express.static('uploads'));
 // ========== CONEXIÓN A MONGODB ==========
 // ========== CONEXIÓN A MONGODB ==========
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('✅ Conectado a MongoDB Atlas'))
-  .catch(err => console.error('❌ Error conectando a MongoDB:', err));
+  .then(() => logger.info('✅ Conectado a MongoDB Atlas'))
+  .catch(err => logger.error('❌ Error conectando a MongoDB:', err));
 
 // ========== RUTAS ==========
 import authRoutes from './routes/auth.js';
@@ -122,7 +129,7 @@ app.get('/', (req, res) => {
 
 // ========== MANEJO DE ERRORES ==========
 app.use((err, req, res, next) => {
-  console.error('❌ Error:', err.stack);
+  logger.error(err.stack); // Log full stack trace
   res.status(err.status || 500).json({
     success: false,
     message: err.message || 'Error interno del servidor'
@@ -132,8 +139,8 @@ app.use((err, req, res, next) => {
 // ========== INICIAR SERVIDOR ==========
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
-  console.log(`🔌 Socket.IO listo para conexiones`);
+  logger.info(`🚀 Servidor corriendo en puerto ${PORT}`);
+  logger.info(`🔌 Socket.IO listo para conexiones`);
 });
 
 export { app, server, io };
