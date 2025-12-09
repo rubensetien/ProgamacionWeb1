@@ -14,76 +14,45 @@ ProgamacionWeb1/
 │   ├── controllers/
 │   │   └── authController.js  # Lógica de login, registro y renovación de tokens
 │   ├── middlewares/
-│   │   ├── auth.js            # Middleware principal: valida JWT + Caché Redis + BD
-│   │   ├── authorizeRole.js   # Control de acceso por roles (RGAC)
+│   │   ├── auth.js            # Middleware principal: valida JWT
 │   │   ├── checkPermissions.js # Validación granular de permisos
-│   │   ├── errorHandler.js    # Manejo centralizado de errores HTTP
+│   │   ├── rateLimit.js       # Limitación de peticiones (Seguridad)
 │   │   └── upload.js          # Configuración de Multer para imágenes
 │   ├── models/
-│   │   ├── Usuario.js         # Usuarios, roles, seguridad y hash de contraseñas
-│   │   ├── Producto.js        # Catálogo principal (precios, stock base)
-│   │   ├── Inventario.js      # Gestión avanzada de stock y movimientos
-│   │   ├── Pedido.js          # Órdenes de compra y snapshots de venta
-│   │   ├── Ubicacion.js       # Sedes (Obrador, Tiendas) con geolocalización
-│   │   ├── Chat.js            # Historial de chats y salas de soporte
-│   │   ├── Categoria.js       # Clasificación jerárquica de productos
-│   │   ├── Variante.js        # Sabores y versiones (ej. Nata, Chocolate)
-│   │   └── Formato.js         # Presentaciones (Tarrina, Cucurucho)
+│   │   ├── Usuario.js         # Usuarios y roles
+│   │   ├── Producto.js        # Catálogo (precios, stock base)
+│   │   ├── Inventario.js      # Stock avanzado y movimientos
+│   │   ├── Pedido.js          # Órdenes y ventas
+│   │   ├── Ubicacion.js       # Sedes (Obrador, Tiendas)
+│   │   ├── Obrador.js         # Gestión específica de obradores
+│   │   ├── PuntoVenta.js      # Gestión específica de tiendas
+│   │   ├── Categoria.js       # Clasificación jerárquica
+│   │   ├── Variante.js        # Sabores y versiones
+│   │   └── Formato.js         # Presentaciones
 │   ├── routes/
-│   │   ├── auth.js            # Endpoints públicos de sesión
-│   │   ├── productos.js       # API de catálogo (con caché)
-│   │   ├── pedidos.js         # Gestión de ventas y checkout
-│   │   ├── ubicaciones.js     # Geo-validación y listado de tiendas
-│   │   ├── chats.js           # API REST para historial de mensajería
-│   │   └── inventario.js      # Operaciones de almacén
-│   ├── scripts/
-│   │   └── seedUbicacionesUser.js # Script de migración y población inicial
-│   ├── uploads/               # Almacén local de imágenes de productos
-│   ├── server.js              # Entry point: Express + Socket.IO + MongoDB
-│   └── socketHandlers.js      # Lógica de eventos en tiempo real (WebSockets)
+│   │   ├── auth.js            # Endpoints de sesión
+│   │   ├── productos.js       # API de catálogo
+│   │   ├── pedidos.js         # API de ventas
+│   │   ├── inventario.js      # API de stock
+│   │   └── ubicaciones.js     # API de sedes
+│   └── server.js              # Entry point: Express + Socket.IO + MongoDB
 │
 └── frontend/
-    ├── public/                # Assets estáticos y PWA
     ├── src/
     │   ├── components/
-    │   │   ├── admin/         # Panel de Control (Administrador Global)
-    │   │   │   ├── DashboardAdmin.jsx  # Vista principal y métricas generales
-    │   │   │   ├── AdminLayout.jsx     # Estructura base del panel
-    │   │   │   └── gestion/       # Módulos de gestión detallada
-    │   │   │       ├── GestionProductos.jsx # ABM de catálogo con paginación
-    │   │   │       ├── GestionTurnos.jsx    # Gestión de horarios y trabajadores
-    │   │   │       ├── GestionInventario.jsx # Control de stock
-    │   │   │       └── GestionVariantes.jsx  # Sabores y Atributos
-    │   │   ├── gestor/        # [BETA] Gestión de Punto de Venta (Gerentes)
-    │   │   │   ├── GestorLayout.jsx    # Layout con menú de tienda
-    │   │   │   ├── PanelTienda.jsx     # Métricas locales y caja
-    │   │   │   ├── PedidosTienda.jsx   # Gestión de pedidos de la sede
-    │   │   │   └── SolicitudStock.jsx  # Reposición interna a obrador
-    │   │   ├── trabajador/    # [BETA] Interfaz de Operarios/Dependientes
-    │   │   │   ├── TrabajadorLayout.jsx # Interfaz simplificada táctil
-    │   │   │   ├── TrabajadorTienda.jsx # TPV para dependientes
-    │   │   │   ├── TrabajadorObrador.jsx # Pantalla de producción
-    │   │   │   └── TrabajadorOficina.jsx # Tareas administrativas
-    │   │   ├── cliente/       # Área Pública/Privada (Clientes)
-    │   │   │   ├── ProductosList.jsx   # Catálogo visual ("Living Glass") con filtros
-    │   │   │   ├── MisPedidos.jsx      # Historial y tracking en tiempo real
-    │   │   │   ├── FinalizarPedido.jsx # Checkout y pasarela de pago
-    │   │   │   └── Carrito.jsx         # Página de carrito sincronizada
-    │   │   ├── public/        # Landing y Catálogo Público
-    │   │   │   ├── LandingPage.jsx     # Home, escaparate y estadísticas
-    │   │   │   └── StoreLocator.jsx    # Buscador de tiendas
-    │   │   └── common/        # Componentes Transversales
-    │   │       ├── LoginForm.jsx       # Formulario de acceso universal
-    │   │       └── Avatar.jsx          # Componente visual de usuario
+    │   │   ├── admin/         # Panel de Administración Global
+    │   │   ├── gestor/        # Panel de Gestor de Tienda
+    │   │   ├── trabajador/    # Interfaz para empleados (TPV/Obrador)
+    │   │   ├── cliente/       # E-commerce para usuario final
+    │   │   └── common/        # Componentes reutilizables (LoginForm, Avatar)
     │   ├── context/
-    │   │   ├── AuthContext.jsx    # Estado global de sesión y persistencia
-    │   │   └── CarritoContext.jsx # Sincronización Carrito (API + Optimistic UI)
-    │   ├── services/          # Capa de comunicación con API (Fetch/Axios)
-    │   ├── styles/            # CSS Modules y estilos globales
-    │   ├── App.jsx            # Enrutamiento principal (React Router)
-    │   └── main.jsx           # Punto de montaje React
-    ├── vite.config.js         # Configuración de compilación
-    └── .env                   # Variables de entorno frontend
+    │   │   ├── AuthContext.jsx    # Estado de sesión
+    │   │   └── CarritoContext.jsx # Lógica de carrito de compras
+    │   ├── services/          # Comunicación con API (Axios)
+    │   ├── styles/            # Estilos globales y módulos
+    │   ├── App.jsx            # Enrutamiento
+    │   └── main.jsx           # Punto de montaje
+    └── vite.config.js         # Configuración Vite
 ```
 
 ## 🔄 Registro de Cambios (Recientes)
@@ -100,7 +69,70 @@ ProgamacionWeb1/
 *   **Frontend**: React 18, Vite, CSS Vanilla (Diseño Premium), Socket.IO Client.
 *   **Backend**: Node.js, Express, Socket.IO Server.
 *   **Datos**: MongoDB Atlas (Persistencia), Redis (Caché de alto rendimiento).
-*   **Seguridad**: JWT, BCrypt, Helmet, CORS.
+*   **Seguridad**: JWT, BCrypt, CORS, Rate Limiting (Protección contra fuerza bruta).
+*   **Datos**: MongoDB Atlas (Persistencia), Redis (Caché de alto rendimiento y gestión de sesiones).
+
+## 🛡️ Seguridad Implementada
+
+La plataforma implementa una estrategia de "Defensa en Profundidad" para proteger los datos y garantizar la disponibilidad del servicio.
+
+### 1. Protección contra Fuerza Bruta (Rate Limiting)
+Para prevenir ataques de fuerza bruta y denegación de servicio (DoS), se ha implementado un sistema de limitación de tasa robusto utilizando `express-rate-limit` con respaldo en **Redis** (o memoria como fallback).
+
+**Configuración Dinámica (Variables de Entorno):**
+Los límites son totalmente configurables sin tocar el código, permitiendo ajustes rápidos en producción:
+*   `RATE_LIMIT_LOGIN_WINDOW_MS` / `RATE_LIMIT_LOGIN_MAX`: Control estricto para login/registro (Default: 5 intentos/15min).
+*   `RATE_LIMIT_API_WINDOW_MS` / `RATE_LIMIT_API_MAX`: Control general para la API (Default: 100 req/15min).
+
+*   **Login Estricto**: Bloquea IPs tras exceder los intentos fallidos permitidos, protegiendo las cuentas de usuario.
+*   **API General**: Previene el abuso de recursos y el scraping agresivo, garantizando la disponibilidad del servicio para todos los usuarios.
+
+### 2. Autenticación y Autorización
+*   **JWT (JSON Web Tokens)**: Autenticación sin estado. Los tokens tienen fecha de expiración y se validan en cada petición protegida.
+*   **BCrypt**: Las contraseñas nunca se almacenan en texto plano. Se utiliza `bcryptjs` con salt generado automáticamente para hasheadas antes de guardarlas en la base de datos.
+*   **RBAC (Role-Based Access Control)**: Sistema de control de acceso basado en roles (`admin`, `gestor-tienda`, `trabajador`, `cliente`) reforzado con middleware de permisos granulares (`checkPermissions.js`).
+
+### 3. Protección contra Fingerprinting
+El sistema oculta detalles técnicos del servidor para dificultar la identificación de vulnerabilidades específicas:
+*   **Helmet**: Middleware de seguridad que configura cabeceras HTTP adecuadas (ej. `Strict-Transport-Security`, `X-Content-Type-Options`).
+*   **Ocultación de Headers**: Se elimina la cabecera `X-Powered-By: Express` y otras señales que revelan la tecnología subyacente.
+
+### 4. Seguridad de Datos
+*   **Sanitización**: Validación de entrada estricta en el backend para prevenir inyección NoSQL.
+*   **CORS Configurado**: Lista blanca estricta de orígenes permitidos (frontend local y producción) para prevenir peticiones no autorizadas desde otros dominios.
+
+---
+
+## 👥 Roles y Funcionalidades
+
+El sistema gestiona 4 niveles principales de acceso, cada uno con un conjunto específico de capacidades:
+
+### 👑 Administrador (`admin`)
+Acceso total al sistema.
+*   **Gestión Global**: Centros de trabajo, usuarios, roles y permisos.
+*   **Catálogo Maestro**: Creación y edición de productos, categorías, variantes y precios base.
+*   **Visión de Negocio**: Dashboard completo con métricas de todas las tiendas y producción.
+
+### 🏪 Gestor de Tienda (`gestor-tienda`)
+Responsable de una sede específica (ej. "Regma Sardinero").
+*   **Gestión Local**: Control de stock e inventario de su tienda.
+*   **Pedidos**: Visualización y gestión de pedidos asignados a su sucursal.
+*   **Personal**: Gestión de turnos simples de su equipo.
+*   **Solicitudes**: Petición de reposición de stock al obrador central.
+
+### 👷 Trabajador (`trabajador`)
+Personal operativo. Sus funciones varían según su asignación (`tipoTrabajador`):
+*   **Tienda (Dependientes/Cajeros)**: TPV, venta directa, cierre de caja y visualización de stock local.
+*   **Obrador (Producción)**: Gestión de órdenes de producción, recetas y stock de materias primas.
+*   **Oficina**: Acceso a reportes básicos y herramientas administrativas.
+
+### 👤 Cliente (`cliente`)
+Usuario final de la plataforma e-commerce.
+*   **Compras**: Navegación por el catálogo, añadir al carrito y realizar pedidos.
+*   **Perfil**: Gestión de datos personales y direcciones de envío.
+*   **Historial**: Seguimiento en tiempo real del estado de sus pedidos.
+
+---
 
 ## 🚀 Instalación
 

@@ -12,8 +12,10 @@ const generarToken = (id) => {
   });
 };
 
+import { loginLimiter } from '../middlewares/rateLimit.js';
+
 // ========== POST /api/auth/register - Registro de usuarios ==========
-router.post('/register', async (req, res) => {
+router.post('/register', loginLimiter, async (req, res) => {
   try {
     const { nombre, email, password, telefono } = req.body;
 
@@ -67,7 +69,7 @@ router.post('/register', async (req, res) => {
 });
 
 // ========== POST /api/auth/login - Inicio de sesión ==========
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
 

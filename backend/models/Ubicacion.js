@@ -88,7 +88,7 @@ const ubicacionSchema = new mongoose.Schema({
 });
 
 // Índices
-ubicacionSchema.index({ codigo: 1 });
+// ubicacionSchema.index({ codigo: 1 }); // Definido en schema con unique: true
 ubicacionSchema.index({ tipo: 1 });
 ubicacionSchema.index({ activo: 1 });
 ubicacionSchema.index({ 'coordenadas.latitud': 1, 'coordenadas.longitud': 1 });

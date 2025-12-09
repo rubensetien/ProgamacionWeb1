@@ -243,7 +243,7 @@ const usuarioSchema = new mongoose.Schema({
 });
 
 // ========== ÍNDICES ==========
-usuarioSchema.index({ email: 1 });
+// usuarioSchema.index({ email: 1 }); // Definido en schema con unique: true
 usuarioSchema.index({ rol: 1, activo: 1 });
 usuarioSchema.index({ 'ubicacionAsignada.tipo': 1, 'ubicacionAsignada.referencia': 1 });
 usuarioSchema.index({ tiendaAsignada: 1 });

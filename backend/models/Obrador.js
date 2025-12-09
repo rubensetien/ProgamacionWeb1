@@ -18,7 +18,7 @@ const obradorSchema = new mongoose.Schema({
     uppercase: true,
     required: true
   },
-  
+
   // ========== UBICACIÓN ==========
   ubicacion: {
     direccion: {
@@ -46,7 +46,7 @@ const obradorSchema = new mongoose.Schema({
       lng: Number
     }
   },
-  
+
   // ========== TIPO Y CARACTERÍSTICAS ==========
   tipo: {
     type: String,
@@ -54,18 +54,18 @@ const obradorSchema = new mongoose.Schema({
     default: 'produccion',
     required: true
   },
-  
+
   descripcion: {
     type: String
   },
-  
+
   // ========== RESPONSABLES Y PERSONAL ==========
   responsable: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Usuario',
     required: true
   },
-  
+
   trabajadores: [{
     usuario: {
       type: mongoose.Schema.Types.ObjectId,
@@ -92,7 +92,7 @@ const obradorSchema = new mongoose.Schema({
       default: true
     }
   }],
-  
+
   // ========== CAPACIDAD DE PRODUCCIÓN ==========
   capacidadProduccion: {
     diaria: {
@@ -117,7 +117,7 @@ const obradorSchema = new mongoose.Schema({
       default: 'litros'
     }
   },
-  
+
   // ========== INVENTARIO ==========
   inventario: [{
     producto: {
@@ -152,7 +152,7 @@ const obradorSchema = new mongoose.Schema({
       default: Date.now
     }
   }],
-  
+
   // ========== ÓRDENES DE PRODUCCIÓN ==========
   ordenesProduccion: [{
     numeroOrden: {
@@ -228,7 +228,7 @@ const obradorSchema = new mongoose.Schema({
       type: String
     }
   }],
-  
+
   // ========== MATERIAS PRIMAS ==========
   materiasPrimas: [{
     nombre: {
@@ -264,7 +264,7 @@ const obradorSchema = new mongoose.Schema({
       type: Date
     }
   }],
-  
+
   // ========== HORARIOS ==========
   horarios: {
     apertura: {
@@ -291,7 +291,7 @@ const obradorSchema = new mongoose.Schema({
       }
     }]
   },
-  
+
   // ========== INSTALACIONES ==========
   instalaciones: {
     camarasFrio: {
@@ -314,7 +314,7 @@ const obradorSchema = new mongoose.Schema({
       proximoMantenimiento: Date
     }]
   },
-  
+
   // ========== CERTIFICACIONES ==========
   certificaciones: [{
     nombre: {
@@ -334,7 +334,7 @@ const obradorSchema = new mongoose.Schema({
       default: true
     }
   }],
-  
+
   // ========== CONTACTO ==========
   contacto: {
     telefono: {
@@ -349,7 +349,7 @@ const obradorSchema = new mongoose.Schema({
       type: String
     }
   },
-  
+
   // ========== ESTADÍSTICAS ==========
   estadisticas: {
     produccionTotal: {
@@ -368,7 +368,7 @@ const obradorSchema = new mongoose.Schema({
       type: Date
     }
   },
-  
+
   // ========== CONFIGURACIÓN ==========
   configuracion: {
     permiteVisitas: {
@@ -384,7 +384,7 @@ const obradorSchema = new mongoose.Schema({
       default: true
     }
   },
-  
+
   // ========== ESTADO ==========
   activo: {
     type: Boolean,
@@ -397,7 +397,7 @@ const obradorSchema = new mongoose.Schema({
   motivoInactivo: {
     type: String
   },
-  
+
   // ========== METADATA ==========
   imagen: {
     type: String
@@ -411,13 +411,13 @@ const obradorSchema = new mongoose.Schema({
 
 // ========== ÍNDICES ==========
 obradorSchema.index({ slug: 1 });
-obradorSchema.index({ codigo: 1 });
+// obradorSchema.index({ codigo: 1 }); // Definido en schema con unique: true
 obradorSchema.index({ activo: 1, operativo: 1 });
 obradorSchema.index({ 'ubicacion.ciudad': 1 });
 obradorSchema.index({ responsable: 1 });
 
 // ========== MIDDLEWARE: Generar slug ==========
-obradorSchema.pre('validate', function(next) {
+obradorSchema.pre('validate', function (next) {
   if (!this.slug && this.nombre) {
     this.slug = this.nombre
       .toLowerCase()
@@ -433,36 +433,36 @@ obradorSchema.pre('validate', function(next) {
 // ========== MÉTODOS DE INSTANCIA ==========
 
 // Verificar si tiene stock de un producto
-obradorSchema.methods.tieneStock = function(productoId, cantidad) {
-  const item = this.inventario.find(i => 
+obradorSchema.methods.tieneStock = function (productoId, cantidad) {
+  const item = this.inventario.find(i =>
     i.producto.toString() === productoId.toString()
   );
-  
+
   return item && item.stock >= cantidad;
 };
 
 // Reducir stock
-obradorSchema.methods.reducirStock = function(productoId, cantidad) {
-  const item = this.inventario.find(i => 
+obradorSchema.methods.reducirStock = function (productoId, cantidad) {
+  const item = this.inventario.find(i =>
     i.producto.toString() === productoId.toString()
   );
-  
+
   if (!item || item.stock < cantidad) {
     throw new Error('Stock insuficiente');
   }
-  
+
   item.stock -= cantidad;
   item.ultimaActualizacion = new Date();
-  
+
   return this.save();
 };
 
 // Agregar stock
-obradorSchema.methods.agregarStock = function(productoId, cantidad, datos = {}) {
-  let item = this.inventario.find(i => 
+obradorSchema.methods.agregarStock = function (productoId, cantidad, datos = {}) {
+  let item = this.inventario.find(i =>
     i.producto.toString() === productoId.toString()
   );
-  
+
   if (item) {
     item.stock += cantidad;
     item.ultimaActualizacion = new Date();
@@ -477,42 +477,42 @@ obradorSchema.methods.agregarStock = function(productoId, cantidad, datos = {}) 
       ultimaActualizacion: new Date()
     });
   }
-  
+
   return this.save();
 };
 
 // Obtener productos con stock bajo
-obradorSchema.methods.getProductosStockBajo = function() {
-  return this.inventario.filter(item => 
+obradorSchema.methods.getProductosStockBajo = function () {
+  return this.inventario.filter(item =>
     item.stock <= item.stockMinimo
   );
 };
 
 // Obtener órdenes pendientes
-obradorSchema.methods.getOrdenesPendientes = function() {
-  return this.ordenesProduccion.filter(orden => 
+obradorSchema.methods.getOrdenesPendientes = function () {
+  return this.ordenesProduccion.filter(orden =>
     orden.estado === 'pendiente' || orden.estado === 'aprobada'
   );
 };
 
 // Obtener órdenes en proceso
-obradorSchema.methods.getOrdenesEnProceso = function() {
-  return this.ordenesProduccion.filter(orden => 
+obradorSchema.methods.getOrdenesEnProceso = function () {
+  return this.ordenesProduccion.filter(orden =>
     orden.estado === 'en-proceso'
   );
 };
 
 // ========== VIRTUALS ==========
-obradorSchema.virtual('totalTrabajadores').get(function() {
+obradorSchema.virtual('totalTrabajadores').get(function () {
   return this.trabajadores.filter(t => t.activo).length;
 });
 
-obradorSchema.virtual('stockTotal').get(function() {
+obradorSchema.virtual('stockTotal').get(function () {
   return this.inventario.reduce((total, item) => total + item.stock, 0);
 });
 
-obradorSchema.virtual('ordenesPendientes').get(function() {
-  return this.ordenesProduccion.filter(o => 
+obradorSchema.virtual('ordenesPendientes').get(function () {
+  return this.ordenesProduccion.filter(o =>
     o.estado === 'pendiente' || o.estado === 'aprobada'
   ).length;
 });

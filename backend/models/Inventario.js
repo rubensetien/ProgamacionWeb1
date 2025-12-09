@@ -9,7 +9,7 @@ const inventarioSchema = new mongoose.Schema({
     unique: true,
     index: true
   },
-  
+
   // ========== STOCK SIMPLE ==========
   stockActual: {
     type: Number,
@@ -17,21 +17,21 @@ const inventarioSchema = new mongoose.Schema({
     min: 0,
     comment: 'Stock actual disponible'
   },
-  
+
   stockMinimo: {
     type: Number,
     default: 5,
     min: 0,
     comment: 'Nivel mínimo antes de alerta'
   },
-  
+
   // ========== UBICACIÓN ==========
   ubicacion: {
     type: String,
     default: 'Obrador principal',
     comment: 'Dónde está almacenado'
   },
-  
+
   // ========== HISTORIAL DE MOVIMIENTOS ==========
   movimientos: [{
     tipo: {
@@ -64,13 +64,13 @@ const inventarioSchema = new mongoose.Schema({
       ref: 'Usuario'
     }
   }],
-  
+
   // ========== ALERTAS AUTOMÁTICAS ==========
   alertaStockBajo: {
     type: Boolean,
     default: false
   },
-  
+
   alertaSinStock: {
     type: Boolean,
     default: false
@@ -80,7 +80,7 @@ const inventarioSchema = new mongoose.Schema({
 });
 
 // ========== MIDDLEWARE: Actualizar alertas automáticamente ==========
-inventarioSchema.pre('save', function(next) {
+inventarioSchema.pre('save', function (next) {
   this.alertaSinStock = this.stockActual === 0;
   this.alertaStockBajo = this.stockActual > 0 && this.stockActual <= this.stockMinimo;
   next();
@@ -89,10 +89,10 @@ inventarioSchema.pre('save', function(next) {
 // ========== MÉTODOS ==========
 
 // 1️⃣ ENTRADA: Añadir stock
-inventarioSchema.methods.agregarStock = function(cantidad, usuarioId = null, motivo = 'Entrada de stock') {
+inventarioSchema.methods.agregarStock = function (cantidad, usuarioId = null, motivo = 'Entrada de stock') {
   const stockAntes = this.stockActual;
   this.stockActual += cantidad;
-  
+
   this.movimientos.push({
     tipo: 'entrada',
     cantidad: cantidad,
@@ -102,19 +102,19 @@ inventarioSchema.methods.agregarStock = function(cantidad, usuarioId = null, mot
     fecha: new Date(),
     usuario: usuarioId
   });
-  
+
   return this.save();
 };
 
 // 2️⃣ SALIDA: Quitar stock
-inventarioSchema.methods.reducirStock = function(cantidad, usuarioId = null, motivo = 'Salida de stock') {
+inventarioSchema.methods.reducirStock = function (cantidad, usuarioId = null, motivo = 'Salida de stock') {
   if (this.stockActual < cantidad) {
     throw new Error(`Stock insuficiente. Disponible: ${this.stockActual}, Solicitado: ${cantidad}`);
   }
-  
+
   const stockAntes = this.stockActual;
   this.stockActual -= cantidad;
-  
+
   this.movimientos.push({
     tipo: 'salida',
     cantidad: cantidad,
@@ -124,16 +124,16 @@ inventarioSchema.methods.reducirStock = function(cantidad, usuarioId = null, mot
     fecha: new Date(),
     usuario: usuarioId
   });
-  
+
   return this.save();
 };
 
 // 3️⃣ AJUSTE: Establecer stock exacto
-inventarioSchema.methods.ajustarStock = function(nuevoStock, usuarioId = null, motivo = 'Ajuste de stock') {
+inventarioSchema.methods.ajustarStock = function (nuevoStock, usuarioId = null, motivo = 'Ajuste de stock') {
   const stockAntes = this.stockActual;
   const diferencia = nuevoStock - stockAntes;
   this.stockActual = nuevoStock;
-  
+
   this.movimientos.push({
     tipo: 'ajuste',
     cantidad: diferencia,
@@ -143,19 +143,19 @@ inventarioSchema.methods.ajustarStock = function(nuevoStock, usuarioId = null, m
     fecha: new Date(),
     usuario: usuarioId
   });
-  
+
   return this.save();
 };
 
 // 4️⃣ VENTA: Reducir por venta (para pedidos)
-inventarioSchema.methods.registrarVenta = function(cantidad, pedidoId = null) {
+inventarioSchema.methods.registrarVenta = function (cantidad, pedidoId = null) {
   if (this.stockActual < cantidad) {
     throw new Error(`Stock insuficiente. Disponible: ${this.stockActual}, Solicitado: ${cantidad}`);
   }
-  
+
   const stockAntes = this.stockActual;
   this.stockActual -= cantidad;
-  
+
   this.movimientos.push({
     tipo: 'venta',
     cantidad: cantidad,
@@ -164,26 +164,26 @@ inventarioSchema.methods.registrarVenta = function(cantidad, pedidoId = null) {
     motivo: pedidoId ? `Venta - Pedido ${pedidoId}` : 'Venta',
     fecha: new Date()
   });
-  
+
   return this.save();
 };
 
 // ========== MÉTODOS ESTÁTICOS ==========
 
 // Obtener productos con stock bajo
-inventarioSchema.statics.getStockBajo = function() {
+inventarioSchema.statics.getStockBajo = function () {
   return this.find({ alertaStockBajo: true })
     .populate('producto', 'nombre sku imagen');
 };
 
 // Obtener productos sin stock
-inventarioSchema.statics.getSinStock = function() {
+inventarioSchema.statics.getSinStock = function () {
   return this.find({ alertaSinStock: true })
     .populate('producto', 'nombre sku imagen');
 };
 
 // ========== ÍNDICES ==========
-inventarioSchema.index({ producto: 1 });
+// inventarioSchema.index({ producto: 1 }); // Definido en schema con unique: true & index: true
 inventarioSchema.index({ stockActual: 1 });
 inventarioSchema.index({ alertaStockBajo: 1 });
 inventarioSchema.index({ alertaSinStock: 1 });

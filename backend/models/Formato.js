@@ -74,7 +74,7 @@ const formatoSchema = new mongoose.Schema({
 });
 
 // Auto-generar slug
-formatoSchema.pre('save', function(next) {
+formatoSchema.pre('save', function (next) {
   if (this.isModified('nombre')) {
     this.slug = this.nombre
       .toLowerCase()
@@ -87,7 +87,7 @@ formatoSchema.pre('save', function(next) {
 });
 
 // Índices
-formatoSchema.index({ slug: 1 });
+// formatoSchema.index({ slug: 1 }); // Definido en schema con unique: true
 formatoSchema.index({ activo: 1 });
 formatoSchema.index({ orden: 1 });
 

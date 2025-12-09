@@ -34,6 +34,11 @@ const io = new Server(server, {
 // Importar manejadores de Socket.IO
 import('./socketHandlers.js').then(module => module.default(io));
 
+// ========== SEGURIDAD ==========
+import helmet from 'helmet';
+app.use(helmet());
+app.disable('x-powered-by'); // Desactivar cabecera explícitamente como respaldo
+
 // ========== MIDDLEWARES ==========
 const allowedOrigins = [
   'http://localhost:5173',
@@ -62,10 +67,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static('uploads'));
 
 // ========== CONEXIÓN A MONGODB ==========
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
+// ========== CONEXIÓN A MONGODB ==========
+mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('✅ Conectado a MongoDB Atlas'))
   .catch(err => console.error('❌ Error conectando a MongoDB:', err));
 
@@ -95,6 +98,9 @@ app.use('/api/pedidos', pedidosRoutes);
 app.use('/api/mensajes', mensajesRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/carrito', carritoRoutes);
+
+import { apiLimiter } from './middlewares/rateLimit.js';
+app.use('/api', apiLimiter);
 
 import turnosRoutes from './routes/turnos.js';
 app.use('/api/turnos', turnosRoutes);
