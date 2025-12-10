@@ -43,7 +43,7 @@ router.get('/trabajadores', async (req, res) => {
       Usuario.find(filtro)
         .populate('ubicacionAsignada.referencia')
         .populate('tiendaAsignada')
-        .select('nombre email rol ubicacionAsignada tiendaAsignada telefono activo')
+        .select('nombre email rol ubicacionAsignada tiendaAsignada telefono activo tipoTrabajador')
         .sort({ nombre: 1 })
         .limit(limitNum)
         .skip(skip)

@@ -10,9 +10,10 @@ import FinalizarPedido from './components/cliente/FinalizarPedido';
 import MisPedidos from './components/cliente/MisPedidos';
 import PerfilCliente from './components/cliente/PerfilCliente';
 import MisSolicitudes from './components/trabajador/MisSolicitudes';
-import StoreLocator from './components/public/StoreLocator'; // ✅ Correctly placed
+import StoreLocator from './components/public/StoreLocator';
 import AdminLayout from './components/admin/AdminLayout';
 import './App.css';
+import TrabajadorLayout from './components/trabajador/TrabajadorLayout';
 
 // Componente para proteger rutas que SÍ requieren autenticación
 const ProtectedRoute = ({ children, rolesPermitidos }) => {
@@ -62,19 +63,25 @@ function AppContent() {
     );
   }
 
+  // Helper para redirección post-login
+  const getRedirectPath = () => {
+    if (!autenticado) return '/login';
+    if (usuario?.rol === 'admin' || usuario?.rol === 'gestor') return '/admin';
+    if (usuario?.rol === 'trabajador') return '/trabajador';
+    return '/productos';
+  };
+
   return (
     <Router>
       <Routes>
-
-
         {/* Rutas públicas */}
         <Route path="/" element={<LandingPage />} />
-        <Route path="/tiendas" element={<StoreLocator />} /> {/* ✅ NEW */}
+        <Route path="/tiendas" element={<StoreLocator />} />
         <Route path="/productos" element={<ProductosList />} />
 
         <Route
           path="/login"
-          element={autenticado ? <Navigate to={usuario?.rol === 'admin' || usuario?.rol === 'gestor' ? '/admin' : '/productos'} /> : <LoginForm />}
+          element={autenticado ? <Navigate to={getRedirectPath()} /> : <LoginForm />}
         />
         <Route
           path="/register"
@@ -82,6 +89,7 @@ function AppContent() {
         />
 
         {/* Rutas que requieren autenticación */}
+        {/* ... carrito, finalizar-pedido, mis-pedidos, perfil ... */}
         <Route
           path="/carrito"
           element={
@@ -90,7 +98,6 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/finalizar-pedido"
           element={
@@ -99,7 +106,6 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/mis-pedidos"
           element={
@@ -108,12 +114,21 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/perfil"
           element={
             <ProtectedRoute>
               <PerfilCliente />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Rutas de trabajador */}
+        <Route
+          path="/trabajador"
+          element={
+            <ProtectedRoute rolesPermitidos={['trabajador']}>
+              <TrabajadorLayout />
             </ProtectedRoute>
           }
         />

@@ -34,7 +34,9 @@ export const auth = async (req, res, next) => {
     }
 
     // 2. Si no está en caché, obtener de BD
-    const usuario = await Usuario.findById(decoded.id).select('-password');
+    const usuario = await Usuario.findById(decoded.id)
+      .select('-password')
+      .populate('ubicacionAsignada.referencia');
 
     if (!usuario) {
       return res.status(401).json({

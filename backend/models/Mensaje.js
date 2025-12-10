@@ -25,6 +25,10 @@ const mensajeSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  entregado: {
+    type: Boolean,
+    default: false
+  },
   timestamp: {
     type: Date,
     default: Date.now

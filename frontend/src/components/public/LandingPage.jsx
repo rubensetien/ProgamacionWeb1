@@ -89,6 +89,22 @@ export default function LandingPage() {
                       <div className="dropdown-divider" />
 
                       <div className="dropdown-items">
+                        {usuario?.rol === 'trabajador' && (
+                          <button
+                            className="dropdown-item"
+                            onClick={() => {
+                              navigate('/trabajador');
+                              setMostrarMenuUsuario(false);
+                            }}
+                          >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: '#e67e22' }}>
+                              <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                            </svg>
+                            <span style={{ color: '#e67e22', fontWeight: 600 }}>Dashboard Trabajo</span>
+                          </button>
+                        )}
+
                         <button
                           className="dropdown-item"
                           onClick={() => {

@@ -163,7 +163,9 @@ router.get('/me', auth, async (req, res) => {
         avatar: usuario.avatar,
         telefono: usuario.telefono,
         permisos: usuario.permisos,
-        activo: usuario.activo
+        activo: usuario.activo,
+        tipoTrabajador: usuario.tipoTrabajador,
+        ubicacionAsignada: usuario.ubicacionAsignada
       }
     });
   } catch (error) {

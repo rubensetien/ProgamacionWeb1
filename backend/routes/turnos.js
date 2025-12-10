@@ -8,6 +8,38 @@ const router = express.Router();
 
 router.use(auth);
 
+// GET /api/turnos/mis-turnos - Obtener mis próximos turnos
+router.get('/mis-turnos', async (req, res) => {
+    try {
+        const usuarioId = req.usuario._id;
+
+        // Obtener turnos desde hoy en adelante
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+
+        const turnos = await Turno.find({
+            usuario: usuarioId,
+            fecha: { $gte: hoy }
+        })
+            .populate('ubicacion', 'nombre tipo')
+            .sort({ fecha: 1 })
+            .limit(10)
+            .lean();
+
+        res.json({
+            success: true,
+            data: turnos
+        });
+    } catch (error) {
+        console.error('Error obteniendo mis turnos:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al obtener mis turnos',
+            error: error.message
+        });
+    }
+});
+
 // GET /api/turnos - Obtener turnos por rango de fecha y ubicación
 router.get('/', async (req, res) => {
     try {

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext();
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -82,7 +82,9 @@ export const AuthProvider = ({ children }) => {
         email: userData.email,
         rol: userData.rol,
         avatar: userData.avatar,
-        permisos: userData.permisos
+        permisos: userData.permisos,
+        tipoTrabajador: userData.tipoTrabajador,
+        ubicacionAsignada: userData.ubicacionAsignada
       };
 
       localStorage.setItem('usuario', JSON.stringify(usuarioFormateado));
@@ -125,7 +127,9 @@ export const AuthProvider = ({ children }) => {
         email: userData.email,
         rol: userData.rol,
         avatar: userData.avatar,
-        permisos: userData.permisos
+        permisos: userData.permisos,
+        tipoTrabajador: userData.tipoTrabajador,
+        ubicacionAsignada: userData.ubicacionAsignada
       };
 
       localStorage.setItem('usuario', JSON.stringify(usuarioFormateado));

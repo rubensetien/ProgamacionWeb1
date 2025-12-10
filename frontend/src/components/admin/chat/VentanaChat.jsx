@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Check, CheckCheck } from 'lucide-react';
 import Avatar from '../../Avatar';
 
 const VentanaChat = ({
@@ -35,7 +36,7 @@ const VentanaChat = ({
       <div className="ventana-chat-vacia">
         <div className="chat-vacio-content">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
           <h3>Selecciona un trabajador</h3>
           <p>Elige un trabajador de la lista para comenzar a chatear</p>
@@ -89,12 +90,25 @@ const VentanaChat = ({
 
                 <div className="mensaje-contenido">
                   <p>{mensaje.texto}</p>
-                  <span className="mensaje-timestamp">
-                    {new Date(mensaje.timestamp).toLocaleTimeString('es-ES', {
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </span>
+                  <div className="mensaje-meta" style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
+                    <span className="mensaje-timestamp" style={{ fontSize: '10px', color: esMio ? 'rgba(255,255,255,0.9)' : '#9ca3af' }}>
+                      {new Date(mensaje.timestamp).toLocaleTimeString('es-ES', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
+                    {esMio && (
+                      <span title={mensaje.leido ? "Leído" : mensaje.entregado ? "Entregado" : "Enviado"} style={{ display: 'flex' }}>
+                        {mensaje.leido ? (
+                          <CheckCheck size={15} color="white" strokeWidth={3} />
+                        ) : mensaje.entregado ? (
+                          <CheckCheck size={15} color="rgba(255,255,255,0.7)" strokeWidth={2} />
+                        ) : (
+                          <Check size={15} color="rgba(255,255,255,0.7)" strokeWidth={2} />
+                        )}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -131,8 +145,8 @@ const VentanaChat = ({
         />
         <button type="submit" className="btn-enviar" disabled={!inputMensaje.trim()}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="22" y1="2" x2="11" y2="13"/>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            <line x1="22" y1="2" x2="11" y2="13" />
+            <polygon points="22 2 15 22 11 13 2 9 22 2" />
           </svg>
           Enviar
         </button>

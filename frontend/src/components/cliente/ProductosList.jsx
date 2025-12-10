@@ -268,12 +268,23 @@ const ProductosList = () => {
             </button>
 
             {autenticado && (
-              <div className="user-profile-mini" onClick={() => navigate('/perfil')}>
-                {usuario?.avatar ? (
-                  <img src={usuario.avatar} alt="Avatar" className="user-avatar-mini" />
-                ) : (
-                  <div className="user-initials-mini">{getIniciales(getAvatarContent())}</div>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                {usuario?.rol === 'trabajador' && (
+                  <button
+                    className="btn-header-nav"
+                    onClick={() => navigate('/trabajador')}
+                    style={{ background: '#e67e22', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '20px' }}
+                  >
+                    Dashboard
+                  </button>
                 )}
+                <div className="user-profile-mini" onClick={() => navigate('/perfil')}>
+                  {usuario?.avatar ? (
+                    <img src={usuario.avatar} alt="Avatar" className="user-avatar-mini" />
+                  ) : (
+                    <div className="user-initials-mini">{getIniciales(getAvatarContent())}</div>
+                  )}
+                </div>
               </div>
             )}
           </div>

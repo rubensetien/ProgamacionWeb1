@@ -138,10 +138,32 @@ export default function PerfilCliente() {
                             {usuario?.avatar ? (<img src={usuario.avatar} alt="Avatar" />) : (<User size={40} />)}
                         </div>
                         <h3>{usuario?.nombre}</h3>
-                        <span className="user-role-badge">{usuario?.rol}</span>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
+                            <span className="user-role-badge">{usuario?.rol}</span>
+                            {usuario?.tipoTrabajador && (
+                                <span className="user-role-badge" style={{ background: '#fef3c7', color: '#b45309', fontSize: '0.75rem' }}>
+                                    {usuario.tipoTrabajador.toUpperCase()}
+                                </span>
+                            )}
+                            {usuario?.ubicacionAsignada?.referencia && (
+                                <span style={{ fontSize: '0.8rem', color: '#666', marginTop: '5px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <MapPin size={14} />
+                                    {usuario.ubicacionAsignada.referencia.nombre || usuario.ubicacionAsignada.referencia}
+                                </span>
+                            )}
+                        </div>
                     </div>
 
                     <nav className="perfil-nav">
+                        {usuario?.rol === 'trabajador' && (
+                            <button
+                                className="nav-item"
+                                onClick={() => navigate('/trabajador')}
+                                style={{ color: '#e67e22', fontWeight: 600 }}
+                            >
+                                <User size={20} /> Dashboard Trabajo
+                            </button>
+                        )}
                         <button
                             className={`nav-item ${activeTab === 'perfil' ? 'active' : ''}`}
                             onClick={() => setActiveTab('perfil')}
