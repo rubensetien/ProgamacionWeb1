@@ -211,11 +211,16 @@ router.patch('/:id', auth, isAdmin, async (req, res) => {
     // Ejecutar el método según el tipo
     try {
       if (tipoMovimiento === 'entrada') {
-        await inventario.agregarStock(cantidad, usuarioId, motivo || 'Entrada de stock');
+        const { fechaFabricacion } = req.body; // Nuevo: Permite especificar lote
+        await inventario.agregarStock(cantidad, usuarioId, motivo || 'Entrada de stock', fechaFabricacion);
       } else if (tipoMovimiento === 'salida') {
-        await inventario.reducirStock(cantidad, usuarioId, motivo || 'Salida de stock');
+        const { fechaFabricacion } = req.body; // Nuevo: Permite sacar de un lote específico
+        await inventario.reducirStock(cantidad, usuarioId, motivo || 'Salida de stock', fechaFabricacion);
       } else if (tipoMovimiento === 'ajuste') {
-        await inventario.ajustarStock(cantidad, usuarioId, motivo || 'Ajuste de inventario');
+        const { fechaFabricacion } = req.body;
+        // Si hay fechaFabricacion, 'cantidad' es el nuevo stock DE ESE LOTE.
+        // Si NO hay fechaFabricacion, 'cantidad' es el nuevo stock TOTAL (reseteando lotes).
+        await inventario.ajustarStock(cantidad, usuarioId, motivo || 'Ajuste de inventario', fechaFabricacion);
       } else {
         return res.status(400).json({
           success: false,

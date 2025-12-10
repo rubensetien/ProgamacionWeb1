@@ -10,12 +10,27 @@ const inventarioSchema = new mongoose.Schema({
     index: true
   },
 
-  // ========== STOCK SIMPLE ==========
+  // ========== LOTES (BATCHES) ==========
+  lotes: [{
+    fechaFabricacion: {
+      type: Date,
+      required: true
+    },
+    cantidad: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+    fechaCaducidad: Date,
+    notas: String
+  }],
+
+  // ========== STOCK SIMPLE (Virtual sum of batches) ==========
   stockActual: {
     type: Number,
     default: 0,
     min: 0,
-    comment: 'Stock actual disponible'
+    comment: 'Stock total disponible (suma de lotes)'
   },
 
   stockMinimo: {
@@ -62,7 +77,11 @@ const inventarioSchema = new mongoose.Schema({
     usuario: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Usuario'
-    }
+    },
+    detalleLotes: [{ // Para rastrear qué lotes se afectaron
+      fechaFabricacion: Date,
+      cantidad: Number
+    }]
   }],
 
   // ========== ALERTAS AUTOMÁTICAS ==========
@@ -81,6 +100,11 @@ const inventarioSchema = new mongoose.Schema({
 
 // ========== MIDDLEWARE: Actualizar alertas automáticamente ==========
 inventarioSchema.pre('save', function (next) {
+  // Recalcular stock total basado en lotes si existen
+  if (this.lotes && this.lotes.length > 0) {
+    this.stockActual = this.lotes.reduce((sum, lote) => sum + lote.cantidad, 0);
+  }
+
   this.alertaSinStock = this.stockActual === 0;
   this.alertaStockBajo = this.stockActual > 0 && this.stockActual <= this.stockMinimo;
   next();
@@ -88,57 +112,170 @@ inventarioSchema.pre('save', function (next) {
 
 // ========== MÉTODOS ==========
 
-// 1️⃣ ENTRADA: Añadir stock
-inventarioSchema.methods.agregarStock = function (cantidad, usuarioId = null, motivo = 'Entrada de stock') {
+// 1️⃣ ENTRADA: Añadir stock (con lote)
+inventarioSchema.methods.agregarStock = function (cantidad, usuarioId = null, motivo = 'Entrada de stock', fechaFabricacion = null) {
   const stockAntes = this.stockActual;
-  this.stockActual += cantidad;
+
+  // Si no se proporciona fecha, usamos hoy (o un lote "default" si ya existe uno sin fecha específica)
+  const fechaLote = fechaFabricacion ? new Date(fechaFabricacion) : new Date();
+  fechaLote.setHours(0, 0, 0, 0); // Normalizar a medianoche
+
+  let loteExistente = this.lotes.find(l => {
+    const d = new Date(l.fechaFabricacion);
+    d.setHours(0, 0, 0, 0);
+    return d.getTime() === fechaLote.getTime();
+  });
+
+  if (loteExistente) {
+    loteExistente.cantidad += cantidad;
+  } else {
+    this.lotes.push({
+      fechaFabricacion: fechaLote,
+      cantidad: cantidad
+    });
+    // Ordenar lotes por fecha (más antiguos primero para FIFO)
+    this.lotes.sort((a, b) => new Date(a.fechaFabricacion) - new Date(b.fechaFabricacion));
+  }
+
+  // El pre-save calculará el stockActual total
+  const stockDespuesPreview = this.stockActual + cantidad; // Aproximación para el historial
 
   this.movimientos.push({
     tipo: 'entrada',
     cantidad: cantidad,
     stockAntes: stockAntes,
-    stockDespues: this.stockActual,
+    stockDespues: stockDespuesPreview, // Se corregirá al guardar
     motivo: motivo,
     fecha: new Date(),
-    usuario: usuarioId
+    usuario: usuarioId,
+    detalleLotes: [{
+      fechaFabricacion: fechaLote,
+      cantidad: cantidad
+    }]
   });
 
   return this.save();
 };
 
-// 2️⃣ SALIDA: Quitar stock
-inventarioSchema.methods.reducirStock = function (cantidad, usuarioId = null, motivo = 'Salida de stock') {
+// 2️⃣ SALIDA: Quitar stock (FIFO o lote específico)
+inventarioSchema.methods.reducirStock = function (cantidad, usuarioId = null, motivo = 'Salida de stock', fechaFabricacion = null) {
   if (this.stockActual < cantidad) {
     throw new Error(`Stock insuficiente. Disponible: ${this.stockActual}, Solicitado: ${cantidad}`);
   }
 
   const stockAntes = this.stockActual;
-  this.stockActual -= cantidad;
+  let cantidadRestante = cantidad;
+  let lotesAfectados = [];
+
+  if (fechaFabricacion) {
+    // Reducir de un lote específico
+    const fechaLote = new Date(fechaFabricacion);
+    fechaLote.setHours(0, 0, 0, 0);
+
+    const lote = this.lotes.find(l => {
+      const d = new Date(l.fechaFabricacion);
+      d.setHours(0, 0, 0, 0);
+      return d.getTime() === fechaLote.getTime();
+    });
+
+    if (!lote || lote.cantidad < cantidad) {
+      throw new Error(`Stock insuficiente en el lote ${fechaFabricacion}.`);
+    }
+
+    lote.cantidad -= cantidad;
+    cantidadRestante = 0;
+    lotesAfectados.push({ fechaFabricacion: fechaLote, cantidad: cantidad });
+  } else {
+    // FIFO: Consumir de los lotes más antiguos primero
+    // Asumimos que this.lotes ya está ordenado por fecha por 'agregarStock'
+    // Pero por seguridad ordenamos de nuevo
+    this.lotes.sort((a, b) => new Date(a.fechaFabricacion) - new Date(b.fechaFabricacion));
+
+    // Filtrar lotes con stock > 0
+    for (let lote of this.lotes) {
+      if (lote.cantidad <= 0) continue;
+      if (cantidadRestante <= 0) break;
+
+      const aConsumir = Math.min(lote.cantidad, cantidadRestante);
+      lote.cantidad -= aConsumir;
+      cantidadRestante -= aConsumir;
+      lotesAfectados.push({ fechaFabricacion: lote.fechaFabricacion, cantidad: aConsumir });
+    }
+  }
+
+  if (cantidadRestante > 0) {
+    // Esto no debería pasar si la validación inicial de stock total pasó,
+    // a menos que los lotes no sumen el stock total (inconsistencia de datos)
+    throw new Error(`Inconsistencia en lotes. Stock total dice OK, pero lotes no alcanzan.`);
+  }
+
+  // Limpiar lotes vacíos (Opcional: podemos dejarlos en 0 para historial)
+  // this.lotes = this.lotes.filter(l => l.cantidad > 0);
 
   this.movimientos.push({
     tipo: 'salida',
     cantidad: cantidad,
     stockAntes: stockAntes,
-    stockDespues: this.stockActual,
+    stockDespues: stockAntes - cantidad, // Se recalculará bien en pre-save
     motivo: motivo,
     fecha: new Date(),
-    usuario: usuarioId
+    usuario: usuarioId,
+    detalleLotes: lotesAfectados
   });
 
   return this.save();
 };
 
-// 3️⃣ AJUSTE: Establecer stock exacto
-inventarioSchema.methods.ajustarStock = function (nuevoStock, usuarioId = null, motivo = 'Ajuste de stock') {
+// 3️⃣ AJUSTE: Ajuste manual (reemplazar)
+// Para simplificar, si es ajuste total, borramos lotes anteriores y creamos uno nuevo con hoy?
+// O mejor: Ajuste de un lote específico.
+inventarioSchema.methods.ajustarStock = function (nuevoStock, usuarioId = null, motivo = 'Ajuste de stock', fechaFabricacion = null) {
+  // Ajustar stock global es complejo con lotes.
+  // Vamos a asumir que "Ajuste" en este contexto significa "Corregir la cantidad total".
+  // Estrategia: Si hay fechaFabricacion, ajustamos ese lote.
+  // Si NO hay fechaFabricacion, es un "reset" peligroso -> Creamos un lote de ajuste con la diferencia?
+  // O mejor, creamos un único lote con el stock total "hoy".
+
   const stockAntes = this.stockActual;
-  const diferencia = nuevoStock - stockAntes;
-  this.stockActual = nuevoStock;
+  const fechaLote = fechaFabricacion ? new Date(fechaFabricacion) : new Date();
+  fechaLote.setHours(0, 0, 0, 0);
+
+  if (fechaFabricacion) {
+    // Ajustar un lote específico
+    let lote = this.lotes.find(l => {
+      const d = new Date(l.fechaFabricacion);
+      d.setHours(0, 0, 0, 0);
+      return d.getTime() === fechaLote.getTime();
+    });
+
+    if (lote) {
+      lote.cantidad = nuevoStock;
+    } else {
+      this.lotes.push({ fechaFabricacion: fechaLote, cantidad: nuevoStock });
+      this.lotes.sort((a, b) => new Date(a.fechaFabricacion) - new Date(b.fechaFabricacion));
+    }
+    // Nota: El 'nuevoStock' aquí se interpreta como el stock de ESE LOTE, no el total.
+    // Esto podría ser confuso desde la API si no se especifica bien.
+    // Para mantener compatibilidad con la API anterior que enviaba "nuevoStockTotal", 
+    // si no se envía fecha, asumimos que se quiere forzar el stock total.
+  } else {
+    // SIN FECHA: Reset drástico. Borrar todo y poner un lote hoy.
+    // Es lo más seguro para "stockActual = X".
+    this.lotes = [{
+      fechaFabricacion: new Date(),
+      cantidad: nuevoStock,
+      notas: 'Ajuste stock total'
+    }];
+  }
+
+  // Recalculamos manualmente para el historial antes de guardar
+  const stockDespuesPreview = this.lotes.reduce((acc, l) => acc + l.cantidad, 0);
 
   this.movimientos.push({
     tipo: 'ajuste',
-    cantidad: diferencia,
+    cantidad: stockDespuesPreview - stockAntes,
     stockAntes: stockAntes,
-    stockDespues: this.stockActual,
+    stockDespues: stockDespuesPreview,
     motivo: motivo,
     fecha: new Date(),
     usuario: usuarioId
@@ -147,25 +284,10 @@ inventarioSchema.methods.ajustarStock = function (nuevoStock, usuarioId = null, 
   return this.save();
 };
 
-// 4️⃣ VENTA: Reducir por venta (para pedidos)
+// 4️⃣ VENTA: Reducir por venta (FIFO)
 inventarioSchema.methods.registrarVenta = function (cantidad, pedidoId = null) {
-  if (this.stockActual < cantidad) {
-    throw new Error(`Stock insuficiente. Disponible: ${this.stockActual}, Solicitado: ${cantidad}`);
-  }
-
-  const stockAntes = this.stockActual;
-  this.stockActual -= cantidad;
-
-  this.movimientos.push({
-    tipo: 'venta',
-    cantidad: cantidad,
-    stockAntes: stockAntes,
-    stockDespues: this.stockActual,
-    motivo: pedidoId ? `Venta - Pedido ${pedidoId}` : 'Venta',
-    fecha: new Date()
-  });
-
-  return this.save();
+  // Reutilizamos reducirStock que ya tiene FIFO
+  return this.reducirStock(cantidad, null, pedidoId ? `Venta - Pedido ${pedidoId}` : 'Venta');
 };
 
 // ========== MÉTODOS ESTÁTICOS ==========

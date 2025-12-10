@@ -67,7 +67,8 @@ const GestionInventario = () => {
     setFormulario({
       cantidad: '',
       motivo: '',
-      tipo: 'entrada'
+      tipo: 'entrada',
+      fechaFabricacion: new Date().toISOString().split('T')[0] // Default hoy
     });
     setMostrarModal(true);
   };
@@ -90,7 +91,8 @@ const GestionInventario = () => {
       const payload = {
         tipoMovimiento: formulario.tipo, // 'entrada', 'salida', o 'ajuste'
         cantidad: cantidad,
-        motivo: formulario.motivo || `${formulario.tipo} de stock`
+        motivo: formulario.motivo || `${formulario.tipo} de stock`,
+        fechaFabricacion: formulario.fechaFabricacion // ✅ Envío de fecha para lotes
       };
 
       console.log('📤 Enviando al backend:', payload);
@@ -137,9 +139,16 @@ const GestionInventario = () => {
     } else if (formulario.tipo === 'salida') {
       return Math.max(0, stockActual - cantidad);
     } else if (formulario.tipo === 'ajuste') {
-      return cantidad;
+      // Ajuste es complejo con lotes, mostraremos advertencia
+      return cantidad; // Asumiendo reset total si no hay fecha, o cambio de lote
     }
     return null;
+  };
+
+  // Helper para formatear fecha de lotes
+  const formatDate = (dateString) => {
+    if (!dateString) return 'S/F';
+    return new Date(dateString).toLocaleDateString();
   };
 
   return (
@@ -179,8 +188,8 @@ const GestionInventario = () => {
                   <th>SKU</th>
                   <th>Producto</th>
                   <th>Ubicación</th>
-                  <th>Stock Actual</th>
-                  <th>Stock Mínimo</th>
+                  <th>Stock Total</th> {/* Renombrado */}
+                  <th>Lotes</th> {/* Nueva columna */}
                   <th>Estado</th>
                   <th>Acciones</th>
                 </tr>
@@ -188,6 +197,8 @@ const GestionInventario = () => {
               <tbody>
                 {inventario.map(item => {
                   const estado = getEstadoStock(item);
+                  const tieneLotes = item.lotes && item.lotes.length > 0;
+
                   return (
                     <tr key={item._id} className={estado.clase}>
                       <td>
@@ -204,7 +215,20 @@ const GestionInventario = () => {
                       <td>
                         <span className="stock-cantidad">{item.stockActual || 0}</span>
                       </td>
-                      <td className="text-muted">{item.stockMinimo || 5}</td>
+                      <td>
+                        {tieneLotes ? (
+                          <div className="lotes-mini-list">
+                            {item.lotes.slice(0, 2).map((lote, idx) => (
+                              <span key={idx} className="lote-tag" title={formatDate(lote.fechaFabricacion)}>
+                                {formatDate(lote.fechaFabricacion)}: <strong>{lote.cantidad}</strong>
+                              </span>
+                            ))}
+                            {item.lotes.length > 2 && <span className="lote-more">+{item.lotes.length - 2}</span>}
+                          </div>
+                        ) : (
+                          <span className="text-muted text-small">Sin lotes</span>
+                        )}
+                      </td>
                       <td>
                         <span className={`estado-stock ${estado.clase}`}>
                           {estado.texto}
@@ -214,13 +238,13 @@ const GestionInventario = () => {
                         <button
                           className="btn-accion ajustar"
                           onClick={() => abrirModalAjuste(item)}
-                          title="Ajustar stock"
+                          title="Gestionar Stock y Lotes"
                         >
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                           </svg>
-                          Ajustar
+                          Gestionar
                         </button>
                       </td>
                     </tr>
@@ -245,83 +269,113 @@ const GestionInventario = () => {
       {/* Modal Ajuste de Stock */}
       {mostrarModal && (
         <div className="modal-overlay" onClick={cerrarModal}>
-          <div className="modal-content modal-small" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content modal-medium" onClick={(e) => e.stopPropagation()}> {/* Modal más ancho */}
             <div className="modal-header">
-              <h2>Ajustar Stock</h2>
+              <h2>Gestionar Stock</h2>
               <button className="btn-cerrar" onClick={cerrarModal}>×</button>
             </div>
 
-            <form className="modal-body" onSubmit={handleAjustarStock}>
-              <div className="info-producto">
-                <p><strong>{itemEditando?.producto?.nombre}</strong></p>
-                <p className="text-muted">Stock actual: {itemEditando?.stockActual || 0} unidades</p>
-              </div>
+            <div className="modal-body-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+              {/* Columna Izquierda: Formulario */}
+              <form onSubmit={handleAjustarStock}>
+                <div className="info-producto">
+                  <p><strong>{itemEditando?.producto?.nombre}</strong></p>
+                  <p className="text-muted">Stock Total: <strong>{itemEditando?.stockActual || 0}</strong></p>
+                </div>
 
-              <div className="form-group">
-                <label>Tipo de Movimiento</label>
-                <div className="tipo-movimiento-selector">
-                  <button
-                    type="button"
-                    className={`tipo-btn ${formulario.tipo === 'entrada' ? 'active' : ''}`}
-                    onClick={() => setFormulario({ ...formulario, tipo: 'entrada' })}
-                  >
-                    ➕ Entrada
-                  </button>
-                  <button
-                    type="button"
-                    className={`tipo-btn ${formulario.tipo === 'salida' ? 'active' : ''}`}
-                    onClick={() => setFormulario({ ...formulario, tipo: 'salida' })}
-                  >
-                    ➖ Salida
-                  </button>
-                  <button
-                    type="button"
-                    className={`tipo-btn ${formulario.tipo === 'ajuste' ? 'active' : ''}`}
-                    onClick={() => setFormulario({ ...formulario, tipo: 'ajuste' })}
-                  >
-                    🔧 Ajuste
+                <div className="form-group">
+                  <label>Tipo de Movimiento</label>
+                  <div className="tipo-movimiento-selector">
+                    <button
+                      type="button"
+                      className={`tipo-btn ${formulario.tipo === 'entrada' ? 'active' : ''}`}
+                      onClick={() => setFormulario({ ...formulario, tipo: 'entrada' })}
+                    >
+                      ➕ Entrada
+                    </button>
+                    <button
+                      type="button"
+                      className={`tipo-btn ${formulario.tipo === 'salida' ? 'active' : ''}`}
+                      onClick={() => setFormulario({ ...formulario, tipo: 'salida' })}
+                    >
+                      ➖ Salida
+                    </button>
+                    <button
+                      type="button"
+                      className={`tipo-btn ${formulario.tipo === 'ajuste' ? 'active' : ''}`}
+                      onClick={() => setFormulario({ ...formulario, tipo: 'ajuste' })}
+                    >
+                      🔧 Ajuste
+                    </button>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Fecha Fabricación / Lote *</label>
+                  <input
+                    type="date"
+                    value={formulario.fechaFabricacion}
+                    onChange={(e) => setFormulario({ ...formulario, fechaFabricacion: e.target.value })}
+                    required
+                  />
+                  <p className="helper-text">
+                    {formulario.tipo === 'entrada' ? 'Fecha de fabricación del nuevo lote.' : 'Selecciona la fecha del lote a afectar.'}
+                  </p>
+                </div>
+
+                <div className="form-group">
+                  <label>Cantidad *</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formulario.cantidad}
+                    onChange={(e) => setFormulario({ ...formulario, cantidad: e.target.value })}
+                    placeholder="Ej: 5"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Motivo</label>
+                  <textarea
+                    value={formulario.motivo}
+                    onChange={(e) => setFormulario({ ...formulario, motivo: e.target.value })}
+                    placeholder="Motivo..."
+                    rows="2"
+                  />
+                </div>
+
+                <div className="modal-footer-inline">
+                  <button type="submit" className="btn-guardar full-width">
+                    Confirmar Movimiento
                   </button>
                 </div>
-              </div>
+              </form>
 
-              <div className="form-group">
-                <label>
-                  {formulario.tipo === 'ajuste' ? 'Nuevo Stock Total *' : 'Cantidad *'}
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={formulario.cantidad}
-                  onChange={(e) => setFormulario({ ...formulario, cantidad: e.target.value })}
-                  placeholder={formulario.tipo === 'ajuste' ? 'Ej: 20' : 'Ej: 5'}
-                  required
-                />
-                {formulario.cantidad && (
-                  <p className="helper-text" style={{ color: '#3498db', marginTop: '8px' }}>
-                    Nuevo stock: <strong>{calcularNuevoStock()}</strong>
-                  </p>
+              {/* Columna Derecha: Lista de Lotes Actuales */}
+              <div className="lotes-panel">
+                <h3>Lotes Disponibles</h3>
+                {itemEditando?.lotes && itemEditando.lotes.length > 0 ? (
+                  <div className="lotes-list-scroll">
+                    {itemEditando.lotes
+                      .sort((a, b) => new Date(a.fechaFabricacion) - new Date(b.fechaFabricacion))
+                      .map((lote, index) => (
+                        <div
+                          key={index}
+                          className="lote-item"
+                          onClick={() => setFormulario({ ...formulario, fechaFabricacion: lote.fechaFabricacion.split('T')[0] })}
+                          style={{ cursor: 'pointer', border: formulario.fechaFabricacion === lote.fechaFabricacion.split('T')[0] ? '2px solid #e67e22' : '1px solid #eee' }}
+                        >
+                          <div className="lote-date">📅 {formatDate(lote.fechaFabricacion)}</div>
+                          <div className="lote-qty">Qt: <strong>{lote.cantidad}</strong></div>
+                        </div>
+                      ))}
+                  </div>
+                ) : (
+                  <p className="text-muted">No hay lotes registrados.</p>
                 )}
               </div>
-
-              <div className="form-group">
-                <label>Motivo</label>
-                <textarea
-                  value={formulario.motivo}
-                  onChange={(e) => setFormulario({ ...formulario, motivo: e.target.value })}
-                  placeholder="Describe el motivo del ajuste..."
-                  rows="3"
-                />
-              </div>
-
-              <div className="modal-footer">
-                <button type="button" className="btn-cancelar" onClick={cerrarModal}>
-                  Cancelar
-                </button>
-                <button type="submit" className="btn-guardar">
-                  Confirmar Ajuste
-                </button>
-              </div>
-            </form>
+            </div>
           </div>
         </div>
       )}
