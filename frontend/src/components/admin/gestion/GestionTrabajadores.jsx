@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import '../../../styles/admin/gestion/GestionProductos.css'; // Reutilizamos estilos
+import Pagination from '../../common/Pagination';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -11,8 +12,14 @@ export default function GestionTrabajadores() {
     const [mostrarModal, setMostrarModal] = useState(false);
     const [modoEdicion, setModoEdicion] = useState(false);
     const [trabajadorEditando, setTrabajadorEditando] = useState(null);
+
+    // Filtros y Paginación
     const [busqueda, setBusqueda] = useState('');
     const [rolFiltro, setRolFiltro] = useState('todos');
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(3);
+    const [total, setTotal] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
 
     const [formulario, setFormulario] = useState({
         nombre: '',
@@ -29,19 +36,37 @@ export default function GestionTrabajadores() {
 
     useEffect(() => {
         cargarDatos();
-    }, []);
+    }, [page, limit, rolFiltro]);
+
+    // Debounce búsqueda
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setPage(1);
+            cargarDatos();
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [busqueda]);
 
     const cargarDatos = async () => {
         try {
             setCargando(true);
             const token = localStorage.getItem('token');
 
+            // Params para trabajadores
+            const queryParams = new URLSearchParams({
+                page,
+                limit,
+                rol: rolFiltro
+            });
+            if (busqueda) queryParams.append('search', busqueda);
+
             // Cargar trabajadores y ubicaciones en paralelo
+            // Nota: Ubicaciones se cargan todas (limit alto implícito) para el dropdown
             const [usuariosRes, ubicacionesRes] = await Promise.all([
-                fetch(`${API_URL}/api/usuarios/trabajadores`, {
+                fetch(`${API_URL}/api/usuarios/trabajadores?${queryParams}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 }),
-                fetch(`${API_URL}/api/ubicaciones?activo=true`, {
+                fetch(`${API_URL}/api/ubicaciones?activo=true&limit=200`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 })
             ]);
@@ -51,6 +76,8 @@ export default function GestionTrabajadores() {
 
             if (usuariosData.success) {
                 setTrabajadores(usuariosData.data);
+                setTotal(usuariosData.total || 0);
+                setTotalPages(usuariosData.pages || 1);
             } else {
                 throw new Error(usuariosData.message || 'Error cargando trabajadores');
             }
@@ -207,12 +234,8 @@ export default function GestionTrabajadores() {
         }
     };
 
-    const trabajadoresFiltrados = trabajadores.filter(t => {
-        const matchBusqueda = t.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-            t.email.toLowerCase().includes(busqueda.toLowerCase());
-        const matchRol = rolFiltro === 'todos' || t.rol === rolFiltro;
-        return matchBusqueda && matchRol;
-    });
+    // No cliente-side filter
+    const trabajadoresList = trabajadores;
 
     // Obtener nombre de ubicación de forma segura
     const getNombreUbicacion = (trabajador) => {
@@ -227,7 +250,7 @@ export default function GestionTrabajadores() {
         return <span style={{ color: '#999', fontStyle: 'italic' }}>Sin asignar</span>;
     };
 
-    if (cargando) {
+    if (cargando && page === 1 && !trabajadores.length) {
         return (
             <div className="gestion-productos">
                 <div className="loading-spinner">Cargando trabajadores...</div>
@@ -280,7 +303,10 @@ export default function GestionTrabajadores() {
 
                 <select
                     value={rolFiltro}
-                    onChange={(e) => setRolFiltro(e.target.value)}
+                    onChange={(e) => {
+                        setRolFiltro(e.target.value);
+                        setPage(1);
+                    }}
                     className="select-filter"
                 >
                     <option value="todos">Todos los roles</option>
@@ -303,14 +329,14 @@ export default function GestionTrabajadores() {
                         </tr>
                     </thead>
                     <tbody>
-                        {trabajadoresFiltrados.length === 0 ? (
+                        {trabajadoresList.length === 0 ? (
                             <tr>
                                 <td colSpan="6" className="empty-state">
                                     <p>No se encontraron trabajadores</p>
                                 </td>
                             </tr>
                         ) : (
-                            trabajadoresFiltrados.map(trabajador => (
+                            trabajadoresList.map(trabajador => (
                                 <tr key={trabajador._id}>
                                     <td className="td-producto">
                                         <span style={{ fontWeight: 600 }}>{trabajador.nombre}</span>
@@ -357,6 +383,18 @@ export default function GestionTrabajadores() {
                     </tbody>
                 </table>
             </div>
+
+            <Pagination
+                page={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+                limit={limit}
+                onLimitChange={(newLimit) => {
+                    setLimit(newLimit);
+                    setPage(1);
+                }}
+                totalItems={total}
+            />
 
             {mostrarModal && (
                 <div className="modal-overlay" onClick={() => setMostrarModal(false)}>

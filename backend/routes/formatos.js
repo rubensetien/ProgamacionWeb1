@@ -7,17 +7,31 @@ const router = express.Router();
 // GET /api/formatos - Obtener todos los formatos
 router.get('/', async (req, res) => {
   try {
-    const { activo } = req.query;
-    
+    const { activo, page = 1, limit = 100 } = req.query;
+
     const filtro = {};
     if (activo !== undefined) filtro.activo = activo === 'true';
-    
-    const formatos = await Formato.find(filtro).sort({ orden: 1 });
-    
+
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
+    const skip = (pageNum - 1) * limitNum;
+
+    const [formatos, total] = await Promise.all([
+      Formato.find(filtro)
+        .sort({ orden: 1 })
+        .skip(skip)
+        .limit(limitNum),
+      Formato.countDocuments(filtro)
+    ]);
+
     res.json({
       success: true,
-      count: formatos.length,
-      data: formatos
+      count: formatos.length, // Backward compatibility
+      data: formatos,
+      total,
+      page: pageNum,
+      pages: Math.ceil(total / limitNum),
+      limit: limitNum
     });
   } catch (error) {
     console.error('Error obteniendo formatos:', error);

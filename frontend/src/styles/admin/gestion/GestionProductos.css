@@ -17,6 +17,16 @@
 }
 
 /* ========== HEADER PRINCIPAL ========== */
+/* ========== HEADER PRINCIPAL ========== */
+.gestion-productos {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
+  padding: 30px 40px;
+  padding-bottom: 100px;
+}
+
 .gestion-header {
   display: flex;
   justify-content: space-between;

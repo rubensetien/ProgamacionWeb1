@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import Pagination from '../../common/Pagination';
 import '../../../styles/admin/GestionComun.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -12,6 +13,12 @@ const GestionInventario = () => {
   const [notificacion, setNotificacion] = useState({ mostrar: false, tipo: '', mensaje: '' });
   const [busqueda, setBusqueda] = useState('');
 
+  // Pagination State
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(3);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+
   const [formulario, setFormulario] = useState({
     cantidad: '',
     motivo: '',
@@ -20,15 +27,28 @@ const GestionInventario = () => {
 
   useEffect(() => {
     cargarInventario();
-  }, []);
+  }, [page, limit, busqueda]);
+
+  // Reset page when filtering
+  useEffect(() => {
+    setPage(1);
+  }, [busqueda]);
 
   const cargarInventario = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const response = await axios.get(`${API_URL}/api/inventario`, config);
-      setInventario(response.data.data || []);
+
+      let url = `${API_URL}/api/inventario?page=${page}&limit=${limit}`;
+      if (busqueda) url += `&search=${encodeURIComponent(busqueda)}`;
+
+      const response = await axios.get(url, config);
+      const { data, total, pages } = response.data;
+
+      setInventario(data || []);
+      setTotal(total || 0);
+      setTotalPages(pages || 1);
     } catch (error) {
       console.error('Error cargando inventario:', error);
       mostrarNotificacion('error', 'Error al cargar inventario');
@@ -54,13 +74,13 @@ const GestionInventario = () => {
 
   const handleAjustarStock = async (e) => {
     e.preventDefault();
-    
+
     try {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
 
       const cantidad = parseInt(formulario.cantidad);
-      
+
       if (isNaN(cantidad) || cantidad < 0) {
         mostrarNotificacion('error', 'La cantidad debe ser un número válido');
         return;
@@ -82,7 +102,7 @@ const GestionInventario = () => {
       );
 
       mostrarNotificacion('success', 'Stock actualizado correctamente');
-      await cargarInventario();
+      await cargarInventario(); // Reload current page
       cerrarModal();
     } catch (error) {
       console.error('Error ajustando stock:', error);
@@ -99,7 +119,7 @@ const GestionInventario = () => {
   const getEstadoStock = (item) => {
     const stock = item.stockActual || 0;
     const minimo = item.stockMinimo || 5;
-    
+
     if (stock === 0) return { clase: 'agotado', texto: 'AGOTADO' };
     if (stock <= minimo) return { clase: 'critico', texto: 'CRÍTICO' };
     if (stock <= minimo * 1.5) return { clase: 'bajo', texto: 'BAJO' };
@@ -108,10 +128,10 @@ const GestionInventario = () => {
 
   const calcularNuevoStock = () => {
     if (!formulario.cantidad || !itemEditando) return null;
-    
+
     const cantidad = parseInt(formulario.cantidad);
     const stockActual = itemEditando.stockActual || 0;
-    
+
     if (formulario.tipo === 'entrada') {
       return stockActual + cantidad;
     } else if (formulario.tipo === 'salida') {
@@ -122,32 +142,18 @@ const GestionInventario = () => {
     return null;
   };
 
-  const inventarioFiltrado = inventario.filter(item =>
-    item.producto?.nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
-    item.producto?.sku?.toLowerCase().includes(busqueda.toLowerCase())
-  );
-
-  if (loading) {
-    return (
-      <div className="gestion-loading">
-        <div className="spinner"></div>
-        <p>Cargando inventario...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="gestion-container">
       {/* Header */}
       <div className="gestion-header">
         <div className="header-info">
-          <span className="count-badge">{inventario.length}</span>
+          <span className="count-badge">{total}</span>
           <span className="count-text">productos en inventario</span>
         </div>
         <div className="filtro-busqueda">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8"/>
-            <path d="m21 21-4.35-4.35"/>
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
           </svg>
           <input
             type="text"
@@ -158,64 +164,83 @@ const GestionInventario = () => {
         </div>
       </div>
 
-      {/* Tabla de Inventario */}
-      <div className="inventario-tabla">
-        <table>
-          <thead>
-            <tr>
-              <th>SKU</th>
-              <th>Producto</th>
-              <th>Ubicación</th>
-              <th>Stock Actual</th>
-              <th>Stock Mínimo</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {inventarioFiltrado.map(item => {
-              const estado = getEstadoStock(item);
-              return (
-                <tr key={item._id} className={estado.clase}>
-                  <td>
-                    <code className="sku-badge">{item.producto?.sku || 'N/A'}</code>
-                  </td>
-                  <td>
-                    <strong>{item.producto?.nombre || 'Sin nombre'}</strong>
-                  </td>
-                  <td>
-                    <span className="ubicacion-tag">
-                      {item.ubicacion || 'Obrador principal'}
-                    </span>
-                  </td>
-                  <td>
-                    <span className="stock-cantidad">{item.stockActual || 0}</span>
-                  </td>
-                  <td className="text-muted">{item.stockMinimo || 5}</td>
-                  <td>
-                    <span className={`estado-stock ${estado.clase}`}>
-                      {estado.texto}
-                    </span>
-                  </td>
-                  <td>
-                    <button 
-                      className="btn-accion ajustar"
-                      onClick={() => abrirModalAjuste(item)}
-                      title="Ajustar stock"
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                      </svg>
-                      Ajustar
-                    </button>
-                  </td>
+      {loading && !inventario.length ? (
+        <div className="gestion-loading">
+          <div className="spinner"></div>
+          <p>Cargando inventario...</p>
+        </div>
+      ) : (
+        <>
+          {/* Tabla de Inventario */}
+          <div className="inventario-tabla">
+            <table>
+              <thead>
+                <tr>
+                  <th>SKU</th>
+                  <th>Producto</th>
+                  <th>Ubicación</th>
+                  <th>Stock Actual</th>
+                  <th>Stock Mínimo</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+              </thead>
+              <tbody>
+                {inventario.map(item => {
+                  const estado = getEstadoStock(item);
+                  return (
+                    <tr key={item._id} className={estado.clase}>
+                      <td>
+                        <code className="sku-badge">{item.producto?.sku || 'N/A'}</code>
+                      </td>
+                      <td>
+                        <strong>{item.producto?.nombre || 'Sin nombre'}</strong>
+                      </td>
+                      <td>
+                        <span className="ubicacion-tag">
+                          {item.ubicacion || 'Obrador principal'}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="stock-cantidad">{item.stockActual || 0}</span>
+                      </td>
+                      <td className="text-muted">{item.stockMinimo || 5}</td>
+                      <td>
+                        <span className={`estado-stock ${estado.clase}`}>
+                          {estado.texto}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          className="btn-accion ajustar"
+                          onClick={() => abrirModalAjuste(item)}
+                          title="Ajustar stock"
+                        >
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                          </svg>
+                          Ajustar
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            totalItems={total}
+            itemsPerPage={limit}
+            onItemsPerPageChange={setLimit}
+            loading={loading}
+          />
+        </>
+      )}
 
       {/* Modal Ajuste de Stock */}
       {mostrarModal && (
@@ -238,21 +263,21 @@ const GestionInventario = () => {
                   <button
                     type="button"
                     className={`tipo-btn ${formulario.tipo === 'entrada' ? 'active' : ''}`}
-                    onClick={() => setFormulario({...formulario, tipo: 'entrada'})}
+                    onClick={() => setFormulario({ ...formulario, tipo: 'entrada' })}
                   >
                     ➕ Entrada
                   </button>
                   <button
                     type="button"
                     className={`tipo-btn ${formulario.tipo === 'salida' ? 'active' : ''}`}
-                    onClick={() => setFormulario({...formulario, tipo: 'salida'})}
+                    onClick={() => setFormulario({ ...formulario, tipo: 'salida' })}
                   >
                     ➖ Salida
                   </button>
                   <button
                     type="button"
                     className={`tipo-btn ${formulario.tipo === 'ajuste' ? 'active' : ''}`}
-                    onClick={() => setFormulario({...formulario, tipo: 'ajuste'})}
+                    onClick={() => setFormulario({ ...formulario, tipo: 'ajuste' })}
                   >
                     🔧 Ajuste
                   </button>
@@ -267,7 +292,7 @@ const GestionInventario = () => {
                   type="number"
                   min="0"
                   value={formulario.cantidad}
-                  onChange={(e) => setFormulario({...formulario, cantidad: e.target.value})}
+                  onChange={(e) => setFormulario({ ...formulario, cantidad: e.target.value })}
                   placeholder={formulario.tipo === 'ajuste' ? 'Ej: 20' : 'Ej: 5'}
                   required
                 />
@@ -282,7 +307,7 @@ const GestionInventario = () => {
                 <label>Motivo</label>
                 <textarea
                   value={formulario.motivo}
-                  onChange={(e) => setFormulario({...formulario, motivo: e.target.value})}
+                  onChange={(e) => setFormulario({ ...formulario, motivo: e.target.value })}
                   placeholder="Describe el motivo del ajuste..."
                   rows="3"
                 />

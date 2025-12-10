@@ -4,7 +4,11 @@ import { auth, isAdmin } from '../middlewares/auth.js'; // ✅ Importante
 
 const router = express.Router();
 
-// 🟢 RUTA PÚBLICA: Obtener tiendas activas para el mapa
+// ==========================================
+// RUTAS PÚBLICAS (Sin Autenticación)
+// ==========================================
+
+// 🟢 Obtener tiendas activas para el mapa
 router.get('/publicas', async (req, res) => {
   try {
     const ubicaciones = await Ubicacion.find({
@@ -24,12 +28,8 @@ router.get('/publicas', async (req, res) => {
   }
 });
 
-// Middleware de autenticación para el resto de rutas
-router.use(auth);
-
 // @route   GET /api/ubicaciones/puntos-venta
 // @desc    Obtener puntos de venta activos (para recogida de pedidos)
-// @access  Public
 router.get('/puntos-venta', async (req, res) => {
   try {
     const puntosVenta = await Ubicacion.find({
@@ -56,7 +56,6 @@ router.get('/puntos-venta', async (req, res) => {
 
 // @route   GET /api/ubicaciones/obrador
 // @desc    Obtener el obrador principal (para calcular radio de entrega)
-// @access  Public
 router.get('/obrador', async (req, res) => {
   try {
     const obrador = await Ubicacion.findOne({
@@ -86,7 +85,6 @@ router.get('/obrador', async (req, res) => {
 
 // @route   POST /api/ubicaciones/validar-entrega
 // @desc    Validar si una dirección está dentro del radio de entrega (50km)
-// @access  Public
 router.post('/validar-entrega', async (req, res) => {
   try {
     const { latitud, longitud } = req.body;
@@ -145,55 +143,8 @@ router.post('/validar-entrega', async (req, res) => {
   }
 });
 
-// @route   GET /api/ubicaciones
-// @desc    Obtener todas las ubicaciones (admin)
-// @access  Private/Admin
-router.get('/', async (req, res) => {
-  try {
-    const { tipo, activo } = req.query;
-
-    const filtros = {};
-    if (tipo) filtros.tipo = tipo;
-    if (activo !== undefined) filtros.activo = activo === 'true';
-
-    const limitVal = parseInt(req.query.limit) || 100;
-    const pageVal = parseInt(req.query.page) || 1;
-    const MAX_LIMIT = 100;
-    const limit = Math.min(limitVal, MAX_LIMIT);
-    const page = Math.max(1, pageVal);
-    const skip = (page - 1) * limit;
-
-    const [ubicaciones, total] = await Promise.all([
-      Ubicacion.find(filtros)
-        .populate('responsable', 'nombre email')
-        .populate('obradorAsignado', 'nombre codigo')
-        .sort({ tipo: 1, nombre: 1 })
-        .limit(limit)
-        .skip(skip),
-      Ubicacion.countDocuments(filtros)
-    ]);
-
-    res.json({
-      success: true,
-      count: ubicaciones.length,
-      data: ubicaciones,
-      total,
-      page,
-      pages: Math.ceil(total / limit),
-      limit
-    });
-  } catch (error) {
-    console.error('Error obteniendo ubicaciones:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al obtener ubicaciones'
-    });
-  }
-});
-
 // @route   GET /api/ubicaciones/:id
 // @desc    Obtener una ubicación por ID
-// @access  Public
 router.get('/:id', async (req, res) => {
   try {
     const ubicacion = await Ubicacion.findById(req.params.id)
@@ -216,6 +167,67 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error al obtener ubicación'
+    });
+  }
+});
+
+// ==========================================
+// RUTAS PRIVADAS (Requieren Autenticación)
+// ==========================================
+// Middleware de autenticación para el resto de rutas (Admin/Gestión)
+router.use(auth);
+
+// @route   GET /api/ubicaciones
+// @desc    Obtener todas las ubicaciones (admin)
+// @access  Private/Admin
+router.get('/', async (req, res) => {
+  try {
+    const { tipo, activo, search } = req.query;
+
+    const filtros = {};
+    if (tipo && tipo !== 'todos') filtros.tipo = tipo; // Fix: ignore 'todos'
+    if (activo !== undefined) filtros.activo = activo === 'true';
+
+    // Búsqueda por nombre, código o ciudad
+    if (search) {
+      filtros.$or = [
+        { nombre: { $regex: search, $options: 'i' } },
+        { codigo: { $regex: search, $options: 'i' } },
+        { 'direccion.ciudad': { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const limitVal = parseInt(req.query.limit) || 100;
+    const pageVal = parseInt(req.query.page) || 1;
+    const MAX_LIMIT = 100;
+    const limit = Math.min(limitVal, MAX_LIMIT);
+    const page = Math.max(1, pageVal);
+    const skip = (page - 1) * limit;
+
+    const [ubicaciones, total] = await Promise.all([
+      Ubicacion.find(filtros)
+        .populate('responsable', 'nombre email')
+        .populate('obradorAsignado', 'nombre codigo')
+        .sort({ nombre: 1 }) // Default sort by name
+        .limit(limit)
+        .skip(skip),
+      Ubicacion.countDocuments(filtros)
+    ]);
+
+    res.json({
+      success: true,
+      count: ubicaciones.length,
+      data: ubicaciones,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+      limit
+    });
+  } catch (error) {
+    console.error('Error obteniendo ubicaciones:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener ubicaciones'
     });
   }
 });
@@ -281,10 +293,7 @@ router.put('/:id', async (req, res) => {
 // @access  Private/Admin
 router.delete('/:id', async (req, res) => {
   try {
-    // Opción 1: Eliminar físicamente
-    // const ubicacion = await Ubicacion.findByIdAndDelete(req.params.id);
-
-    // Opción 2: Soft delete (recomendado para mantener historial)
+    // Soft delete (recomendado para mantener historial)
     const ubicacion = await Ubicacion.findByIdAndUpdate(
       req.params.id,
       { activo: false },

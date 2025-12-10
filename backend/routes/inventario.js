@@ -13,13 +13,29 @@ router.get('/', auth, async (req, res) => {
 
     const limitVal = parseInt(req.query.limit) || 100;
     const pageVal = parseInt(req.query.page) || 1;
+    const { search } = req.query;
     const MAX_LIMIT = 100;
     const limit = Math.min(limitVal, MAX_LIMIT);
     const page = Math.max(1, pageVal);
     const skip = (page - 1) * limit;
 
+    let filtro = {};
+
+    if (search) {
+      // Step 1: Find products that match the search term
+      const matchedProducts = await Producto.find({
+        $or: [
+          { nombre: { $regex: search, $options: 'i' } },
+          { sku: { $regex: search, $options: 'i' } }
+        ]
+      }).select('_id');
+
+      const productIds = matchedProducts.map(p => p._id);
+      filtro.producto = { $in: productIds };
+    }
+
     const [inventarios, total] = await Promise.all([
-      Inventario.find()
+      Inventario.find(filtro)
         .populate({
           path: 'producto',
           populate: [
@@ -31,7 +47,7 @@ router.get('/', auth, async (req, res) => {
         .sort({ stockActual: 1 })
         .limit(limit)
         .skip(skip),
-      Inventario.countDocuments()
+      Inventario.countDocuments(filtro)
     ]);
 
     res.json({

@@ -89,7 +89,9 @@ export const CarritoProvider = ({ children }) => {
       let method = 'POST';
       let body = payload;
 
-      if (action === 'update') {
+      if (action === 'add') {
+        url = `${API_URL}/api/carrito/item`;
+      } else if (action === 'update') {
         url = `${API_URL}/api/carrito/item/${payload.itemId}`;
         method = 'PUT';
         body = { cantidad: payload.cantidad };

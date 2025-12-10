@@ -5,6 +5,7 @@
 .gestion-container {
   padding: 30px 40px;
   min-height: 100%;
+  /* Keep min-height, remove overflow/flex that causes nested scroll */
 }
 
 /* ========== HEADER ========== */
@@ -583,8 +584,13 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
@@ -592,6 +598,7 @@
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -901,7 +908,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ========== NOTIFICACIÓN ========== */
@@ -933,6 +942,7 @@
     opacity: 0;
     transform: translateX(100px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -1070,12 +1080,12 @@
 }
 
 /* Espaciado entre secciones del formulario */
-.form-group + .form-group {
+.form-group+.form-group {
   margin-top: 20px;
 }
 
-.form-row + .form-group,
-.form-group + .form-row {
+.form-row+.form-group,
+.form-group+.form-row {
   margin-top: 20px;
 }
 

@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import '../../../styles/admin/gestion/GestionProductos.css';
 import GestionFormatos from './GestionFormatos';
 import GestionVariantes from './GestionVariantes';
 import GestionInventario from './GestionInventario';
+import Pagination from '../../common/Pagination';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -18,10 +19,14 @@ export default function GestionProductos() {
   const [modoEdicion, setModoEdicion] = useState(false);
   const [productoEditando, setProductoEditando] = useState(null);
   const [busqueda, setBusqueda] = useState('');
-  const [categoriaFiltro, setCategoriaFiltro] = useState('todas');
+  const [categoriaFiltro, setCategoriaFiltro] = useState('');
   const [seccionActiva, setSeccionActiva] = useState('productos'); // 'productos', 'formatos', 'sabores', 'inventario'
+
+  // Pagination State
   const [page, setPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(5); // [NEW] Control de items por página
+  const [limit, setLimit] = useState(3);
+  const [publicTotal, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
 
   const [formulario, setFormulario] = useState({
     nombre: '',
@@ -38,9 +43,68 @@ export default function GestionProductos() {
   // Estado para saber si la categoría seleccionada requiere sabor
   const [categoriaRequiereSabor, setCategoriaRequiereSabor] = useState(false);
 
-  useEffect(() => {
-    cargarDatos();
+  const cargarDatosAuxiliares = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const [categoriasRes, variantesRes, formatosRes] = await Promise.all([
+        fetch(`${API_URL}/api/categorias`, { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch(`${API_URL}/api/variantes?limit=1000`, { headers: { 'Authorization': `Bearer ${token}` } }), // Load all for dropdown
+        fetch(`${API_URL}/api/formatos?limit=1000`, { headers: { 'Authorization': `Bearer ${token}` } })  // Load all for dropdown
+      ]);
+
+      const categoriasData = await categoriasRes.json();
+      const variantesData = await variantesRes.json();
+      const formatosData = await formatosRes.json();
+
+      if (categoriasData.success) setCategorias(categoriasData.data);
+      if (variantesData.success) setVariantes(variantesData.data);
+      if (formatosData.success) setFormatos(formatosData.data);
+    } catch (err) {
+      console.error('Error cargando datos auxiliares:', err);
+    }
   }, []);
+
+  const cargarProductos = useCallback(async () => {
+    try {
+      setCargando(true);
+      const token = localStorage.getItem('token');
+
+      let url = `${API_URL}/api/productos?page=${page}&limit=${limit}`;
+      if (busqueda) url += `&search=${encodeURIComponent(busqueda)}`;
+      if (categoriaFiltro && categoriaFiltro !== 'todas') url += `&categoria=${categoriaFiltro}`;
+
+      const res = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setProductos(data.data);
+        setTotal(data.total);
+        setTotalPages(data.pages);
+      } else {
+        setError(data.message);
+      }
+    } catch (err) {
+      setError('Error al cargar productos: ' + err.message);
+    } finally {
+      setCargando(false);
+    }
+  }, [page, limit, busqueda, categoriaFiltro]);
+
+  useEffect(() => {
+    cargarDatosAuxiliares();
+  }, [cargarDatosAuxiliares]);
+
+  useEffect(() => {
+    cargarProductos();
+  }, [cargarProductos]);
+
+  // Handle search with debounce could be better, but for now simple state change triggers effect
+  // Reset page when filtering
+  useEffect(() => {
+    setPage(1);
+  }, [busqueda, categoriaFiltro]);
 
   // Detectar cuando cambia la categoría seleccionada
   useEffect(() => {
@@ -58,44 +122,6 @@ export default function GestionProductos() {
       setCategoriaRequiereSabor(false);
     }
   }, [formulario.categoria, categorias]);
-
-  const cargarDatos = async () => {
-    try {
-      setCargando(true);
-      const token = localStorage.getItem('token');
-
-      const [productosRes, categoriasRes, variantesRes, formatosRes] = await Promise.all([
-        fetch(`${API_URL}/api/productos`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }),
-        fetch(`${API_URL}/api/categorias`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }),
-        fetch(`${API_URL}/api/variantes`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }),
-        fetch(`${API_URL}/api/formatos`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
-      ]);
-
-      const productosData = await productosRes.json();
-      const categoriasData = await categoriasRes.json();
-      const variantesData = await variantesRes.json();
-      const formatosData = await formatosRes.json();
-
-      if (productosData.success) setProductos(productosData.data);
-      if (categoriasData.success) setCategorias(categoriasData.data);
-      if (variantesData.success) setVariantes(variantesData.data);
-      if (formatosData.success) setFormatos(formatosData.data);
-
-      setError(null);
-    } catch (err) {
-      setError('Error al cargar datos: ' + err.message);
-    } finally {
-      setCargando(false);
-    }
-  };
 
   const abrirModalNuevo = () => {
     setModoEdicion(false);
@@ -194,7 +220,7 @@ export default function GestionProductos() {
       }
 
       setMostrarModal(false);
-      cargarDatos();
+      cargarProductos();
       setError(null);
     } catch (err) {
       setError(err.message);
@@ -219,33 +245,14 @@ export default function GestionProductos() {
         throw new Error(data.message || 'Error al eliminar');
       }
 
-      cargarDatos();
+      cargarProductos();
       setError(null);
     } catch (err) {
       setError(err.message);
     }
   };
 
-  const productosFiltrados = productos.filter(p => {
-    const matchBusqueda = p.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-      p.sku?.toLowerCase().includes(busqueda.toLowerCase());
-    const matchCategoria = categoriaFiltro === 'todas' ||
-      p.categoria?._id === categoriaFiltro;
-    return matchBusqueda && matchCategoria;
-  });
-
-  const obtenerNombreCompleto = (producto) => {
-    let nombre = producto.nombre;
-    if (producto.variante?.nombre) {
-      nombre += ` - ${producto.variante.nombre}`;
-    }
-    if (producto.formato?.nombre) {
-      nombre += ` (${producto.formato.nombre})`;
-    }
-    return nombre;
-  };
-
-  if (cargando) {
+  if (cargando && !productos.length && seccionActiva === 'productos') {
     return (
       <div className="gestion-productos">
         <div className="loading-spinner">Cargando productos...</div>
@@ -321,14 +328,8 @@ export default function GestionProductos() {
 
           <div className="stats-bar">
             <div className="stat-card">
-              <div className="stat-value">{productos.length}</div>
-              <div className="stat-label">productos totales</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-value">
-                {productos.filter(p => p.activo).length}
-              </div>
-              <div className="stat-label">activos</div>
+              <div className="stat-value">{publicTotal}</div>
+              <div className="stat-label">productos en lista</div>
             </div>
           </div>
 
@@ -358,134 +359,110 @@ export default function GestionProductos() {
             </select>
           </div>
 
-          <div className="tabla-container">
-            <table className="tabla-productos">
-              {/* (Table content unchanged) */}
-              <thead>
-                <tr>
-                  <th>SKU</th>
-                  <th>PRODUCTO</th>
-                  <th>CATEGORÍA</th>
-                  <th>SABOR/VARIANTE</th>
-                  <th>FORMATO</th>
-                  <th>PRECIO BASE</th>
-                  <th>PRECIO FINAL</th>
-                  <th>ESTADO</th>
-                  <th>ACCIONES</th>
-                </tr>
-              </thead>
-              <tbody>
-                {productosFiltrados.length === 0 ? (
-                  <tr>
-                    <td colSpan="9" className="empty-state">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="12" cy="12" r="10" />
-                        <path d="M16 16s-1.5-2-4-2-4 2-4 2" />
-                        <line x1="9" y1="9" x2="9.01" y2="9" />
-                        <line x1="15" y1="9" x2="15.01" y2="9" />
-                      </svg>
-                      <p>No se encontraron productos</p>
-                    </td>
-                  </tr>
-                ) : (
-                  // ✅ PAGINACIÓN: Variable
-                  productosFiltrados.slice((page - 1) * itemsPerPage, page * itemsPerPage).map(producto => (
-                    <tr key={producto._id}>
-                      {/* ... row content ... */}
-                      <td className="td-sku">{producto.sku || '-'}</td>
-                      <td className="td-producto">
-                        <div className="producto-info">
-                          {producto.imagenPrincipal || producto.imagen ? (
-                            <img
-                              src={`${API_URL}${producto.imagenPrincipal || producto.imagen}`}
-                              alt={producto.nombre}
-                              className="producto-thumbnail"
-                            />
-                          ) : null}
-                          <span>{producto.nombre}</span>
-                        </div>
-                      </td>
-                      <td>{producto.categoria?.nombre || '-'}</td>
-                      <td>{producto.variante?.nombre || '-'}</td>
-                      <td>{producto.formato?.nombre || '-'}</td>
-                      <td className="td-precio">€{producto.precioBase?.toFixed(2)}</td>
-                      <td className="td-precio">€{producto.precioFinal?.toFixed(2)}</td>
-                      <td>
-                        <span className={`badge ${producto.activo ? 'badge-success' : 'badge-inactive'}`}>
-                          {producto.activo ? 'Activo' : 'Inactivo'}
-                        </span>
-                      </td>
-                      <td>
-                        <div className="acciones">
-                          <button
-                            className="btn-icono btn-editar"
-                            onClick={() => abrirModalEditar(producto)}
-                            title="Editar"
-                          >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                            </svg>
-                          </button>
-                          <button
-                            className="btn-icono btn-eliminar"
-                            onClick={() => handleEliminar(producto._id)}
-                            title="Eliminar"
-                          >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <polyline points="3 6 5 6 21 6" />
-                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                            </svg>
-                          </button>
-                        </div>
-                      </td>
+          {cargando ? (
+            <div className="loading-state">
+              <div className="spinner"></div>
+              <p>Cargando datos...</p>
+            </div>
+          ) : (
+            <>
+              <div className="tabla-container">
+                <table className="tabla-productos">
+                  <thead>
+                    <tr>
+                      <th>SKU</th>
+                      <th>PRODUCTO</th>
+                      <th>CATEGORÍA</th>
+                      <th>SABOR/VARIANTE</th>
+                      <th>FORMATO</th>
+                      <th>PRECIO BASE</th>
+                      <th>PRECIO FINAL</th>
+                      <th>ESTADO</th>
+                      <th>ACCIONES</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                  </thead>
+                  <tbody>
+                    {productos.length === 0 ? (
+                      <tr>
+                        <td colSpan="9" className="empty-state">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M16 16s-1.5-2-4-2-4 2-4 2" />
+                            <line x1="9" y1="9" x2="9.01" y2="9" />
+                            <line x1="15" y1="9" x2="15.01" y2="9" />
+                          </svg>
+                          <p>No se encontraron productos</p>
+                        </td>
+                      </tr>
+                    ) : (
+                      productos.map(producto => (
+                        <tr key={producto._id}>
+                          <td className="td-sku">{producto.sku || '-'}</td>
+                          <td className="td-producto">
+                            <div className="producto-info">
+                              {producto.imagenPrincipal || producto.imagen ? (
+                                <img
+                                  src={`${API_URL}${producto.imagenPrincipal || producto.imagen}`}
+                                  alt={producto.nombre}
+                                  className="producto-thumbnail"
+                                />
+                              ) : null}
+                              <span>{producto.nombre}</span>
+                            </div>
+                          </td>
+                          <td>{producto.categoria?.nombre || '-'}</td>
+                          <td>{producto.variante?.nombre || '-'}</td>
+                          <td>{producto.formato?.nombre || '-'}</td>
+                          <td className="td-precio">€{producto.precioBase?.toFixed(2)}</td>
+                          <td className="td-precio">€{producto.precioFinal?.toFixed(2)}</td>
+                          <td>
+                            <span className={`badge ${producto.activo ? 'badge-success' : 'badge-inactive'}`}>
+                              {producto.activo ? 'Activo' : 'Inactivo'}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="acciones">
+                              <button
+                                className="btn-icono btn-editar"
+                                onClick={() => abrirModalEditar(producto)}
+                                title="Editar"
+                              >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                </svg>
+                              </button>
+                              <button
+                                className="btn-icono btn-eliminar"
+                                onClick={() => handleEliminar(producto._id)}
+                                title="Eliminar"
+                              >
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <polyline points="3 6 5 6 21 6" />
+                                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                </svg>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
 
-          {/* CONTROLES DE PAGINACIÓN MEJORADOS */}
-          <div className="pagination-controls" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+              <Pagination
+                currentPage={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+                totalItems={publicTotal}
+                itemsPerPage={limit}
+                onItemsPerPageChange={setLimit}
+                loading={cargando}
+              />
+            </>
+          )}
 
-            <div className="items-per-page" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ color: '#7f8c8d', fontSize: '14px', fontWeight: '500' }}>Mostrar:</span>
-              <select
-                value={itemsPerPage}
-                onChange={(e) => { setItemsPerPage(Number(e.target.value)); setPage(1); }}
-                style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #e8e8e8', fontWeight: '600', color: '#2c3e50', cursor: 'pointer' }}
-              >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-              </select>
-            </div>
-
-            <span style={{ color: '#7f8c8d', fontSize: '14px', fontWeight: '500' }}>
-              Mostrando {Math.min((page - 1) * itemsPerPage + 1, productosFiltrados.length)} - {Math.min(page * itemsPerPage, productosFiltrados.length)} de {productosFiltrados.length} productos
-            </span>
-
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="btn-secondary"
-                style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #e8e8e8', background: page === 1 ? '#f8f9fa' : 'white', cursor: page === 1 ? 'not-allowed' : 'pointer' }}
-              >
-                Anterior
-              </button>
-              <button
-                onClick={() => setPage(p => Math.min(Math.ceil(productosFiltrados.length / itemsPerPage), p + 1))}
-                disabled={page >= Math.ceil(productosFiltrados.length / itemsPerPage)}
-                className="btn-secondary"
-                style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #e8e8e8', background: page >= Math.ceil(productosFiltrados.length / itemsPerPage) ? '#f8f9fa' : 'white', cursor: page >= Math.ceil(productosFiltrados.length / itemsPerPage) ? 'not-allowed' : 'pointer' }}
-              >
-                Siguiente
-              </button>
-            </div>
-          </div>
         </>
       )}
 
@@ -640,5 +617,3 @@ export default function GestionProductos() {
     </div>
   );
 }
-
-

@@ -15,20 +15,49 @@ router.use(auth);
  */
 router.get('/trabajadores', async (req, res) => {
   try {
-    const trabajadores = await Usuario.find({
-      rol: { $in: ['admin', 'gestor', 'trabajador', 'gestor-tienda'] },
-      activo: true
-    })
-      .populate('ubicacionAsignada.referencia') // ✅ Fix: Poblar ubicacion
-      .populate('tiendaAsignada')
-      .select('nombre email rol ubicacionAsignada tiendaAsignada telefono activo') // ✅ Fix: Campos correctos
-      .sort({ nombre: 1 })
-      .lean();
+    const { page, limit, search, rol } = req.query;
+
+    const filtro = {
+      activo: true,
+      // Default roles if no specific rol requested
+      rol: rol && rol !== 'todos'
+        ? rol
+        : { $in: ['admin', 'gestor', 'trabajador', 'gestor-tienda'] }
+    };
+
+    if (search) {
+      filtro.$or = [
+        { nombre: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const limitVal = parseInt(limit) || 100;
+    const pageVal = parseInt(page) || 1;
+    const MAX_LIMIT = 100;
+    const limitNum = Math.min(limitVal, MAX_LIMIT);
+    const pageNum = Math.max(1, pageVal);
+    const skip = (pageNum - 1) * limitNum;
+
+    const [trabajadores, total] = await Promise.all([
+      Usuario.find(filtro)
+        .populate('ubicacionAsignada.referencia')
+        .populate('tiendaAsignada')
+        .select('nombre email rol ubicacionAsignada tiendaAsignada telefono activo')
+        .sort({ nombre: 1 })
+        .limit(limitNum)
+        .skip(skip)
+        .lean(),
+      Usuario.countDocuments(filtro)
+    ]);
 
     res.json({
       success: true,
       data: trabajadores,
-      count: trabajadores.length
+      total,
+      page: pageNum,
+      pages: Math.ceil(total / limitNum),
+      limit: limitNum
     });
   } catch (error) {
     console.error('Error obteniendo trabajadores:', error);

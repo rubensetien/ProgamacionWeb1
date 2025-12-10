@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import '../../../styles/admin/gestion/GestionProductos.css'; // Reutilizamos estilos por ahora
+import '../../../styles/admin/gestion/GestionProductos.css'; // Reutilizamos estilos
+import Pagination from '../../common/Pagination';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -10,8 +11,14 @@ export default function GestionUbicaciones() {
     const [mostrarModal, setMostrarModal] = useState(false);
     const [modoEdicion, setModoEdicion] = useState(false);
     const [ubicacionEditando, setUbicacionEditando] = useState(null);
+
+    // Filtros y Paginación
     const [busqueda, setBusqueda] = useState('');
     const [tipoFiltro, setTipoFiltro] = useState('todos');
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(3);
+    const [total, setTotal] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
 
     const [formulario, setFormulario] = useState({
         nombre: '',
@@ -28,14 +35,32 @@ export default function GestionUbicaciones() {
 
     useEffect(() => {
         cargarDatos();
-    }, []);
+    }, [page, limit, tipoFiltro]); // Recargar al cambiar página, límite o filtro
+
+    // Debounce para búsqueda
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setPage(1); // Reset a primera página al buscar
+            cargarDatos();
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [busqueda]);
 
     const cargarDatos = async () => {
         try {
             setCargando(true);
             const token = localStorage.getItem('token');
 
-            const res = await fetch(`${API_URL}/api/ubicaciones`, {
+            // Construir query params
+            const queryParams = new URLSearchParams({
+                page,
+                limit,
+                tipo: tipoFiltro
+            });
+
+            if (busqueda) queryParams.append('search', busqueda);
+
+            const res = await fetch(`${API_URL}/api/ubicaciones?${queryParams}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -43,6 +68,8 @@ export default function GestionUbicaciones() {
 
             if (data.success) {
                 setUbicaciones(data.data);
+                setTotal(data.total || 0);
+                setTotalPages(data.pages || 1);
             } else {
                 setError(data.message || 'Error al cargar ubicaciones');
             }
@@ -169,14 +196,10 @@ export default function GestionUbicaciones() {
         }
     };
 
-    const ubicacionesFiltradas = ubicaciones.filter(u => {
-        const matchBusqueda = u.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-            u.codigo.toLowerCase().includes(busqueda.toLowerCase());
-        const matchTipo = tipoFiltro === 'todos' || u.tipo === tipoFiltro;
-        return matchBusqueda && matchTipo;
-    });
+    // No necesitamos filter client-side, ya tenemos los datos paginados
+    const ubicacionesList = ubicaciones;
 
-    if (cargando) {
+    if (cargando && page === 1 && !ubicaciones.length) {
         return (
             <div className="gestion-productos">
                 <div className="loading-spinner">Cargando ubicaciones...</div>
@@ -215,15 +238,14 @@ export default function GestionUbicaciones() {
 
             <div className="stats-bar">
                 <div className="stat-card">
-                    <div className="stat-value">{ubicaciones.length}</div>
+                    <div className="stat-value">{total}</div>
                     <div className="stat-label">ubicaciones totales</div>
                 </div>
-                <div className="stat-card">
-                    <div className="stat-value">
-                        {ubicaciones.filter(u => u.activo).length}
-                    </div>
-                    <div className="stat-label">activas</div>
-                </div>
+                {/* 
+                 Nota: Con paginación server-side, no podemos saber cuántas activas hay en total 
+                 sin una query específica. Por ahora mostramos solo el total general.
+                 Podríamos agregar un endpoint de stats en el futuro.
+                */}
             </div>
 
             <div className="filtros-bar">
@@ -242,7 +264,10 @@ export default function GestionUbicaciones() {
 
                 <select
                     value={tipoFiltro}
-                    onChange={(e) => setTipoFiltro(e.target.value)}
+                    onChange={(e) => {
+                        setTipoFiltro(e.target.value);
+                        setPage(1); // Reset page on filter change
+                    }}
                     className="select-filter"
                 >
                     <option value="todos">Todos los tipos</option>
@@ -268,14 +293,14 @@ export default function GestionUbicaciones() {
                         </tr>
                     </thead>
                     <tbody>
-                        {ubicacionesFiltradas.length === 0 ? (
+                        {ubicacionesList.length === 0 ? (
                             <tr>
                                 <td colSpan="8" className="empty-state">
                                     <p>No se encontraron ubicaciones</p>
                                 </td>
                             </tr>
                         ) : (
-                            ubicacionesFiltradas.map(ubicacion => (
+                            ubicacionesList.map(ubicacion => (
                                 <tr key={ubicacion._id}>
                                     <td className="td-sku">{ubicacion.codigo}</td>
                                     <td className="td-producto">
@@ -345,6 +370,18 @@ export default function GestionUbicaciones() {
                     </tbody>
                 </table>
             </div>
+
+            <Pagination
+                page={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+                limit={limit}
+                onLimitChange={(newLimit) => {
+                    setLimit(newLimit);
+                    setPage(1);
+                }}
+                totalItems={total}
+            />
 
             {mostrarModal && (
                 <div className="modal-overlay" onClick={() => setMostrarModal(false)}>

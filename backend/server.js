@@ -1,3 +1,4 @@
+
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
@@ -32,14 +33,9 @@ const io = new Server(server, {
 });
 
 // Importar manejadores de Socket.IO
-import('./socketHandlers.js').then(module => module.default(io));
-
-// ========== SEGURIDAD ==========
-import helmet from 'helmet';
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
-}));
-app.disable('x-powered-by'); // Desactivar cabecera explícitamente como respaldo
+import('./socketHandlers.js').then(module => {
+  if (module.default) module.default(io);
+}).catch(err => console.log('⚠️ socketHandlers.js no encontrado, continuando sin Socket.IO handlers'));
 
 // ========== MIDDLEWARES ==========
 const allowedOrigins = [
@@ -53,7 +49,8 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -62,11 +59,6 @@ app.use(cors({
   credentials: true
 }));
 
-import httpLogger from './middlewares/httpLogger.js';
-import logger from './config/logger.js';
-
-app.use(httpLogger);
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -74,12 +66,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static('uploads'));
 
 // ========== CONEXIÓN A MONGODB ==========
-// ========== CONEXIÓN A MONGODB ==========
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => logger.info('✅ Conectado a MongoDB Atlas'))
-  .catch(err => logger.error('❌ Error conectando a MongoDB:', err));
+  .then(() => console.log('✅ Conectado a MongoDB Atlas'))
+  .catch(err => console.error('❌ Error conectando a MongoDB:', err));
 
-// ========== RUTAS ==========
+// ========== RUTAS API ==========
 import authRoutes from './routes/auth.js';
 import usuariosRoutes from './routes/usuarios.js';
 import productosRoutes from './routes/productos.js';
@@ -106,17 +97,21 @@ app.use('/api/mensajes', mensajesRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/carrito', carritoRoutes);
 
-import { apiLimiter } from './middlewares/rateLimit.js';
-app.use('/api', apiLimiter);
+// Rutas opcionales (solo si existen)
+try {
+  const turnosRoutes = await import('./routes/turnos.js');
+  app.use('/api/turnos', turnosRoutes.default);
+} catch (e) { console.log('⚠️ turnos.js no encontrado'); }
 
-import turnosRoutes from './routes/turnos.js';
-app.use('/api/turnos', turnosRoutes);
+try {
+  const solicitudesRoutes = await import('./routes/solicitudes.js');
+  app.use('/api/solicitudes', solicitudesRoutes.default);
+} catch (e) { console.log('⚠️ solicitudes.js no encontrado'); }
 
-import solicitudesRoutes from './routes/solicitudes.js';
-app.use('/api/solicitudes', solicitudesRoutes);
-
-import dashboardRoutes from './routes/dashboard.js';
-app.use('/api/dashboard', dashboardRoutes);
+try {
+  const dashboardRoutes = await import('./routes/dashboard.js');
+  app.use('/api/dashboard', dashboardRoutes.default);
+} catch (e) { console.log('⚠️ dashboard.js no encontrado'); }
 
 // Ruta de prueba
 app.get('/', (req, res) => {
@@ -129,7 +124,7 @@ app.get('/', (req, res) => {
 
 // ========== MANEJO DE ERRORES ==========
 app.use((err, req, res, next) => {
-  logger.error(err.stack); // Log full stack trace
+  console.error('❌ Error:', err.stack);
   res.status(err.status || 500).json({
     success: false,
     message: err.message || 'Error interno del servidor'
@@ -139,8 +134,8 @@ app.use((err, req, res, next) => {
 // ========== INICIAR SERVIDOR ==========
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
-  logger.info(`🚀 Servidor corriendo en puerto ${PORT}`);
-  logger.info(`🔌 Socket.IO listo para conexiones`);
+  console.log(`🚀 Servidor corriendo en puerto ${PORT}`);
+  console.log(`🔌 Socket.IO listo para conexiones`);
 });
 
 export { app, server, io };

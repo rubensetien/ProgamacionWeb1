@@ -113,7 +113,7 @@ const AdminLayout = () => {
 
         <nav className="sidebar-nav">
           <button
-            className={`nav-item ${vistaActual === 'dashboard' ? 'active' : ''}`}
+            className={`admin-nav-item ${vistaActual === 'dashboard' ? 'active' : ''}`}
             onClick={() => cambiarVista('dashboard')}
             title="Alt + D"
           >
@@ -130,7 +130,7 @@ const AdminLayout = () => {
           </button>
 
           <button
-            className={`nav-item ${vistaActual === 'productos' ? 'active' : ''}`}
+            className={`admin-nav-item ${vistaActual === 'productos' ? 'active' : ''}`}
             onClick={() => cambiarVista('productos')}
             title="Alt + P"
           >
@@ -146,7 +146,7 @@ const AdminLayout = () => {
           </button>
 
           <button
-            className={`nav-item ${vistaActual === 'catalogo' ? 'active' : ''}`}
+            className={`admin-nav-item ${vistaActual === 'catalogo' ? 'active' : ''}`}
             onClick={() => cambiarVista('catalogo')}
             title="Alt + C"
           >
@@ -161,7 +161,7 @@ const AdminLayout = () => {
           </button>
 
           <button
-            className={`nav-item ${vistaActual === 'ubicaciones' ? 'active' : ''}`}
+            className={`admin-nav-item ${vistaActual === 'ubicaciones' ? 'active' : ''}`}
             onClick={() => cambiarVista('ubicaciones')}
             title="Alt + T"
           >
@@ -175,7 +175,7 @@ const AdminLayout = () => {
           </button>
 
           <button
-            className={`nav-item ${vistaActual === 'trabajadores' ? 'active' : ''}`}
+            className={`admin-nav-item ${vistaActual === 'trabajadores' ? 'active' : ''}`}
             onClick={() => cambiarVista('trabajadores')}
             title="Alt + E"
           >
@@ -192,7 +192,7 @@ const AdminLayout = () => {
           </button>
 
           <button
-            className={`nav-item ${vistaActual === 'turnos' ? 'active' : ''}`}
+            className={`admin-nav-item ${vistaActual === 'turnos' ? 'active' : ''}`}
             onClick={() => cambiarVista('turnos')}
             title="Alt + C"
           >
@@ -209,7 +209,7 @@ const AdminLayout = () => {
           </button>
 
           <button
-            className={`nav-item ${vistaActual === 'pedidos' ? 'active' : ''}`}
+            className={`admin-nav-item ${vistaActual === 'pedidos' ? 'active' : ''}`}
             onClick={() => cambiarVista('pedidos')}
             title="Alt + O"
           >
@@ -225,7 +225,7 @@ const AdminLayout = () => {
           </button>
 
           <button
-            className={`nav-item ${vistaActual === 'chat' ? 'active' : ''}`}
+            className={`admin-nav-item ${vistaActual === 'chat' ? 'active' : ''}`}
             onClick={() => cambiarVista('chat')}
             title="Alt + M"
           >

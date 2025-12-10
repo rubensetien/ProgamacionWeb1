@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import Pagination from '../../common/Pagination';
 import '../../../styles/admin/GestionComun.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -11,6 +12,12 @@ const GestionFormatos = () => {
   const [modoEdicion, setModoEdicion] = useState(false);
   const [formatoEditando, setFormatoEditando] = useState(null);
   const [notificacion, setNotificacion] = useState({ mostrar: false, tipo: '', mensaje: '' });
+
+  // Pagination State
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(3);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
 
   const [formulario, setFormulario] = useState({
     nombre: '',
@@ -49,15 +56,20 @@ const GestionFormatos = () => {
 
   useEffect(() => {
     cargarFormatos();
-  }, []);
+  }, [page, limit]);
 
   const cargarFormatos = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const response = await axios.get(`${API_URL}/api/formatos`, config);
-      setFormatos(response.data.data || []);
+
+      const response = await axios.get(`${API_URL}/api/formatos?page=${page}&limit=${limit}`, config);
+      const { data, total, pages } = response.data;
+
+      setFormatos(data || []);
+      setTotal(total || 0);
+      setTotalPages(pages || 1);
     } catch (error) {
       console.error('Error cargando formatos:', error);
       mostrarNotificacion('error', 'Error al cargar formatos');
@@ -158,7 +170,7 @@ const GestionFormatos = () => {
       seVendeEnPuntoVenta: true,
       descripcion: '',
       activo: true,
-      orden: formatos.length + 1
+      orden: total + 1
     });
     setMostrarModal(true);
   };
@@ -169,21 +181,12 @@ const GestionFormatos = () => {
     setFormatoEditando(null);
   };
 
-  if (loading) {
-    return (
-      <div className="gestion-loading">
-        <div className="spinner"></div>
-        <p>Cargando formatos...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="gestion-container">
       {/* Header */}
       <div className="gestion-header">
         <div className="header-info">
-          <span className="count-badge">{formatos.length}</span>
+          <span className="count-badge">{total}</span>
           <span className="count-text">formatos totales</span>
         </div>
         <button className="btn-nuevo" onClick={abrirModalNuevo}>
@@ -195,61 +198,80 @@ const GestionFormatos = () => {
         </button>
       </div>
 
-      {/* Grid de Formatos */}
-      <div className="formatos-grid">
-        {formatos.map(formato => (
-          <div key={formato._id} className="formato-card">
-            <div className="formato-icon">
-              {tiposFormato.find(t => t.value === formato.tipo)?.icon || '📦'}
-            </div>
-            <div className="formato-content">
-              <h3>{formato.nombre}</h3>
-              <div className="formato-detalles">
-                <div className="detalle-item">
-                  <span className="detalle-label">Capacidad:</span>
-                  <span className="detalle-valor">{formato.capacidad} {formato.unidad}</span>
+      {loading && !formatos.length ? (
+        <div className="gestion-loading">
+          <div className="spinner"></div>
+          <p>Cargando formatos...</p>
+        </div>
+      ) : (
+        <>
+          {/* Grid de Formatos */}
+          <div className="formatos-grid">
+            {formatos.map(formato => (
+              <div key={formato._id} className="formato-card">
+                <div className="formato-icon">
+                  {tiposFormato.find(t => t.value === formato.tipo)?.icon || '📦'}
                 </div>
-                <div className="detalle-item">
-                  <span className="detalle-label">Tipo:</span>
-                  <span className="detalle-valor">{formato.tipo}</span>
+                <div className="formato-content">
+                  <h3>{formato.nombre}</h3>
+                  <div className="formato-detalles">
+                    <div className="detalle-item">
+                      <span className="detalle-label">Capacidad:</span>
+                      <span className="detalle-valor">{formato.capacidad} {formato.unidad}</span>
+                    </div>
+                    <div className="detalle-item">
+                      <span className="detalle-label">Tipo:</span>
+                      <span className="detalle-valor">{formato.tipo}</span>
+                    </div>
+                    <div className="detalle-item">
+                      <span className="detalle-label">Envase:</span>
+                      <span className="detalle-valor">{formato.tipoEnvase}</span>
+                    </div>
+                    <div className="detalle-item">
+                      <span className="detalle-label">Precio Base:</span>
+                      <span className="detalle-valor precio">€{formato.precioBase?.toFixed(2)}</span>
+                    </div>
+                  </div>
+                  <div className="formato-tags">
+                    {formato.reciclable && <span className="tag reciclable">♻️ Reciclable</span>}
+                    {formato.seVendeOnline && <span className="tag online">🌐 Online</span>}
+                    {formato.seVendeEnPuntoVenta && <span className="tag tienda">🏪 Tienda</span>}
+                  </div>
+                  <div className="formato-estado">
+                    <span className={`estado-badge ${formato.activo ? 'activo' : 'inactivo'}`}>
+                      {formato.activo ? 'Activo' : 'Inactivo'}
+                    </span>
+                  </div>
                 </div>
-                <div className="detalle-item">
-                  <span className="detalle-label">Envase:</span>
-                  <span className="detalle-valor">{formato.tipoEnvase}</span>
-                </div>
-                <div className="detalle-item">
-                  <span className="detalle-label">Precio Base:</span>
-                  <span className="detalle-valor precio">€{formato.precioBase?.toFixed(2)}</span>
+                <div className="formato-acciones">
+                  <button className="btn-accion editar" onClick={() => handleEditar(formato)}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                  </button>
+                  <button className="btn-accion eliminar" onClick={() => handleEliminar(formato._id)}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    </svg>
+                  </button>
                 </div>
               </div>
-              <div className="formato-tags">
-                {formato.reciclable && <span className="tag reciclable">♻️ Reciclable</span>}
-                {formato.seVendeOnline && <span className="tag online">🌐 Online</span>}
-                {formato.seVendeEnPuntoVenta && <span className="tag tienda">🏪 Tienda</span>}
-              </div>
-              <div className="formato-estado">
-                <span className={`estado-badge ${formato.activo ? 'activo' : 'inactivo'}`}>
-                  {formato.activo ? 'Activo' : 'Inactivo'}
-                </span>
-              </div>
-            </div>
-            <div className="formato-acciones">
-              <button className="btn-accion editar" onClick={() => handleEditar(formato)}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                </svg>
-              </button>
-              <button className="btn-accion eliminar" onClick={() => handleEliminar(formato._id)}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="3 6 5 6 21 6" />
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                </svg>
-              </button>
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
+
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            totalItems={total}
+            itemsPerPage={limit}
+            onItemsPerPageChange={setLimit}
+            loading={loading}
+          />
+        </>
+      )}
 
       {/* Modal */}
       {mostrarModal && (

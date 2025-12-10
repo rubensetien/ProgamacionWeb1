@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import ImageUploader from '../common/ImageUploader';
+import Pagination from '../../common/Pagination';
 import '../../../styles/admin/gestion/GestionVariantes.css';
+import '../../../styles/admin/GestionComun.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -13,6 +15,13 @@ const GestionVariantes = () => {
   const [modoEdicion, setModoEdicion] = useState(false);
   const [varianteActual, setVarianteActual] = useState(null);
   const [notificacion, setNotificacion] = useState({ mostrar: false, mensaje: '', tipo: '' });
+  const [loading, setLoading] = useState(false);
+
+  // Pagination State
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(3);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
 
   const [formData, setFormData] = useState({
     nombre: '',
@@ -34,22 +43,40 @@ const GestionVariantes = () => {
   ];
 
   useEffect(() => {
-    cargarVariantes();
     cargarCategorias();
   }, []);
 
+  useEffect(() => {
+    cargarVariantes();
+  }, [page, limit, busqueda, filtroCategoria]);
+
+  // Reset page on filter change
+  useEffect(() => {
+    setPage(1);
+  }, [busqueda, filtroCategoria]);
+
   const cargarVariantes = async () => {
     try {
+      setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/api/variantes`, {
+
+      let url = `${API_URL}/api/variantes?page=${page}&limit=${limit}`;
+      if (busqueda) url += `&search=${encodeURIComponent(busqueda)}`;
+      if (filtroCategoria) url += `&categoria=${filtroCategoria}`;
+
+      const response = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await response.json();
       if (data.success) {
         setVariantes(data.data);
+        setTotal(data.total);
+        setTotalPages(data.pages);
       }
     } catch (error) {
       console.error('Error cargando variantes:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -74,7 +101,7 @@ const GestionVariantes = () => {
       setVarianteActual(variante);
       setFormData({
         nombre: variante.nombre,
-        categoria: variante.categoria._id,
+        categoria: variante.categoria?._id || variante.categoria,
         descripcion: variante.descripcion || '',
         precio: variante.precio || '',
         color: variante.color || '#3498db',
@@ -134,7 +161,7 @@ const GestionVariantes = () => {
           modoEdicion ? 'Sabor actualizado correctamente' : 'Sabor creado correctamente',
           'success'
         );
-        cargarVariantes();
+        cargarVariantes(); // Refresh current page
         cerrarModal();
       } else {
         mostrarNotificacion(data.message || 'Error al guardar', 'error');
@@ -176,20 +203,12 @@ const GestionVariantes = () => {
     }, 3000);
   };
 
-  const variantesFiltradas = variantes.filter(v => {
-    const matchCategoria = !filtroCategoria || v.categoria._id === filtroCategoria;
-    const matchBusqueda = !busqueda ||
-      v.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-      v.descripcion?.toLowerCase().includes(busqueda.toLowerCase());
-    return matchCategoria && matchBusqueda;
-  });
-
   return (
     <div className="gestion-container">
       <div className="gestion-header">
         <div>
           <h2>Gestión de Sabores</h2>
-          <span className="count-badge">{variantesFiltradas.length} sabores</span>
+          <span className="count-badge">{total} sabores</span>
         </div>
         <button className="btn-nuevo" onClick={() => abrirModal()}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -220,51 +239,72 @@ const GestionVariantes = () => {
         </select>
       </div>
 
-      <div className="variantes-grid">
-        {variantesFiltradas.map(variante => (
-          <div key={variante._id} className="variante-card">
-            <div className="variante-color-bar" style={{ backgroundColor: variante.color }} />
+      {loading && !variantes.length ? (
+        <div className="gestion-loading">
+          <div className="spinner"></div>
+          <p>Cargando sabores...</p>
+        </div>
+      ) : (
+        <>
+          <div className="variantes-grid">
+            {variantes.map(variante => (
+              <div key={variante._id} className="variante-card">
+                <div className="variante-color-bar" style={{ backgroundColor: variante.color }} />
 
-            {variante.imagen && (
-              <div className="variante-imagen">
-                <img src={`${API_URL}${variante.imagen}`} alt={variante.nombre} />
-              </div>
-            )}
+                {variante.imagen && (
+                  <div className="variante-imagen">
+                    <img src={`${API_URL}${variante.imagen}`} alt={variante.nombre} />
+                  </div>
+                )}
 
-            <div className="variante-contenido">
-              <h3>{variante.nombre}</h3>
-              <span className="variante-categoria">{variante.categoria.nombre}</span>
-              {variante.descripcion && (
-                <p className="variante-descripcion">{variante.descripcion}</p>
-              )}
+                <div className="variante-contenido">
+                  <h3>{variante.nombre}</h3>
+                  <span className="variante-categoria">
+                    {variante.categoria?.nombre || 'Sin categoría'}
+                  </span>
+                  {variante.descripcion && (
+                    <p className="variante-descripcion">{variante.descripcion}</p>
+                  )}
 
-              <div className="variante-tags">
-                {variante.vegano && <span className="tag tag-vegano">🌱 Vegano</span>}
-                {variante.sinGluten && <span className="tag tag-sin-gluten">🌾 Sin Gluten</span>}
-                {variante.sinLactosa && <span className="tag tag-sin-lactosa">🥛 Sin Lactosa</span>}
-              </div>
+                  <div className="variante-tags">
+                    {variante.vegano && <span className="tag tag-vegano">🌱 Vegano</span>}
+                    {variante.sinGluten && <span className="tag tag-sin-gluten">🌾 Sin Gluten</span>}
+                    {variante.sinLactosa && <span className="tag tag-sin-lactosa">🥛 Sin Lactosa</span>}
+                  </div>
 
-              <div className="variante-footer">
-                <span className="variante-precio">{(variante?.precio || 0).toFixed(2)}€</span>
-                <div className="variante-acciones">
-                  <button className="btn-accion editar" onClick={() => abrirModal(variante)}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                    </svg>
-                  </button>
-                  <button className="btn-accion eliminar" onClick={() => eliminarVariante(variante._id)}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polyline points="3 6 5 6 21 6" />
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                    </svg>
-                  </button>
+                  <div className="variante-footer">
+                    <span className="variante-precio">{(variante?.precio || 0).toFixed(2)}€</span>
+                    <div className="variante-acciones">
+                      <button className="btn-accion editar" onClick={() => abrirModal(variante)}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
+                      </button>
+                      <button className="btn-accion eliminar" onClick={() => eliminarVariante(variante._id)}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polyline points="3 6 5 6 21 6" />
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            ))}
           </div>
-        ))}
-      </div>
+
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            totalItems={total}
+            itemsPerPage={limit}
+            onItemsPerPageChange={setLimit}
+            loading={loading}
+          />
+        </>
+      )}
 
       {modalAbierto && (
         <div className="modal-overlay" onClick={cerrarModal}>

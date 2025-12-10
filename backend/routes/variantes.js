@@ -7,22 +7,41 @@ const router = express.Router();
 // GET /api/variantes - Obtener todas las variantes
 router.get('/', async (req, res) => {
   try {
-    const { categoria, activo, destacado, temporada } = req.query;
-    
+    const { categoria, activo, destacado, temporada, page = 1, limit = 100, search } = req.query;
+
     const filtro = {};
     if (categoria) filtro.categoria = categoria;
     if (activo !== undefined) filtro.activo = activo === 'true';
     if (destacado !== undefined) filtro.destacado = destacado === 'true';
     if (temporada) filtro.temporada = temporada;
-    
-    const variantes = await Variante.find(filtro)
-      .populate('categoria', 'nombre slug')
-      .sort({ orden: 1 });
-    
+
+    if (search) {
+      filtro.$or = [
+        { nombre: { $regex: search, $options: 'i' } },
+        { descripcion: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
+    const skip = (pageNum - 1) * limitNum;
+
+    const [variantes, total] = await Promise.all([
+      Variante.find(filtro)
+        .populate('categoria', 'nombre slug')
+        .sort({ orden: 1 })
+        .skip(skip)
+        .limit(limitNum),
+      Variante.countDocuments(filtro)
+    ]);
+
     res.json({
       success: true,
       data: variantes,
-      total: variantes.length
+      total,
+      page: pageNum,
+      pages: Math.ceil(total / limitNum),
+      limit: limitNum
     });
   } catch (error) {
     console.error('Error obteniendo variantes:', error);
@@ -37,13 +56,13 @@ router.get('/', async (req, res) => {
 // GET /api/variantes/categoria/:categoriaId - Obtener variantes por categoría
 router.get('/categoria/:categoriaId', async (req, res) => {
   try {
-    const variantes = await Variante.find({ 
+    const variantes = await Variante.find({
       categoria: req.params.categoriaId,
-      activo: true 
+      activo: true
     })
       .populate('categoria', 'nombre slug')
       .sort({ orden: 1 });
-    
+
     res.json({
       success: true,
       data: variantes,
@@ -64,14 +83,14 @@ router.get('/:id', async (req, res) => {
   try {
     const variante = await Variante.findById(req.params.id)
       .populate('categoria', 'nombre slug color');
-    
+
     if (!variante) {
       return res.status(404).json({
         success: false,
         message: 'Variante no encontrada'
       });
     }
-    
+
     res.json({
       success: true,
       data: variante
@@ -91,14 +110,14 @@ router.get('/slug/:slug', async (req, res) => {
   try {
     const variante = await Variante.findOne({ slug: req.params.slug })
       .populate('categoria', 'nombre slug color');
-    
+
     if (!variante) {
       return res.status(404).json({
         success: false,
         message: 'Variante no encontrada'
       });
     }
-    
+
     res.json({
       success: true,
       data: variante
@@ -124,12 +143,12 @@ router.post('/', async (req, res) => {
         message: 'Categoría no encontrada'
       });
     }
-    
+
     const variante = new Variante(req.body);
     await variante.save();
-    
+
     await variante.populate('categoria', 'nombre slug');
-    
+
     res.status(201).json({
       success: true,
       data: variante,
@@ -153,14 +172,14 @@ router.put('/:id', async (req, res) => {
       req.body,
       { new: true, runValidators: true }
     ).populate('categoria', 'nombre slug');
-    
+
     if (!variante) {
       return res.status(404).json({
         success: false,
         message: 'Variante no encontrada'
       });
     }
-    
+
     res.json({
       success: true,
       data: variante,
@@ -180,14 +199,14 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const variante = await Variante.findByIdAndDelete(req.params.id);
-    
+
     if (!variante) {
       return res.status(404).json({
         success: false,
         message: 'Variante no encontrada'
       });
     }
-    
+
     res.json({
       success: true,
       message: 'Variante eliminada exitosamente'

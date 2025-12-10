@@ -123,33 +123,35 @@ body {
 
 /* Sidebar */
 .perfil-sidebar {
-    background: var(--color-surface);
+    background: linear-gradient(135deg, var(--color-brand-orange) 0%, #ea580c 100%);
     border-radius: var(--radius-lg);
     padding: 24px;
     box-shadow: var(--shadow-lg);
     position: sticky;
     top: 2rem;
+    color: white;
+    /* Force white text */
 }
 
 .perfil-user-card {
     text-align: center;
     padding-bottom: 24px;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     margin-bottom: 24px;
 }
 
 .user-avatar-large {
     width: 80px;
     height: 80px;
-    background: var(--color-bg);
+    background: rgba(255, 255, 255, 0.2);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 16px;
-    color: var(--color-text-light);
+    color: white;
     overflow: hidden;
-    border: 2px solid var(--color-brand-orange);
+    border: 3px solid rgba(255, 255, 255, 0.5);
 }
 
 .user-avatar-large img {
@@ -160,7 +162,7 @@ body {
 
 .perfil-user-card h3 {
     margin: 0 0 8px;
-    color: var(--color-text-main);
+    color: white;
     font-family: var(--font-heading);
     font-size: 1.25rem;
     font-weight: 700;
@@ -169,14 +171,15 @@ body {
 .user-role-badge {
     display: inline-block;
     padding: 4px 12px;
-    background: #fff7ed;
-    color: var(--color-brand-orange);
+    background: white;
+    color: var(--color-brand-orange-hover);
     border-radius: 9999px;
     font-size: 0.75rem;
-    font-weight: 700;
+    font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    border: 1px solid rgba(249, 115, 22, 0.2);
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Navigation - Card Style */
@@ -190,24 +193,20 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    /* Space for arrow */
     gap: 14px;
     padding: 16px 20px;
     border-radius: 16px;
-    /* More rounded */
-    border: 1px solid transparent;
-    background: #f9fafb;
-    /* Light Gray Card Base */
-    color: #4b5563 !important;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+    /* Glass effect */
+    color: white !important;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     width: 100%;
     text-align: left;
-    -webkit-appearance: none;
-    background-image: none !important;
-    /* KILL GRADIENT */
+    backdrop-filter: blur(4px);
 }
 
 /* Icon Container */
@@ -218,30 +217,27 @@ body {
 }
 
 .nav-item:hover {
-    background: #ffffff;
-    border-color: var(--color-brand-orange);
-    color: var(--color-brand-orange) !important;
+    background: rgba(255, 255, 255, 0.25);
+    border-color: white;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    color: white !important;
 }
 
 .nav-item.active {
-    background: var(--color-brand-orange) !important;
-    /* Solid Orange */
-    color: #ffffff !important;
+    background: white !important;
+    color: var(--color-brand-orange) !important;
     font-weight: 700;
-    box-shadow: 0 8px 20px -4px rgba(249, 115, 22, 0.5);
-    /* Soft Orange Shadow */
+    box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.2);
     transform: translateY(-2px);
-    border-color: transparent;
+    border-color: white;
 }
 
 .nav-item.active svg {
-    color: #ffffff !important;
+    color: var(--color-brand-orange) !important;
     stroke-width: 2.5px;
 }
 
-/* Arrow Indicator (Auto-added via CSS) */
+/* Arrow Indicator */
 .nav-item::after {
     content: '→';
     font-family: inherit;
@@ -249,6 +245,7 @@ body {
     opacity: 0;
     transform: translateX(-10px);
     transition: all 0.2s;
+    color: white;
 }
 
 .nav-item:hover::after,
@@ -258,29 +255,23 @@ body {
 }
 
 .nav-item.active::after {
-    color: white;
+    color: var(--color-brand-orange);
 }
 
 .nav-item:hover::after {
-    color: var(--color-brand-orange);
+    color: white;
 }
 
 .nav-item.logout {
     margin-top: 16px;
-    background: #fef2f2;
-    color: #b91c1c !important;
-    border: 1px dashed #fca5a5;
+    background: rgba(0, 0, 0, 0.2);
+    color: white !important;
+    border: none;
 }
 
 .nav-item.logout:hover {
-    background: #fee2e2;
-    border-color: #ef4444;
-    color: #ef4444 !important;
-}
-
-.nav-item.logout::after {
-    content: '';
-    /* No arrow for logout */
+    background: rgba(0, 0, 0, 0.3);
+    color: #fecaca !important;
 }
 
 /* Main Content Card Spacing */
