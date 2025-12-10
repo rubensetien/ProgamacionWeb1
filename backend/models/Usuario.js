@@ -42,7 +42,7 @@ const usuarioSchema = new mongoose.Schema({
   // Solo para rol 'trabajador'
   tipoTrabajador: {
     type: String,
-    enum: ['tienda', 'obrador', 'oficina'],
+    enum: ['tienda', 'obrador', 'oficina', 'repartidor'],
     default: null
   },
 
@@ -55,7 +55,7 @@ const usuarioSchema = new mongoose.Schema({
     },
     referencia: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Ubicacion', // ✅ FIX: Referencia estática al modelo correcto
+      ref: 'Ubicacion',
       default: null
     },
     nombre: String,
@@ -67,7 +67,9 @@ const usuarioSchema = new mongoose.Schema({
         // Obrador
         'maestro-heladero', 'ayudante-produccion', 'almacen', 'logistica',
         // Oficina
-        'administracion', 'contabilidad', 'marketing', 'rrhh', 'ventas', 'gerencia'
+        'administracion', 'contabilidad', 'marketing', 'rrhh', 'ventas', 'gerencia',
+        // Reparto
+        'repartidor-moto', 'repartidor-furgoneta'
       ],
       default: null
     },
@@ -80,97 +82,47 @@ const usuarioSchema = new mongoose.Schema({
   // Solo para gestor-tienda (compatibilidad)
   tiendaAsignada: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Ubicacion', // ✅ FIX: Referencia a Ubicacion, 'PuntoVenta' no existe
+    ref: 'Ubicacion',
     default: null
   },
 
   // ========== PERMISOS GRANULARES ==========
   permisos: {
     // Catálogo
-    gestionarCatalogo: {
-      type: Boolean,
-      default: false
-    },
+    gestionarCatalogo: { type: Boolean, default: false },
 
     // Inventario
-    verStockObrador: {
-      type: Boolean,
-      default: false
-    },
-    verStockTienda: {
-      type: Boolean,
-      default: false
-    },
-    gestionarStock: {
-      type: Boolean,
-      default: false
-    },
-    solicitarProductos: {
-      type: Boolean,
-      default: false
-    },
+    verStockObrador: { type: Boolean, default: false },
+    verStockTienda: { type: Boolean, default: false },
+    gestionarStock: { type: Boolean, default: false }, // General stock mgmt
+    solicitarProductos: { type: Boolean, default: false },
+
+    // Nuevo: Permiso específico para añadir stock (Obrador)
+    anadirStock: { type: Boolean, default: false },
 
     // Pedidos
-    verPedidosTodos: {
-      type: Boolean,
-      default: false
-    },
-    verPedidosTienda: {
-      type: Boolean,
-      default: false
-    },
-    procesarPedidos: {
-      type: Boolean,
-      default: false
-    },
+    verPedidosTodos: { type: Boolean, default: false },
+    verPedidosTienda: { type: Boolean, default: false },
+    verPedidosAsignados: { type: Boolean, default: false }, // Nuevo: Para repartidores
+    procesarPedidos: { type: Boolean, default: false },
 
     // Producción
-    verProduccion: {
-      type: Boolean,
-      default: false
-    },
-    gestionarProduccion: {
-      type: Boolean,
-      default: false
-    },
-    crearOrdenesProduccion: {
-      type: Boolean,
-      default: false
-    },
+    verProduccion: { type: Boolean, default: false },
+    gestionarProduccion: { type: Boolean, default: false },
+    crearOrdenesProduccion: { type: Boolean, default: false },
 
     // Chat
-    accederChatEmpresarial: {
-      type: Boolean,
-      default: false
-    },
-    crearGrupos: {
-      type: Boolean,
-      default: false
-    },
+    accederChatEmpresarial: { type: Boolean, default: false },
+    crearGrupos: { type: Boolean, default: false },
 
     // Reportes
-    verReportesVentas: {
-      type: Boolean,
-      default: false
-    },
-    verReportesProduccion: {
-      type: Boolean,
-      default: false
-    },
-    exportarDatos: {
-      type: Boolean,
-      default: false
-    },
+    verReportesVentas: { type: Boolean, default: false },
+    verReportesProduccion: { type: Boolean, default: false },
+    exportarDatos: { type: Boolean, default: false },
 
     // Usuarios
-    gestionarUsuarios: {
-      type: Boolean,
-      default: false
-    },
-    gestionarPermisos: {
-      type: Boolean,
-      default: false
-    }
+    gestionarUsuarios: { type: Boolean, default: false },
+    gestionarPermisos: { type: Boolean, default: false }
   },
 
   // ========== HORARIOS Y TURNOS ==========
@@ -190,60 +142,32 @@ const usuarioSchema = new mongoose.Schema({
   }],
 
   // ========== ESTADO ==========
-  activo: {
-    type: Boolean,
-    default: true
-  },
-  verificado: {
-    type: Boolean,
-    default: false
-  },
-  bloqueado: {
-    type: Boolean,
-    default: false
-  },
+  activo: { type: Boolean, default: true },
+  verificado: { type: Boolean, default: false },
+  bloqueado: { type: Boolean, default: false },
   motivoBloqueo: String,
 
   // ========== METADATA LABORAL ==========
-  fechaContratacion: {
-    type: Date,
-    default: null
-  },
-  fechaBaja: {
-    type: Date,
-    default: null
-  },
+  fechaContratacion: { type: Date, default: null },
+  fechaBaja: { type: Date, default: null },
   motivoBaja: String,
 
   // ========== METADATA TÉCNICA ==========
-  fechaUltimoAcceso: {
-    type: Date,
-    default: null
-  },
+  fechaUltimoAcceso: { type: Date, default: null },
   tokenRecuperacion: String,
   tokenExpiracion: Date,
 
   // ========== NOTIFICACIONES ==========
   notificaciones: {
-    email: {
-      type: Boolean,
-      default: true
-    },
-    push: {
-      type: Boolean,
-      default: true
-    },
-    chat: {
-      type: Boolean,
-      default: true
-    }
+    email: { type: Boolean, default: true },
+    push: { type: Boolean, default: true },
+    chat: { type: Boolean, default: true }
   }
 }, {
   timestamps: true
 });
 
 // ========== ÍNDICES ==========
-// usuarioSchema.index({ email: 1 }); // Definido en schema con unique: true
 usuarioSchema.index({ rol: 1, activo: 1 });
 usuarioSchema.index({ 'ubicacionAsignada.tipo': 1, 'ubicacionAsignada.referencia': 1 });
 usuarioSchema.index({ tiendaAsignada: 1 });
@@ -259,12 +183,17 @@ usuarioSchema.pre('save', async function (next) {
 
 // ========== MIDDLEWARE: Asignar permisos por defecto según rol ==========
 usuarioSchema.pre('save', function (next) {
-  if (!this.isNew) return next();
+  // Solo aplicar si es nuevo, o si el rol/tipoTrabajador ha cambiado (lógica opcional, aquí simplificamos)
+  // Nota: Si se editan permisos manualmente, esto podría sobrescribirlos si no se tiene cuidado.
+  // Por seguridad, aplicamos defaults solo en creación o cambio explícito de rol.
+  if (!this.isNew && !this.isModified('rol') && !this.isModified('tipoTrabajador')) return next();
+
+  // Resetear permisos a false antes de aplicar nuevos (opcional, pero limpio)
+  // Object.keys(this.permisos).forEach(k => this.permisos[k] = false);
 
   // Permisos por defecto según rol
   switch (this.rol) {
     case 'admin':
-      // Admin tiene todos los permisos
       Object.keys(this.permisos).forEach(key => {
         this.permisos[key] = true;
       });
@@ -281,26 +210,28 @@ usuarioSchema.pre('save', function (next) {
       break;
 
     case 'trabajador':
-      // Permisos básicos para trabajadores
       this.permisos.accederChatEmpresarial = true;
 
-      // Permisos según tipo de trabajador
       if (this.tipoTrabajador === 'tienda') {
+        // "Ver sus horarios y comprar" -> Ver stock tienda, ver pedidos (para cobrar), NO gestionar stock global
         this.permisos.verStockTienda = true;
         this.permisos.verPedidosTienda = true;
-        this.permisos.procesarPedidos = true;
+        // Comprar se asume implícito por ser usuario, o acceso a TPV
       } else if (this.tipoTrabajador === 'obrador') {
         this.permisos.verStockObrador = true;
+        this.permisos.anadirStock = true; // "Poder añadir productos... Solamente añadir"
+        // No damos 'gestionarStock' completo que implicaría editar/borrar
         this.permisos.verProduccion = true;
-        this.permisos.gestionarProduccion = true;
       } else if (this.tipoTrabajador === 'oficina') {
         this.permisos.verReportesVentas = true;
         this.permisos.verReportesProduccion = true;
+      } else if (this.tipoTrabajador === 'repartidor') {
+        this.permisos.verPedidosAsignados = true;
+        this.permisos.procesarPedidos = true; // Para cambiar estados (entregado)
       }
       break;
 
     case 'cliente':
-      // Cliente no tiene permisos empresariales
       break;
   }
 

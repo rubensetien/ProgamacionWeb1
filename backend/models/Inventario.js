@@ -21,6 +21,11 @@ const inventarioSchema = new mongoose.Schema({
       required: true,
       min: 0
     },
+    reservado: { // Nuevo: Cantidad reservada (no disponible para venta pero física)
+      type: Number,
+      default: 0,
+      min: 0
+    },
     fechaCaducidad: Date,
     notas: String
   }],
@@ -30,7 +35,7 @@ const inventarioSchema = new mongoose.Schema({
     type: Number,
     default: 0,
     min: 0,
-    comment: 'Stock total disponible (suma de lotes)'
+    comment: 'Stock FÍSICO total (incluye reservados)'
   },
 
   stockMinimo: {
@@ -51,7 +56,7 @@ const inventarioSchema = new mongoose.Schema({
   movimientos: [{
     tipo: {
       type: String,
-      enum: ['entrada', 'salida', 'ajuste', 'venta'],
+      enum: ['entrada', 'salida', 'ajuste', 'venta', 'reserva', 'confirmacion-entrega'],
       required: true
     },
     cantidad: {
@@ -108,6 +113,13 @@ inventarioSchema.pre('save', function (next) {
   this.alertaSinStock = this.stockActual === 0;
   this.alertaStockBajo = this.stockActual > 0 && this.stockActual <= this.stockMinimo;
   next();
+});
+
+// ========== VIRTUALS ==========
+inventarioSchema.virtual('stockDisponible').get(function () {
+  if (!this.lotes || this.lotes.length === 0) return this.stockActual;
+  const totalReservado = this.lotes.reduce((sum, lote) => sum + (lote.reservado || 0), 0);
+  return Math.max(0, this.stockActual - totalReservado);
 });
 
 // ========== MÉTODOS ==========
@@ -288,6 +300,82 @@ inventarioSchema.methods.ajustarStock = function (nuevoStock, usuarioId = null, 
 inventarioSchema.methods.registrarVenta = function (cantidad, pedidoId = null) {
   // Reutilizamos reducirStock que ya tiene FIFO
   return this.reducirStock(cantidad, null, pedidoId ? `Venta - Pedido ${pedidoId}` : 'Venta');
+};
+
+// 4️⃣ RESERVAR STOCK (Preparación de pedido)
+inventarioSchema.methods.reservarStockLote = function (fechaFabricacion, cantidad, usuarioId = null, motivo = 'Reserva pedido') {
+  const fechaLote = new Date(fechaFabricacion);
+  fechaLote.setHours(0, 0, 0, 0);
+
+  const lote = this.lotes.find(l => {
+    const d = new Date(l.fechaFabricacion);
+    d.setHours(0, 0, 0, 0);
+    return d.getTime() === fechaLote.getTime();
+  });
+
+  if (!lote) throw new Error('Lote no encontrado');
+
+  // Disponibilidad = cantidad - reservado
+  if ((lote.cantidad - (lote.reservado || 0)) < cantidad) {
+    throw new Error(`Stock insuficiente disponible en lote ${fechaFabricacion}`);
+  }
+
+  lote.reservado = (lote.reservado || 0) + cantidad;
+
+  this.movimientos.push({
+    tipo: 'reserva',
+    cantidad: cantidad,
+    stockAntes: this.stockActual,
+    stockDespues: this.stockActual, // Reserva no baja el stock físico
+    motivo: motivo,
+    fecha: new Date(),
+    usuario: usuarioId,
+    detalleLotes: [{ fechaFabricacion: fechaLote, cantidad }]
+  });
+
+  return this.save();
+};
+
+// 5️⃣ CONFIRMAR VENTA (Entrega de pedido) - Baja física y de reserva
+inventarioSchema.methods.confirmarVentaLote = function (fechaFabricacion, cantidad, usuarioId = null, motivo = 'Confirmación entrega') {
+  const fechaLote = new Date(fechaFabricacion);
+  fechaLote.setHours(0, 0, 0, 0);
+
+  const lote = this.lotes.find(l => {
+    const d = new Date(l.fechaFabricacion);
+    d.setHours(0, 0, 0, 0);
+    return d.getTime() === fechaLote.getTime();
+  });
+
+  if (!lote) throw new Error('Lote no encontrado');
+
+  // Asumimos que la reserva YA EXISTE.
+  // Pero por si acaso, verificamos que hay reserva que liberar
+  if (!lote.reservado || lote.reservado < cantidad) {
+    console.warn('Confirmando venta sin reserva suficiente, ajustando reserva.');
+    lote.reservado = 0; // O manejar error
+  } else {
+    lote.reservado -= cantidad;
+  }
+
+  // Baja física
+  if (lote.cantidad < cantidad) throw new Error('Inconsistencia crítica: Stock físico menor que entrega');
+  lote.cantidad -= cantidad;
+
+  const stockAntes = this.stockActual; // Antes del save (que recalcula)
+
+  this.movimientos.push({
+    tipo: 'confirmacion-entrega',
+    cantidad: cantidad,
+    stockAntes: stockAntes,
+    stockDespues: stockAntes - cantidad, // Preview
+    motivo: motivo,
+    fecha: new Date(),
+    usuario: usuarioId,
+    detalleLotes: [{ fechaFabricacion: fechaLote, cantidad }]
+  });
+
+  return this.save();
 };
 
 // ========== MÉTODOS ESTÁTICOS ==========

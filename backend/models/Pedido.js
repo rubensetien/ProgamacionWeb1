@@ -151,6 +151,25 @@ const pedidoSchema = new mongoose.Schema({
     notas: String
   }],
 
+  // ========== ASIGNACIÓN ==========
+  repartidor: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Usuario',
+    default: null
+  },
+
+  // ========== DETALLE DE ENTREGAS (LOTES) ==========
+  detalleEntregas: [{
+    producto: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Producto'
+    },
+    itemsLote: [{ // Qué lotes se utilizaron para este producto
+      fechaFabricacion: Date,
+      cantidad: Number
+    }]
+  }],
+
   // ========== FECHAS ==========
   fechaPedido: {
     type: Date,

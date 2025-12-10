@@ -27,6 +27,7 @@ export default function GestionTrabajadores() {
         password: '',
         telefono: '',
         rol: 'trabajador',
+        tipoTrabajador: '',
         ubicacionAsignada: {
             tipo: '',
             referencia: ''
@@ -38,7 +39,7 @@ export default function GestionTrabajadores() {
         cargarDatos();
     }, [page, limit, rolFiltro]);
 
-    // Debounce búsqueda
+    // Debounce para búsqueda
     useEffect(() => {
         const timer = setTimeout(() => {
             setPage(1);
@@ -52,21 +53,21 @@ export default function GestionTrabajadores() {
             setCargando(true);
             const token = localStorage.getItem('token');
 
-            // Params para trabajadores
+            // Construir query params
             const queryParams = new URLSearchParams({
                 page,
                 limit,
                 rol: rolFiltro
             });
+
             if (busqueda) queryParams.append('search', busqueda);
 
-            // Cargar trabajadores y ubicaciones en paralelo
-            // Nota: Ubicaciones se cargan todas (limit alto implícito) para el dropdown
+            // Cargar trabajadores y ubicaciones (para el modal)
             const [usuariosRes, ubicacionesRes] = await Promise.all([
                 fetch(`${API_URL}/api/usuarios/trabajadores?${queryParams}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 }),
-                fetch(`${API_URL}/api/ubicaciones?activo=true&limit=200`, {
+                fetch(`${API_URL}/api/ubicaciones?activo=true&limit=100`, { // Traer suficientes ubicaciones
                     headers: { 'Authorization': `Bearer ${token}` }
                 })
             ]);
@@ -79,14 +80,13 @@ export default function GestionTrabajadores() {
                 setTotal(usuariosData.total || 0);
                 setTotalPages(usuariosData.pages || 1);
             } else {
-                throw new Error(usuariosData.message || 'Error cargando trabajadores');
+                setError(usuariosData.message || 'Error al cargar trabajadores');
             }
 
             if (ubicacionesData.success) {
                 setUbicaciones(ubicacionesData.data);
             }
 
-            setError(null);
         } catch (err) {
             setError('Error al cargar datos: ' + err.message);
         } finally {
@@ -103,6 +103,7 @@ export default function GestionTrabajadores() {
             password: '',
             telefono: '',
             rol: 'trabajador',
+            tipoTrabajador: '',
             ubicacionAsignada: {
                 tipo: '',
                 referencia: ''
@@ -118,14 +119,15 @@ export default function GestionTrabajadores() {
         setFormulario({
             nombre: trabajador.nombre,
             email: trabajador.email,
-            password: '', // No mostrar password al editar
+            password: '',
             telefono: trabajador.telefono || '',
             rol: trabajador.rol,
+            tipoTrabajador: trabajador.tipoTrabajador || '',
             ubicacionAsignada: {
                 tipo: trabajador.ubicacionAsignada?.tipo || '',
                 referencia: trabajador.ubicacionAsignada?.referencia?._id || trabajador.ubicacionAsignada?.referencia || ''
             },
-            activo: trabajador.activo !== false // Default true
+            activo: trabajador.activo !== false
         });
         setMostrarModal(true);
     };
@@ -158,33 +160,38 @@ export default function GestionTrabajadores() {
 
             // Ubicación asignada solo si se seleccionó una
             if (formulario.ubicacionAsignada.referencia) {
-                // Encontrar la ubicación seleccionada para obtener su tipo correcto
                 const ubicacionSel = ubicaciones.find(u => u._id === formulario.ubicacionAsignada.referencia);
                 if (ubicacionSel) {
-                    if (ubicacionSel) {
-                        // Mapear tipos de ubicación a tipos de asignación permitidos en Usuario
-                        let tipoAsignacion = 'tienda'; // Default fallback
+                    // Mapear tipos de ubicación a tipos de asignación permitidos en Usuario
+                    let tipoAsignacion = 'tienda';
 
-                        if (ubicacionSel.tipo === 'punto-venta' || ubicacionSel.tipo === 'cafeteria') {
-                            tipoAsignacion = 'tienda';
-                        } else if (ubicacionSel.tipo === 'obrador') {
-                            tipoAsignacion = 'obrador';
-                        } else if (ubicacionSel.tipo === 'oficina') {
-                            tipoAsignacion = 'oficina';
-                        }
+                    if (ubicacionSel.tipo === 'punto-venta' || ubicacionSel.tipo === 'cafeteria') {
+                        tipoAsignacion = 'tienda';
+                    } else if (ubicacionSel.tipo === 'obrador') {
+                        tipoAsignacion = 'obrador';
+                    } else if (ubicacionSel.tipo === 'oficina') {
+                        tipoAsignacion = 'oficina';
+                    }
 
-                        payload.ubicacionAsignada = {
-                            tipo: tipoAsignacion,
-                            referencia: ubicacionSel._id
-                        };
+                    payload.ubicacionAsignada = {
+                        tipo: tipoAsignacion, // El tipo de la ubicación física
+                        referencia: ubicacionSel._id
+                    };
 
-                        // Sincronizar también tipoTrabajador
+                    // Si es trabajador, usamos el sub-rol seleccionado explícitamente
+                    if (formulario.rol === 'trabajador' && formulario.tipoTrabajador) {
+                        payload.tipoTrabajador = formulario.tipoTrabajador;
+                    } else {
+                        // Fallback lógica anterior (inferir de ubicación) si no se seleccionó nada (ej: gestor)
                         payload.tipoTrabajador = tipoAsignacion;
                     }
                 }
             } else {
-                // Si no hay ubicación, null
                 payload.ubicacionAsignada = null;
+                // Si no hay ubicación y es trabajador, mantenemos el tipo seleccionado si existe
+                if (formulario.rol === 'trabajador' && formulario.tipoTrabajador) {
+                    payload.tipoTrabajador = formulario.tipoTrabajador;
+                }
             }
 
             const res = await fetch(url, {
@@ -252,8 +259,11 @@ export default function GestionTrabajadores() {
 
     if (cargando && page === 1 && !trabajadores.length) {
         return (
-            <div className="gestion-productos">
-                <div className="loading-spinner">Cargando trabajadores...</div>
+            <div className="gestion-productos" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                <div className="loading-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+                    <div className="loading-spinner"></div>
+                    <p style={{ color: '#666', fontWeight: 500 }}>Cargando trabajadores...</p>
+                </div>
             </div>
         );
     }
@@ -343,13 +353,20 @@ export default function GestionTrabajadores() {
                                     </td>
                                     <td>{trabajador.email}</td>
                                     <td>
-                                        <span className={`badge`} style={{
-                                            background: trabajador.rol === 'admin' ? '#fecaca' : '#dbeafe',
-                                            color: trabajador.rol === 'admin' ? '#991b1b' : '#1e40af',
-                                            textTransform: 'capitalize'
-                                        }}>
-                                            {trabajador.rol.replace('-', ' ')}
-                                        </span>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                            <span className={`badge`} style={{
+                                                background: trabajador.rol === 'admin' ? '#fecaca' : '#dbeafe',
+                                                color: trabajador.rol === 'admin' ? '#991b1b' : '#1e40af',
+                                                textTransform: 'capitalize'
+                                            }}>
+                                                {trabajador.rol.replace('-', ' ')}
+                                            </span>
+                                            {trabajador.tipoTrabajador && (
+                                                <span style={{ fontSize: '0.8em', color: '#666', background: '#f3f4f6', padding: '2px 6px', borderRadius: '4px', width: 'fit-content' }}>
+                                                    {trabajador.tipoTrabajador}
+                                                </span>
+                                            )}
+                                        </div>
                                     </td>
                                     <td>{getNombreUbicacion(trabajador)}</td>
                                     <td>{trabajador.telefono || '-'}</td>
@@ -467,24 +484,41 @@ export default function GestionTrabajadores() {
                                     </select>
                                 </div>
 
-                                <div className="form-group">
-                                    <label>Asignar a Ubicación *</label>
-                                    <select
-                                        value={formulario.ubicacionAsignada.referencia}
-                                        onChange={(e) => setFormulario({
-                                            ...formulario,
-                                            ubicacionAsignada: { ...formulario.ubicacionAsignada, referencia: e.target.value }
-                                        })}
-                                        required={formulario.rol !== 'admin'} // Obligatorio para no-admins
-                                    >
-                                        <option value="">-- Seleccionar Ubicación --</option>
-                                        {ubicaciones.map(u => (
-                                            <option key={u._id} value={u._id}>
-                                                {u.nombre} ({u.tipo})
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+                                {formulario.rol === 'trabajador' && (
+                                    <div className="form-group">
+                                        <label>Tipo (Sub-rol) *</label>
+                                        <select
+                                            value={formulario.tipoTrabajador || ''}
+                                            onChange={(e) => setFormulario({ ...formulario, tipoTrabajador: e.target.value })}
+                                            required
+                                        >
+                                            <option value="">-- Seleccionar Función --</option>
+                                            <option value="tienda">Personal de Tienda</option>
+                                            <option value="obrador">Personal de Obrador</option>
+                                            <option value="repartidor">Repartidor</option>
+                                            <option value="oficina">Personal de Oficina</option>
+                                        </select>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="form-group">
+                                <label>Asignar a Base/Ubicación *</label>
+                                <select
+                                    value={formulario.ubicacionAsignada.referencia}
+                                    onChange={(e) => setFormulario({
+                                        ...formulario,
+                                        ubicacionAsignada: { ...formulario.ubicacionAsignada, referencia: e.target.value }
+                                    })}
+                                    required={formulario.rol !== 'admin'}
+                                >
+                                    <option value="">-- Seleccionar Ubicación --</option>
+                                    {ubicaciones.map(u => (
+                                        <option key={u._id} value={u._id}>
+                                            {u.nombre} ({u.tipo})
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
 
                             <div className="form-group">

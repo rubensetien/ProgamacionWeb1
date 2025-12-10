@@ -636,13 +636,32 @@
 }
 
 /* Loading */
+/* Loading */
 .loading-spinner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  font-size: 18px;
-  color: var(--color-text-light);
+  width: 50px;
+  height: 50px;
+  border: 5px solid #fff3e0;
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  /* Reset layout properties that might conflict with previous usage */
+  display: block;
+  min-height: 0;
+}
+
+/* Remove the old ::after hack if we are making the div itself the spinner */
+.loading-spinner::after {
+  display: none;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ========== RESPONSIVE ========== */

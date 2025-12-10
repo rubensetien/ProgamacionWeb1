@@ -2,22 +2,28 @@ import React from 'react';
 import '../../styles/common/Pagination.css';
 
 const Pagination = ({
-    currentPage,
-    totalPages,
+    currentPage = 1,
+    totalPages = 1,
     onPageChange,
-    totalItems,
-    itemsPerPage,
+    totalItems = 0,
+    itemsPerPage = 10,
     onItemsPerPageChange,
     loading = false
 }) => {
+    // Ensure all inputs are numbers to prevent NaN
+    const safeCurrentPage = Number(currentPage) || 1;
+    const safeItemsPerPage = Number(itemsPerPage) || 10;
+    const safeTotalItems = Number(totalItems) || 0;
+    const safeTotalPages = Number(totalPages) || 1;
+
     // Generate array of page numbers to display
     const getPageNumbers = () => {
         const delta = 2; // Number of pages to show around current page
         const range = [];
         const rangeWithDots = [];
 
-        for (let i = 1; i <= totalPages; i++) {
-            if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
+        for (let i = 1; i <= safeTotalPages; i++) {
+            if (i === 1 || i === safeTotalPages || (i >= safeCurrentPage - delta && i <= safeCurrentPage + delta)) {
                 range.push(i);
             }
         }
@@ -38,20 +44,20 @@ const Pagination = ({
         return rangeWithDots;
     };
 
-    if (totalItems === 0) return null;
+    if (safeTotalItems === 0) return null;
 
     return (
         <div className="pagination-container">
             <div className="pagination-info">
                 <span className="info-text">
-                    Mostrando <strong>{Math.min((currentPage - 1) * itemsPerPage + 1, totalItems)}</strong> - <strong>{Math.min(currentPage * itemsPerPage, totalItems)}</strong> de <strong>{totalItems}</strong> resultados
+                    Mostrando <strong>{Math.min((safeCurrentPage - 1) * safeItemsPerPage + 1, safeTotalItems)}</strong> - <strong>{Math.min(safeCurrentPage * safeItemsPerPage, safeTotalItems)}</strong> de <strong>{safeTotalItems}</strong> resultados
                 </span>
 
                 {onItemsPerPageChange && (
                     <div className="items-per-page-selector">
                         <label>Mostrar</label>
                         <select
-                            value={itemsPerPage}
+                            value={safeItemsPerPage}
                             onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
                             disabled={loading}
                         >
@@ -69,8 +75,8 @@ const Pagination = ({
             <div className="pagination-controls">
                 <button
                     className="page-btn prev"
-                    onClick={() => onPageChange(currentPage - 1)}
-                    disabled={currentPage === 1 || loading}
+                    onClick={() => onPageChange(safeCurrentPage - 1)}
+                    disabled={safeCurrentPage === 1 || loading}
                     title="Anterior"
                 >
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -85,7 +91,7 @@ const Pagination = ({
                         ) : (
                             <button
                                 key={page}
-                                className={`page-number ${currentPage === page ? 'active' : ''}`}
+                                className={`page-number ${safeCurrentPage === page ? 'active' : ''}`}
                                 onClick={() => onPageChange(page)}
                                 disabled={loading}
                             >
@@ -97,8 +103,8 @@ const Pagination = ({
 
                 <button
                     className="page-btn next"
-                    onClick={() => onPageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages || loading}
+                    onClick={() => onPageChange(safeCurrentPage + 1)}
+                    disabled={safeCurrentPage === safeTotalPages || loading}
                     title="Siguiente"
                 >
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
