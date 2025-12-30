@@ -1,12 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import L from 'leaflet';
+import { useAuth } from '../../context/AuthContext';
 
-// 🎨 ICONOS PERSONALIZADOS (SVG)
-// Creamos iconos dinámicos para estado normal y seleccionado
+// Fix default leaflet icon
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
 const createCustomIcon = (isSelected) => {
     return L.divIcon({
         className: 'custom-marker-icon',
@@ -20,10 +27,10 @@ const createCustomIcon = (isSelected) => {
             justify-content: center;
             transition: all 0.3s ease;
         ">
-            <svg viewBox="0 0 24 24" fill="${isSelected ? '#ff6600' : '#FF8C00'}" stroke="white" stroke-width="1.5" 
+            <svg viewBox="0 0 24 24" fill="${isSelected ? '#ff6600' : '#FF8C00'}" stroke="white" stroke-width="1.5"
                 style="filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); width: 100%; height: 100%;">
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-                <circle cx="12" cy="9" r="3.5" fill="white"/>
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
+                <circle cx="12" cy="9" r="3.5" fill="white" />
             </svg>
             ${isSelected ? `
             <div style="
@@ -40,7 +47,7 @@ const createCustomIcon = (isSelected) => {
         </div>
         `,
         iconSize: [isSelected ? 48 : 36, isSelected ? 48 : 36],
-        iconAnchor: [isSelected ? 24 : 18, isSelected ? 48 : 36], // Punta del pin
+        iconAnchor: [isSelected ? 24 : 18, isSelected ? 48 : 36],
         popupAnchor: [0, isSelected ? -50 : -40]
     });
 };
@@ -63,6 +70,7 @@ function MapEffect({ coords }) {
 
 const StoreLocator = () => {
     const navigate = useNavigate();
+    const { autenticado, usuario } = useAuth();
     const [tiendas, setTiendas] = useState([]);
     const [selectedStore, setSelectedStore] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -92,20 +100,26 @@ const StoreLocator = () => {
         }
     };
 
+    // Helper para iniciales
+    const getInitials = (name) => {
+        return name ? name.substring(0, 2).toUpperCase() : 'U';
+    };
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: "'Outfit', sans-serif" }}>
 
-            {/* Header / Nav - Corporate Orange */}
+            {/* Header / Nav - Modern White & Clean */}
             <header style={{
                 padding: '1rem 2rem',
-                background: 'linear-gradient(135deg, #ff6600 0%, #ff8533 100%)', // Gradiente sutil
-                boxShadow: '0 4px 20px rgba(255, 102, 0, 0.3)',
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(10px)',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 zIndex: 1000,
-                color: 'white',
-                position: 'relative'
+                position: 'relative',
+                borderBottom: '1px solid #f0f0f0'
             }}>
                 <div
                     style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
@@ -114,50 +128,78 @@ const StoreLocator = () => {
                     <img
                         src="https://regma.es/wp-content/uploads/2024/09/240503-regma-logotipo-rgb-logo-con-tagline-e1721651920696.png"
                         alt="REGMA"
-                        style={{ height: '45px', filter: 'brightness(0) invert(1) drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }}
+                        style={{ height: '40px' }}
                     />
                 </div>
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                     <button
-                        onClick={() => navigate('/')}
+                        onClick={() => navigate('/productos')}
+                        className="btn-nav-modern"
                         style={{
                             padding: '0.6rem 1.2rem',
-                            border: '1px solid rgba(255,255,255,0.4)',
-                            background: 'rgba(255,255,255,0.1)',
-                            color: 'white',
+                            border: '1px solid #eee',
+                            background: 'white',
+                            color: '#555',
                             borderRadius: '12px',
                             cursor: 'pointer',
                             fontWeight: '600',
-                            backdropFilter: 'blur(5px)',
                             transition: 'all 0.2s',
                             display: 'flex',
                             alignItems: 'center',
                             gap: '8px'
                         }}
                     >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
-                        Inicio
-                    </button>
-                    <button
-                        onClick={() => navigate('/productos')}
-                        style={{
-                            padding: '0.6rem 1.5rem',
-                            border: 'none',
-                            background: 'white',
-                            color: '#ff6600',
-                            borderRadius: '50px',
-                            cursor: 'pointer',
-                            fontWeight: '800',
-                            transition: 'all 0.2s',
-                            boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px'
-                        }}
-                    >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" /></svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" /></svg>
                         Catálogo
                     </button>
+
+                    {!autenticado ? (
+                        <button
+                            onClick={() => navigate('/login')}
+                            className="btn-nav-primary"
+                            style={{
+                                padding: '0.6rem 1.5rem',
+                                border: 'none',
+                                background: '#ff6600',
+                                color: 'white',
+                                borderRadius: '50px',
+                                cursor: 'pointer',
+                                fontWeight: '700',
+                                transition: 'all 0.2s',
+                                boxShadow: '0 4px 10px rgba(255, 102, 0, 0.2)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                            }}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /><polyline points="10 17 15 12 10 7" /><line x1="15" y1="12" x2="3" y2="12" /></svg>
+                            Entrar
+                        </button>
+                    ) : (
+                        <div
+                            onClick={() => navigate('/perfil')}
+                            title="Ir a mi perfil"
+                            style={{
+                                width: '45px',
+                                height: '45px',
+                                borderRadius: '50%',
+                                background: '#ff6600',
+                                color: 'white',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontWeight: '700',
+                                fontSize: '1rem',
+                                border: '3px solid white', // Borde blanco prominente como en la imagen
+                                boxShadow: '0 4px 12px rgba(255, 102, 0, 0.3)', // Sombra con color marca
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                userSelect: 'none'
+                            }}
+                        >
+                            {getInitials(usuario?.nombre)}
+                        </div>
+                    )}
                 </div>
             </header>
 
@@ -331,7 +373,7 @@ const StoreLocator = () => {
             <style>{`
                 .leaflet-popup-content-wrapper {
                     border-radius: 12px;
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
                     padding: 0;
                     overflow: hidden;
                 }

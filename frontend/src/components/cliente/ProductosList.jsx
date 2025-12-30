@@ -2,57 +2,53 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { useCarrito } from '../../context/CarritoContext'; // [NEW] Importar contexto
+import { useCarrito } from '../../context/CarritoContext';
 import Swal from 'sweetalert2';
-import '../../styles/cliente/ProductosList.css';
+import '../../styles/cliente/ProductosListModern.css'; // New CSS
 
 // API URL Config
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 const ProductosList = () => {
   const [productos, setProductos] = useState([]);
-  const [productosAgrupados, setProductosAgrupados] = useState([]); // [NEW] Estado parta grupos
+  const [productosAgrupados, setProductosAgrupados] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [selectedCategoria, setSelectedCategoria] = useState('Todas');
   const [busqueda, setBusqueda] = useState('');
   const [loading, setLoading] = useState(true);
-  const [cantidades, setCantidades] = useState({});
-  // const [carritoCount, setCarritoCount] = useState(0); // REMOVED: Managed by Context
-
-  // [NEW] Estado para controlar qué formato está seleccionado en cada "Grupo"
-  // { [grupoId]: productoIdSeleccionado }
   const [selectedVariations, setSelectedVariations] = useState({});
+  const [menuAbierto, setMenuAbierto] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { usuario, logout, autenticado } = useAuth(); // Usamos autenticado del contexto
-  const { agregarAlCarrito: agregarAlContexto, cantidadTotal } = useCarrito(); // [NEW] Usar contexto
+  const { usuario, logout, autenticado } = useAuth();
+  const { agregarAlCarrito, cantidadTotal } = useCarrito();
 
-  // Efecto inicial: Cargar productos
+  // Helper Initials
+  const getInitials = (name) => name ? name.substring(0, 2).toUpperCase() : 'U';
+
+  // 1. Fetch Data
   useEffect(() => {
     fetchProductos();
-    // updateCarritoCount(); // REMOVED
   }, []);
 
-  // Efecto para filtrar por categoría desde URL query params
+  // 2. URL Filter
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const catParam = params.get('categoria');
-    if (catParam) {
-      if (categorias.length > 0) {
-        const found = categorias.find(c => c.toLowerCase().includes(catParam.toLowerCase())) || 'Todas';
-        setSelectedCategoria(found);
-      }
+    if (catParam && categorias.length > 0) {
+      const found = categorias.find(c => c.toLowerCase().includes(catParam.toLowerCase())) || 'Todas';
+      setSelectedCategoria(found);
     }
   }, [location.search, categorias]);
 
-  // [NEW] Efecto complejo: Filtrado + Agrupación
+  // 3. Logic: Filter & Group
   useEffect(() => {
     if (productos.length === 0) return;
 
     let resultado = productos;
 
-    // 1. Filtrar
+    // Filter by Category
     if (selectedCategoria !== 'Todas') {
       resultado = resultado.filter(p => {
         const catNombre = p.categoria?.nombre || p.categoria;
@@ -60,6 +56,7 @@ const ProductosList = () => {
       });
     }
 
+    // Filter by Search
     if (busqueda) {
       resultado = resultado.filter(p => {
         const nombreCompleto = p.nombre + (p.variante?.nombre || '');
@@ -68,15 +65,10 @@ const ProductosList = () => {
       });
     }
 
-    // 2. Agrupar
+    // Grouping
     const grupos = {};
-
     resultado.forEach(prod => {
-      // Clave de agrupación:
-      // Si tiene variante (Sabor) -> [CategoriaID]_[VarianteID]
-      // Si NO tiene variante -> [Nombre] (para juntar formatos con mismo nombre)
       let groupKey;
-
       if (prod.variante) {
         groupKey = `${prod.categoria?._id || 'cat'}_${prod.variante._id}`;
       } else {
@@ -94,19 +86,16 @@ const ProductosList = () => {
           productos: []
         };
       }
-
       grupos[groupKey].productos.push(prod);
     });
 
     const listaGrupos = Object.values(grupos);
 
-    // Inicializar selecciones por defecto (el de menor precio o primero)
+    // Default Selections (Cheapest first)
     setSelectedVariations(prev => {
       const newSelections = { ...prev };
       listaGrupos.forEach(grupo => {
-        // Ordenar por precio para seleccionar el más barato por defecto
         const sortedProds = [...grupo.productos].sort((a, b) => (a.precioFinal || 0) - (b.precioFinal || 0));
-
         if (!newSelections[grupo.id] || !grupo.productos.find(p => p._id === newSelections[grupo.id])) {
           newSelections[grupo.id] = sortedProds[0]._id;
         }
@@ -123,9 +112,6 @@ const ProductosList = () => {
       const productosActivos = res.data.data.filter(p => p.activo);
       setProductos(productosActivos);
 
-
-      // Extraer categorías únicas (manejando si categoria es objeto o string)
-      // Extraer categorías únicas y asegurar que Helados y Dulces estén presentes
       const catsData = productosActivos.map(p => p.categoria?.nombre || p.categoria).filter(Boolean);
       const cats = Array.from(new Set(['Todas', 'Helados', 'Dulces', ...catsData]));
       setCategorias(cats);
@@ -137,310 +123,223 @@ const ProductosList = () => {
     }
   };
 
-  /* REMOVED MANUAL LOCALSTORAGE LOGIC
-  const updateCarritoCount = () => {
-    const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
-    const count = carrito.reduce((acc, item) => acc + item.cantidad, 0);
-    setCarritoCount(count);
-  };
-  */
-
-  const handleCantidadChange = (groupId, delta) => {
-    setCantidades(prev => ({
-      ...prev,
-      [groupId]: Math.max(1, (prev[groupId] || 1) + delta)
-    }));
-  };
-
-  // [NEW] Cambiar formato seleccionado en la tarjeta
   const handleFormatChange = (groupId, productId) => {
-    setSelectedVariations(prev => ({
-      ...prev,
-      [groupId]: productId
-    }));
-    // Resetear cantidad al cambiar formato? O mantenerla? 
-    // Mejor resetear para evitar confusiones de precio x cantidad
-    setCantidades(prev => ({ ...prev, [groupId]: 1 }));
+    setSelectedVariations(prev => ({ ...prev, [groupId]: productId }));
   };
 
-  const agregarAlCarrito = (producto, groupId) => {
-    // La cantidad la sacamos del estado del GRUPO
-    const cantidad = cantidades[groupId] || 1;
+  const handleAddToCart = (grupo) => {
+    const activeId = selectedVariations[grupo.id];
+    const activeProd = grupo.productos.find(p => p._id === activeId) || grupo.productos[0];
 
-    /* REMOVED MANUAL ADD LOGIC
-    const carrito = JSON.parse(localStorage.getItem('carrito')) || [];
-    const existingIndex = carrito.findIndex(item => item._id === producto._id);
+    agregarAlCarrito(activeProd, activeProd.variante, activeProd.formato, 1);
 
-    if (existingIndex >= 0) {
-      carrito[existingIndex].cantidad += cantidad;
-    } else {
-      carrito.push({ ...producto, cantidad });
-    }
-
-    localStorage.setItem('carrito', JSON.stringify(carrito));
-    updateCarritoCount();
-    */
-
-    // Usar contexto
-    agregarAlContexto(producto, producto.variante, producto.formato, cantidad);
-
-    // Reset cantidad
-    setCantidades(prev => ({ ...prev, [groupId]: 1 }));
-
+    // Custom Toast
     const Toast = Swal.mixin({
       toast: true,
       position: 'bottom-end',
       showConfirmButton: false,
       timer: 2000,
-      timerProgressBar: true,
-      background: '#2c3e50',
+      timerProgressBar: false,
+      background: '#1a1a1a', // Regma Dark
       color: '#fff',
-      didOpen: (toast) => {
-        toast.addEventListener('mouseenter', Swal.stopTimer)
-        toast.addEventListener('mouseleave', Swal.resumeTimer)
-      }
     });
-
-    Toast.fire({
-      icon: 'success',
-      title: `${cantidad}x ${producto.nombre} añadido`
-    });
+    Toast.fire({ icon: 'success', title: 'Añadido al pedido' });
   };
 
-  // Obtener nombre o inicial
-  const getAvatarContent = () => {
-    if (usuario?.nombre) return usuario.nombre;
-    if (usuario?.email) return usuario.email;
-    return 'U';
-  };
-
-  const getIniciales = (nombre) => {
-    return nombre.substring(0, 2).toUpperCase();
+  const getImageUrl = (path) => {
+    if (!path) return 'https://placehold.co/300x300?text=Regma';
+    if (path.startsWith('http')) return path;
+    return `${API_URL}${path}`;
   };
 
   return (
-    <div className="catalogo-container">
-      {/* 🔮 LIVING BACKGROUND */}
-      <div className="living-background">
-        <div className="blob blob-1"></div>
-        <div className="blob blob-2"></div>
-        <div className="blob blob-3"></div>
-        <div className="noise-overlay"></div>
-      </div>
+    <div className="catalogo-modern-container">
 
-      {/* 🌟 HEADER PREMIUM */}
-      <header className="catalogo-header">
-        <div className="header-glass">
-          <div className="logo-section" onClick={() => navigate('/')}>
-            <img
-              src="https://regma.es/wp-content/uploads/2024/09/240503-regma-logotipo-rgb-logo-con-tagline-e1721651920696.png"
-              alt="Regma"
-              className="logo-img"
-            />
+      {/* 1. NAVBAR OVERLAY (Absolute) */}
+      <nav style={{
+        position: 'absolute', top: 0, left: 0, width: '100%', padding: '20px 40px',
+        zIndex: 50, display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+      }}>
+        <img
+          src="https://regma.es/wp-content/uploads/2024/09/240503-regma-logotipo-rgb-logo-con-tagline-e1721651920696.png"
+          alt="Regma"
+          style={{ height: '35px', filter: 'brightness(0) invert(1)' }} // White logo for video
+          onClick={() => navigate('/')}
+        />
+
+        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+          <span onClick={() => navigate('/')} style={{ color: 'white', fontWeight: '600', cursor: 'pointer', textTransform: 'uppercase' }}>Inicio</span>
+          <span onClick={() => navigate('/historia')} style={{ color: 'white', fontWeight: '600', cursor: 'pointer', textTransform: 'uppercase' }}>Historia</span>
+
+          <div onClick={() => navigate('/carrito')} style={{ position: 'relative', cursor: 'pointer', color: 'white' }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 20a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm7 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-11-2h15.6l1.4-10H5.2L4 .5H1" />
+            </svg>
+            {cantidadTotal() > 0 &&
+              <span style={{
+                position: 'absolute', top: -8, right: -8, background: '#ff6600',
+                color: 'white', fontSize: '0.7rem', width: '18px', height: '18px',
+                borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                {cantidadTotal()}
+              </span>
+            }
           </div>
 
-          <div className="header-actions">
-            <button
-              className="btn-header-nav"
-              onClick={() => navigate('/tiendas')}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>
-              <span>Tiendas</span>
-            </button>
-
-            <button
-              className="btn-header-cart"
-              onClick={() => navigate('/carrito')}
-            >
-              <div className="cart-icon-wrapper">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-                  <line x1="3" y1="6" x2="21" y2="6" />
-                  <path d="M16 10a4 4 0 0 1-8 0" />
-                </svg>
-                {/* [UPDATED] Use context quantity */}
-                {cantidadTotal() > 0 && <span className="cart-badge">{cantidadTotal()}</span>}
+          {autenticado ? (
+            <div className="user-dropdown-container" style={{ position: 'relative' }}>
+              <div
+                onClick={() => setMenuAbierto(!menuAbierto)}
+                style={{ width: '35px', height: '35px', background: 'white', color: '#ff6600', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', cursor: 'pointer' }}
+              >
+                {getInitials(usuario?.nombre)}
               </div>
-              <span className="cart-text">Mi Pedido</span>
-            </button>
 
-            {autenticado && (
-              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                {usuario?.rol === 'trabajador' && (
-                  <button
-                    className="btn-header-nav"
-                    onClick={() => navigate('/trabajador')}
-                    style={{ background: '#e67e22', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '20px' }}
-                  >
-                    Dashboard
-                  </button>
-                )}
-                <div className="user-profile-mini" onClick={() => navigate('/perfil')}>
-                  {usuario?.avatar ? (
-                    <img src={usuario.avatar} alt="Avatar" className="user-avatar-mini" />
-                  ) : (
-                    <div className="user-initials-mini">{getIniciales(getAvatarContent())}</div>
+              {menuAbierto && (
+                <div className="user-dropdown-menu active">
+                  <div className="dropdown-item" onClick={() => {
+                    const path = usuario?.rol === 'admin' ? '/admin' : usuario?.rol === 'trabajador' ? '/trabajador' : '/perfil';
+                    navigate(path);
+                  }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="7" height="7"></rect>
+                      <rect x="14" y="3" width="7" height="7"></rect>
+                      <rect x="14" y="14" width="7" height="7"></rect>
+                      <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    {usuario?.rol === 'admin' || usuario?.rol === 'trabajador' ? 'Dashboard' : 'Mi Perfil'}
+                  </div>
+                  {(usuario?.rol === 'admin' || usuario?.rol === 'trabajador') && (
+                    <div className="dropdown-item" onClick={() => navigate('/perfil')}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                      </svg>
+                      Mi Cuenta
+                    </div>
                   )}
+                  <div className="dropdown-divider"></div>
+                  <div className="dropdown-item logout" onClick={logout}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                      <polyline points="16 17 21 12 16 7"></polyline>
+                      <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    Cerrar Sesión
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          ) : (
+            <button onClick={() => navigate('/login')} style={{ background: 'transparent', border: '1px solid white', color: 'white', borderRadius: '20px', padding: '5px 15px', cursor: 'pointer' }}>
+              Entrar
+            </button>
+          )}
+        </div>
+      </nav>
+
+      {/* 2. HERO VIDEO */}
+      <header className="catalog-hero">
+        <video
+          className="hero-video-bg"
+          autoPlay
+          muted
+          loop
+          playsInline
+          poster={`${API_URL}/uploads/landing/hero-principal.jpg`}
+        >
+          <source src={`${API_URL}/uploads/regma-pantallas-16x9-1.mp4`} type="video/mp4" />
+        </video>
+        <div className="hero-overlay-content">
+          <h1 className="hero-title-cat">CATÁLOGO 2025</h1>
+          <p className="hero-subtitle-cat">Colección de Sabores & Tradición</p>
         </div>
       </header>
 
-      {/* 🔍 SEARCH & FILTER BAR */}
-      <div className="catalogo-toolbar">
-        <div className="search-bar-glass">
-          <svg className="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input
-            type="text"
-            placeholder="Buscar helados, postres..."
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-          />
-        </div>
-
-        <div className="categories-scroll">
+      {/* 3. FLOATING FILTER BAR */}
+      <div className="filter-sticky-bar">
+        <div className="categories-pills">
           {categorias.map(cat => (
             <button
               key={cat}
-              className={`cat-pill ${selectedCategoria === cat ? 'active' : ''}`}
+              className={`cat-btn ${selectedCategoria === cat ? 'active' : ''}`}
               onClick={() => setSelectedCategoria(cat)}
             >
               {cat}
             </button>
           ))}
         </div>
+        <div className="search-mini">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input
+            type="text"
+            placeholder="Buscar..."
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+          />
+        </div>
       </div>
 
-      {/* 🛍️ PRODUCT GRID - GROUPED */}
-      <main className="main-content">
-        <h2 className="section-title">
-          {selectedCategoria === 'Todas' ? 'Nuestra Selección' : selectedCategoria}
-        </h2>
-
+      {/* 4. MAIN GRID */}
+      <main className="grid-layout-modern">
         {loading ? (
-          <div className="loading-spinner"></div>
+          <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '50px' }}>Cargando catálogo...</div>
         ) : productosAgrupados.length > 0 ? (
-          <div className="products-grid">
-            {productosAgrupados.map(grupo => {
-              // Determine active product based on selection state
-              const activeProductId = selectedVariations[grupo.id];
-              const activeProd = grupo.productos.find(p => p._id === activeProductId) || grupo.productos[0];
+          productosAgrupados.map(grupo => {
+            const activeId = selectedVariations[grupo.id];
+            const activeProd = grupo.productos.find(p => p._id === activeId) || grupo.productos[0];
 
-              // Determine quantity based on GROUP ID
-              const currentQty = cantidades[grupo.id] || 1;
+            return (
+              <div key={grupo.id} className="prod-card-modern">
+                <div className="card-img-wrapper">
+                  <img
+                    src={getImageUrl(activeProd.variante?.imagen || activeProd.imagenPrincipal || activeProd.imagen)}
+                    alt={activeProd.nombre}
+                    className="prod-img-main"
+                  />
+                </div>
+                <div className="card-info">
+                  <span className="prod-cat-tag">{activeProd.categoria?.nombre || activeProd.categoria}</span>
+                  <h3 className="prod-name">{grupo.nombrePrincipal}</h3>
+                  <p className="prod-desc">{activeProd.descripcion ? activeProd.descripcion.substring(0, 60) + '...' : 'Delicioso producto Regma'}</p>
 
-              // Helper para obtener URL completa de la imagen
-              const getImageUrl = (path) => {
-                if (!path) return 'https://placehold.co/300x300?text=Regma';
-                if (path.startsWith('http')) return path;
-                return `${API_URL}${path}`;
-              };
-
-              return (
-                <div key={grupo.id} className="product-card-glass">
-                  <div className="card-image-container">
-                    <img
-                      src={getImageUrl(activeProd.imagenPrincipal || activeProd.imagen || activeProd.variante?.imagen)}
-                      alt={activeProd.nombre}
-                      className="product-image"
-                      loading="lazy"
-                    />
-                    <div className="card-overlay"></div>
-                  </div>
-
-                  <div className="card-content">
-                    <div className="card-header-row">
-                      <span className="card-category">
-                        {activeProd.categoria?.nombre || activeProd.categoria || 'Sin categoría'}
-                      </span>
-                      {/* Iterate formats if multiple exist */}
-                      {grupo.productos.length > 1 && (
-                        <div className="format-badges">
-                          {grupo.productos.length} formatos
-                        </div>
-                      )}
-                    </div>
-
-                    <h3 className="card-title">{grupo.nombrePrincipal}</h3>
-                    <p className="card-description">
-                      {activeProd.descripcion || 'Delicioso producto artesanal de Regma.'}
-                    </p>
-
-                    {/* FORMAT SELECTOR */}
-                    {grupo.productos.length > 1 && (
-                      <div className="format-selector">
-                        {grupo.productos.map(prod => (
-                          <button
-                            key={prod._id}
-                            className={`format-btn ${prod._id === activeProd._id ? 'active' : ''}`}
-                            onClick={() => handleFormatChange(grupo.id, prod._id)}
-                          >
-                            {/* [FIX] Show generic capacity (e.g. 0.5 L) if available, otherwise cleaner name parsing */}
-                            {prod.formato && prod.formato.capacidad
-                              ? `${prod.formato.capacidad} ${prod.formato.unidad}`
-                              : prod.nombre.replace(new RegExp(grupo.nombrePrincipal, 'gi'), '').replace(/^[\s-]+/, '').trim() || prod.nombre}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-
-                    <div className="card-footer">
-                      <div className="price-tag">
-                        <span className="currency">€</span>
-                        <span className="value">
-                          {(Number(activeProd.precioFinal || activeProd.precioBase) || 0).toFixed(2)}
-                        </span>
-                      </div>
-
-                      <div className="actions-wrapper">
-                        <div className="qty-selector">
-                          <button
-                            onClick={() => handleCantidadChange(grupo.id, -1)}
-                            disabled={currentQty <= 1}
-                          >−</button>
-                          <span>{currentQty}</span>
-                          <button onClick={() => handleCantidadChange(grupo.id, 1)}>+</button>
-                        </div>
-
+                  {/* Format Chips */}
+                  {grupo.productos.length > 1 && (
+                    <div className="format-chips">
+                      {grupo.productos.map(p => (
                         <button
-                          className="btn-add-cart"
-                          onClick={() => agregarAlCarrito(activeProd, grupo.id)}
+                          key={p._id}
+                          className={`chip ${p._id === activeProd._id ? 'active' : ''}`}
+                          onClick={() => handleFormatChange(grupo.id, p._id)}
                         >
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-                            <line x1="3" y1="6" x2="21" y2="6" />
-                            <path d="M16 10a4 4 0 0 1-8 0" />
-                          </svg>
-                          <span>Añadir</span>
+                          {p.formato?.capacidad
+                            ? `${p.formato.capacidad} ${p.formato.unidad}`
+                            : p.nombre.replace(grupo.nombrePrincipal, '').trim() || 'Estándar'}
                         </button>
-                      </div>
+                      ))}
                     </div>
+                  )}
+
+                  <div className="prod-controls">
+                    <span className="price-modern">{Number(activeProd.precioFinal || 0).toFixed(2)}€</span>
+                    <button className="btn-add-modern" onClick={() => handleAddToCart(grupo)}>
+                      <span>Añadir</span>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 5v14M5 12h14" /></svg>
+                    </button>
                   </div>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })
         ) : (
-          <div className="no-results">
-            <p>No encontramos productos en esta categoría.</p>
-            <button onClick={() => {
-              setSelectedCategoria('Todas');
-              setBusqueda('');
-            }}>
-              Ver todo el catálogo
-            </button>
+          <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '50px' }}>
+            <p>No se encontraron productos.</p>
           </div>
         )}
       </main>
-
 
     </div>
   );

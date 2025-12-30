@@ -11,6 +11,7 @@ import MisPedidos from './components/cliente/MisPedidos';
 import PerfilCliente from './components/cliente/PerfilCliente';
 import MisSolicitudes from './components/trabajador/MisSolicitudes';
 import StoreLocator from './components/public/StoreLocator';
+import HistoriaPage from './components/public/HistoriaPage';
 import AdminLayout from './components/admin/AdminLayout';
 import './App.css';
 import TrabajadorLayout from './components/trabajador/TrabajadorLayout';
@@ -80,6 +81,7 @@ function AppContent() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/tiendas" element={<StoreLocator />} />
         <Route path="/productos" element={<ProductosList />} />
+        <Route path="/historia" element={<HistoriaPage />} />
 
         <Route
           path="/login"

@@ -1,488 +1,352 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import '../../styles/public/LandingPage.css';
+import '../../styles/public/LandingPageAdvanced.css';
+
+// Videos de stock de alta calidad (Placeholders)
+const HERO_VIDEO_URL = "https://cdn.pixabay.com/video/2023/10/12/184734-874249151_large.mp4"; // Olas/Crema suave
+const MASK_VIDEO_URL = "https://cdn.pixabay.com/video/2022/04/24/114979-702334887_large.mp4"; // Ingredientes frescos
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export default function LandingPage() {
   const navigate = useNavigate();
   const { autenticado, usuario, logout } = useAuth();
-  const [mostrarMenuUsuario, setMostrarMenuUsuario] = useState(false);
+  const [menuAbierto, setMenuAbierto] = useState(false); // [NEW] Menu State
   const [scrollY, setScrollY] = useState(0);
+  const horizontalScrollRef = useRef(null);
 
   useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const getIniciales = (nombre) => {
-    if (!nombre) return 'U';
-    return nombre.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  // Efecto de scroll horizontal con la rueda del ratón
+  useEffect(() => {
+    const el = horizontalScrollRef.current;
+    if (el) {
+      const onWheel = (e) => {
+        if (e.deltaY === 0) return;
+        // Solo prevenir scroll vertical si estamos "dentro" del componente de forma intencional
+        // Para simplicidad, dejamos el comportamiento nativo de scroll horizontal si es trackpad
+        // O podríamos forzar horizontal scroll:
+        // e.preventDefault();
+        // el.scrollTo({
+        //     left: el.scrollLeft + e.deltaY * 2,
+        //     behavior: 'smooth'
+        // });
+      };
+      // el.addEventListener('wheel', onWheel);
+      return () => {
+        // if(el) el.removeEventListener('wheel', onWheel);
+      };
+    }
+  }, []);
+
+  // Scroll handler
+  const scrollToContent = () => {
+    const nextSection = document.querySelector('.natural-section');
+    if (nextSection) {
+      nextSection.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
-  const handleCerrarSesion = () => {
-    logout();
-    setMostrarMenuUsuario(false);
+  // Helper para iniciales (mismo estilo que StoreLocator)
+  const getInitials = (name) => {
+    return name ? name.substring(0, 2).toUpperCase() : 'U';
   };
-
-  // Obtener nombre para mostrar (Nombre o Email o 'Usuario')
-  const nombreMostrar = usuario?.nombre || usuario?.email || 'Usuario';
 
   return (
-    <div className="landing-modern">
-      {/* Navbar Glassmorphism */}
-      <nav className={`navbar-glass ${scrollY > 50 ? 'scrolled' : ''}`}>
-        <div className="navbar-content">
-          <div className="navbar-brand" onClick={() => navigate('/')}>
-            <img
-              src="https://regma.es/wp-content/uploads/2024/09/240503-regma-logotipo-rgb-logo-con-tagline-e1721651920696.png"
-              alt="REGMA"
-            />
-          </div>
+    <div className="landing-advanced">
 
-          <div className="navbar-menu">
-            {autenticado ? (
-              <div className="user-menu">
-                <button
-                  className="user-button"
-                  onClick={() => setMostrarMenuUsuario(!mostrarMenuUsuario)}
-                >
-                  <div className="user-avatar">
-                    {usuario?.avatar ? (
-                      <img src={usuario.avatar} alt={nombreMostrar} />
-                    ) : (
-                      <span>{getIniciales(usuario?.nombre || usuario?.email)}</span>
-                    )}
-                  </div>
-                  <span className="user-name-display">{nombreMostrar}</span>
-                  <svg
-                    className={`chevron-icon ${mostrarMenuUsuario ? 'open' : ''}`}
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </button>
-
-                {mostrarMenuUsuario && (
-                  <>
-                    <div className="dropdown-overlay" onClick={() => setMostrarMenuUsuario(false)} />
-                    <div className="dropdown-menu">
-                      <div className="dropdown-header">
-                        <div className="user-avatar large">
-                          {usuario?.avatar ? (
-                            <img src={usuario.avatar} alt={nombreMostrar} />
-                          ) : (
-                            <span>{getIniciales(nombreMostrar)}</span>
-                          )}
-                        </div>
-                        <div className="user-details">
-                          <p className="user-fullname">{nombreMostrar}</p>
-                          <p className="user-email">{usuario?.email}</p>
-                        </div>
-                      </div>
-
-                      <div className="dropdown-divider" />
-
-                      <div className="dropdown-items">
-                        {usuario?.rol === 'trabajador' && (
-                          <button
-                            className="dropdown-item"
-                            onClick={() => {
-                              navigate('/trabajador');
-                              setMostrarMenuUsuario(false);
-                            }}
-                          >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: '#e67e22' }}>
-                              <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-                              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-                            </svg>
-                            <span style={{ color: '#e67e22', fontWeight: 600 }}>Dashboard Trabajo</span>
-                          </button>
-                        )}
-
-                        <button
-                          className="dropdown-item"
-                          onClick={() => {
-                            navigate('/perfil');
-                            setMostrarMenuUsuario(false);
-                          }}
-                        >
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                            <circle cx="12" cy="7" r="4" />
-                          </svg>
-                          <span>Mi Perfil</span>
-                        </button>
-
-                        {(usuario?.rol === 'admin' || usuario?.rol === 'gestor') && (
-                          <button
-                            className="dropdown-item"
-                            onClick={() => {
-                              navigate('/admin');
-                              setMostrarMenuUsuario(false);
-                            }}
-                          >
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <rect x="3" y="3" width="7" height="7" />
-                              <rect x="14" y="3" width="7" height="7" />
-                              <rect x="14" y="14" width="7" height="7" />
-                              <rect x="3" y="14" width="7" height="7" />
-                            </svg>
-                            <span>Panel Admin</span>
-                          </button>
-                        )}
-
-                        <button
-                          className="dropdown-item"
-                          onClick={() => {
-                            navigate('/productos');
-                            setMostrarMenuUsuario(false);
-                          }}
-                        >
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <circle cx="9" cy="21" r="1" />
-                            <circle cx="20" cy="21" r="1" />
-                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-                          </svg>
-                          <span>Catálogo</span>
-                        </button>
-
-                        <button
-                          className="dropdown-item"
-                          onClick={() => {
-                            navigate('/tiendas');
-                            setMostrarMenuUsuario(false);
-                          }}
-                        >
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                            <circle cx="12" cy="10" r="3"></circle>
-                          </svg>
-                          <span>Tiendas</span>
-                        </button>
-
-                        <button
-                          className="dropdown-item"
-                          onClick={() => {
-                            navigate('/carrito');
-                            setMostrarMenuUsuario(false);
-                          }}
-                        >
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-                            <line x1="3" y1="6" x2="21" y2="6" />
-                            <path d="M16 10a4 4 0 0 1-8 0" />
-                          </svg>
-                          <span>Mi Carrito</span>
-                        </button>
-                      </div>
-
-                      <div className="dropdown-divider" />
-
-                      <button
-                        className="dropdown-item logout"
-                        onClick={handleCerrarSesion}
-                      >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                          <polyline points="16 17 21 12 16 7" />
-                          <line x1="21" y1="12" x2="9" y2="12" />
-                        </svg>
-                        <span>Cerrar Sesión</span>
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
+      {/* --- NAVBAR FLOTANTE MINIMALISTA --- */}
+      <nav className={`navbar-glass ${scrollY > 50 ? 'scrolled' : ''}`} style={{
+        position: 'fixed', top: 0, width: '100%', zIndex: 1000,
+        padding: '20px 40px', transition: 'all 0.4s ease',
+        background: scrollY > 50 ? 'rgba(18,18,18,0.8)' : 'transparent',
+        backdropFilter: scrollY > 50 ? 'blur(10px)' : 'none',
+        borderBottom: scrollY > 50 ? '1px solid rgba(255,255,255,0.05)' : 'none'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '1400px', margin: '0 auto' }}>
+          <img
+            src="https://regma.es/wp-content/uploads/2024/09/240503-regma-logotipo-rgb-logo-con-tagline-e1721651920696.png"
+            alt="REGMA"
+            style={{ height: '40px', filter: 'brightness(0) invert(1)' }}
+          />
+          <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+            <button className="btn-text-light" onClick={() => navigate('/productos')}>Catálogo</button>
+            {!autenticado ? (
+              <button className="btn-premium-outline" onClick={() => navigate('/login')}>Entrar</button>
             ) : (
-              <div className="auth-buttons">
-                <button className="btn-text" onClick={() => navigate('/login')}>
-                  Iniciar Sesión
-                </button>
-                <button className="btn-gradient" onClick={() => navigate('/register')}>
-                  Registrarse
-                </button>
+              <div className="user-dropdown-container" style={{ position: 'relative' }}>
+                <div
+                  onClick={() => setMenuAbierto(!menuAbierto)}
+                  title="Mi Cuenta"
+                  style={{
+                    width: '45px',
+                    height: '45px',
+                    borderRadius: '50%',
+                    background: '#ff6600',
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: '700',
+                    fontSize: '1rem',
+                    border: '3px solid rgba(255,255,255,0.3)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    userSelect: 'none'
+                  }}
+                >
+                  {getInitials(usuario?.nombre)}
+                </div>
+
+                {/* DROPDOWN MENU */}
+                {menuAbierto && (
+                  <div className="user-dropdown-menu active">
+                    <div className="dropdown-item" onClick={() => {
+                      const path = usuario?.rol === 'admin' ? '/admin' : usuario?.rol === 'trabajador' ? '/trabajador' : '/perfil';
+                      navigate(path);
+                    }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                      </svg>
+                      {usuario?.rol === 'admin' || usuario?.rol === 'trabajador' ? 'Dashboard' : 'Mi Perfil'}
+                    </div>
+
+                    {(usuario?.rol === 'admin' || usuario?.rol === 'trabajador') && (
+                      <div className="dropdown-item" onClick={() => navigate('/perfil')}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                          <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        Mi Cuenta
+                      </div>
+                    )}
+
+                    <div className="dropdown-divider"></div>
+
+                    <div className="dropdown-item logout" onClick={logout}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                      </svg>
+                      Cerrar Sesión
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
         </div>
       </nav>
 
-      {/* Hero Section con imagen real */}
-      <section className="hero-ultra">
-        <div className="hero-bg">
+      {/* --- 1. HERO CINEMATOGRÁFICO --- */}
+      <section className="hero-video-container">
+        <video
+          className="hero-video-bg"
+          autoPlay
+          loop
+          muted
+          playsInline
+        >
+          <source src={`${API_URL}/uploads/REGMA_FLZNVD1933_V6-3-2.mp4`} type="video/mp4" />
+          Tu navegador no soporta video HTML5.
+        </video>
+        <div className="hero-overlay-gradient" />
+
+        <div className="hero-content-advanced" style={{
+          transform: `translateY(${scrollY * 0.3}px)`, // Parallax simple
+          opacity: 1 - scrollY / 700
+        }}>
           <img
-            src={`${API_URL}/uploads/landing/hero-principal.jpg`}
-            alt="Helado REGMA"
+            src="https://regma.es/wp-content/uploads/2024/09/240503-regma-logotipo-rgb-logo-con-tagline-e1721651920696.png"
+            alt="REGMA"
+            className="hero-logo-main"
           />
-          <div className="hero-overlay"></div>
+          <p className="hero-subtitle-advanced">Pasión Helada desde 1940</p>
         </div>
 
-        <div className="hero-content-wrapper">
-          <div className="hero-badge">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 2L2 7l10 5 10-5-10-5z" />
-              <path d="M2 17l10 5 10-5" />
-            </svg>
-            <span>Desde 1940 · Tradición Artesanal</span>
+        {/* Scroll Indicator (Mouse) */}
+        <div className="scroll-indicator" onClick={scrollToContent}>
+          <div className="mouse">
+            <div className="wheel"></div>
           </div>
+          <div className="arrow-scroll">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      </section>
 
-          <h1 className="hero-title-xl">
-            El Sabor de lo
-            <span className="gradient-text"> Natural</span>
-          </h1>
-
-          <p className="hero-subtitle-xl">
-            Helados artesanales elaborados con los mejores ingredientes.
-            <br />Descubre más de 80 años de pasión por lo auténtico.
+      {/* --- 2. 100% NATURAL (Clean & Bold) --- */}
+      <section className="natural-section">
+        <div className="natural-content">
+          <h2 className="natural-title">100% NATURAL</h2>
+          <p className="natural-desc">
+            Sin aditivos. Sin conservantes.<br />
+            Solo leche fresca de Cantabria, fruta de temporada y pasión.
           </p>
-
-          <div className="hero-cta-buttons">
-            <button className="btn-hero-primary" onClick={() => navigate('/productos')}>
-              Explorar Catálogo
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <polyline points="12 5 19 12 12 19" />
-              </svg>
-            </button>
-
-            {!autenticado && (
-              <button className="btn-hero-secondary" onClick={() => navigate('/register')}>
-                Crear Cuenta Gratis
-              </button>
-            )}
-          </div>
-
-          <div className="hero-stats-inline">
-            <div className="stat-inline">
-              <span className="stat-value">+80</span>
-              <span className="stat-text">Años</span>
-            </div>
-            <div className="stat-inline">
-              <span className="stat-value">+20</span>
-              <span className="stat-text">Sabores</span>
-            </div>
-            <div className="stat-inline">
-              <span className="stat-value">100%</span>
-              <span className="stat-text">Natural</span>
-            </div>
-          </div>
         </div>
       </section>
 
-      {/* 📍 FLOATING ACTION BUTTON - ACCESO DIRECTO A TIENDAS */}
-      <button
-        onClick={() => navigate('/tiendas')}
-        style={{
-          position: 'fixed',
-          bottom: '30px',
-          right: '30px',
-          backgroundColor: '#ff6600',
-          color: 'white',
-          border: 'none',
-          borderRadius: '50px',
-          padding: '12px 24px',
-          boxShadow: '0 4px 20px rgba(255, 102, 0, 0.4)',
-          zIndex: 9999,
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          cursor: 'pointer',
-          fontSize: '1rem',
-          fontWeight: '600',
-          transform: scrollY > 100 ? 'translateY(0)' : 'translateY(100px)', // Animate in
-          opacity: scrollY > 100 ? 1 : 0,
-          transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
-        }}
-        onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(0) scale(1.05)'; }}
-        onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0) scale(1)'; }}
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-          <circle cx="12" cy="10" r="3"></circle>
-        </svg>
-        <span>Ubícanos</span>
-      </button>
+      {/* --- 3. SCROLL HORIZONTAL DE PRODUCTOS (Vibrant) --- */}
+      <section className="horizontal-section">
+        <div style={{ padding: '0 5vw 40px 5vw', textAlign: 'center' }}>
+          <span className="section-tag">Nuestras Creaciones</span>
+          <h2 className="section-heading-fresh">Sabores que Enamoran</h2>
+        </div>
 
-      {/* Categorías con tus imágenes */}
-      <section className="categorias-showcase">
-        <div className="container-xl">
-          <div className="section-intro">
-            <span className="section-tag">Nuestros Productos</span>
-            <h2 className="section-heading">Descubre Nuestra Selección</h2>
-            <p className="section-desc">Cada categoría es una experiencia única de sabor y calidad</p>
-          </div>
-
-          <div className="categorias-grid-modern">
-            <div className="categoria-card-modern" onClick={() => navigate('/productos?categoria=helados')}>
-              <div className="categoria-image-wrapper">
-                <img
-                  src={`${API_URL}/uploads/landing/categoria-helados.jpg`}
-                  alt="Helados Artesanales"
-                />
-                <div className="categoria-overlay-gradient"></div>
-              </div>
-              <div className="categoria-content">
-                <h3>Helados Artesanales</h3>
-                <p>Más de 20 sabores elaborados con recetas tradicionales</p>
-                <button className="btn-categoria">
-                  Ver Helados
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                    <polyline points="12 5 19 12 12 19" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <div className="categoria-card-modern" onClick={() => navigate('/productos?categoria=dulces')}>
-              <div className="categoria-image-wrapper">
-                <img
-                  src={`${API_URL}/uploads/landing/categoria-dulces.png`}
-                  alt="Dulces Tradicionales"
-                />
-                <div className="categoria-overlay-gradient"></div>
-              </div>
-              <div className="categoria-content">
-                <h3>Dulces Tradicionales</h3>
-                <p>Repostería artesanal con las mejores materias primas</p>
-                <button className="btn-categoria">
-                  Ver Dulces
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                    <polyline points="12 5 19 12 12 19" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <div className="categoria-card-modern" onClick={() => navigate('/productos?categoria=salados')}>
-              <div className="categoria-image-wrapper">
-                <img
-                  src={`${API_URL}/uploads/landing/categoria-salados.jpg`}
-                  alt="Productos Salados"
-                />
-                <div className="categoria-overlay-gradient"></div>
-              </div>
-              <div className="categoria-content">
-                <h3>Productos Salados</h3>
-                <p>Bollería salada fresca elaborada cada día</p>
-                <button className="btn-categoria">
-                  Ver Salados
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                    <polyline points="12 5 19 12 12 19" />
-                  </svg>
-                </button>
-              </div>
+        <div className="horizontal-track" ref={horizontalScrollRef}>
+          {/* Card 1 */}
+          <div className="product-card-3d" onClick={() => navigate('/productos?categoria=helados')}>
+            <img className="card-img-bg" src={`${API_URL}/uploads/landing/categoria-helados.jpg`} alt="Helados" />
+            <div className="card-content-bottom">
+              <h3 className="card-title-lg">Helados</h3>
+              <p className="card-desc">Cremosos y auténticos</p>
+              <button className="btn-card-action">Ver Catálogo</button>
             </div>
           </div>
+
+          {/* Card 2 */}
+          <div className="product-card-3d" onClick={() => navigate('/productos?categoria=dulces')}>
+            <img className="card-img-bg" src={`${API_URL}/uploads/landing/categoria-dulces.png`} alt="Dulces" />
+            <div className="card-content-bottom">
+              <h3 className="card-title-lg">Repostería</h3>
+              <p className="card-desc">Dulces momentos</p>
+              <button className="btn-card-action">Ver Catálogo</button>
+            </div>
+          </div>
+
+
         </div>
       </section>
 
-      {/* Historia con imagen real */}
-      <section className="historia-visual">
-        <div className="container-xl">
-          <div className="historia-grid">
-            <div className="historia-image-side">
-              <img
-                src={`${API_URL}/uploads/landing/historia-obrador.jpg`}
-                alt="Historia REGMA"
-              />
-            </div>
-
-            <div className="historia-text-side">
-              <span className="section-tag">Nuestra Historia</span>
-              <h2 className="section-heading">Más de 80 Años de Tradición</h2>
-              <p className="text-lg">
-                Desde 1940, REGMA ha sido sinónimo de calidad y tradición en la elaboración
-                de helados artesanales. Nuestra pasión por los ingredientes naturales y las
-                recetas tradicionales nos ha convertido en un referente en Cantabria.
-              </p>
-              <p className="text-lg">
-                Cada helado es elaborado con dedicación en nuestro obrador de
-                Revilla de Camargo, utilizando únicamente productos de la máxima calidad.
-              </p>
-
-              <div className="stats-row">
-                <div className="stat-box">
-                  <div className="stat-number-large">1940</div>
-                  <div className="stat-label-large">Año de fundación</div>
-                </div>
-                <div className="stat-box">
-                  <div className="stat-number-large">4<sup>ta</sup></div>
-                  <div className="stat-label-large">Generación familiar</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Final */}
-      <section className="cta-final">
-        <div className="cta-content-center">
-          <h2 className="cta-title">¿Listo para Disfrutar?</h2>
-          <p className="cta-text">Descubre nuestra amplia variedad de sabores y formatos. La tradición te espera.</p>
-          <button className="btn-cta-large" onClick={() => navigate('/productos')}>
-            Ver Catálogo Completo
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="12 5 19 12 12 19" />
-            </svg>
+      {/* --- 4. HISTORIA TEASER (New) --- */}
+      <section className="map-teaser-section" style={{ height: '60vh' }}>
+        <img
+          src={`${API_URL}/uploads/landing/historia-obrador2.jpg`}
+          alt="Nuestra Historia"
+          className="map-bg-image"
+          style={{ objectPosition: 'center' }}
+        />
+        <div className="map-content-center">
+          <h2 style={{ fontSize: '3rem', marginBottom: '20px' }}>Nuestra Historia</h2>
+          <p style={{ marginBottom: '40px', fontSize: '1.2rem', color: '#333' }}>
+            Más de 80 años de tradición, calidad y pasión por lo auténtico.
+          </p>
+          <button className="btn-premium" onClick={() => navigate('/historia')}>
+            Conocer Más
           </button>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="footer-minimal">
-        <div className="footer-grid">
-          <div className="footer-brand-section">
-            <img
-              src="https://regma.es/wp-content/uploads/2024/09/240503-regma-logotipo-rgb-logo-con-tagline-e1721651920696.png"
-              alt="REGMA"
-              className="footer-logo"
-            />
-            <p className="footer-tagline">El sabor de lo natural desde 1940</p>
-          </div>
+      {/* --- 5. MAPA INTERACTIVO TEASER --- */}
+      <section className="map-teaser-section">
+        {/* Usamos una imagen de fondo (puedes cambiarla por la que quieras) */}
+        <img
+          src={`${API_URL}/uploads/landing/hero-principal.jpg`}
+          alt="Mapa Fondo"
+          className="map-bg-image"
+        />
+        <div className="map-content-center">
+          <h2 style={{ fontSize: '3rem', marginBottom: '20px' }}>Estamos Cerca de Ti</h2>
+          <p style={{ marginBottom: '40px', fontSize: '1.2rem', color: '#333' }}>
+            Descubre nuestras más de 25 ubicaciones en el norte de España.
+          </p>
+          <button className="btn-premium" onClick={() => navigate('/tiendas')}>
+            Ver Mapa
+          </button>
+        </div>
+      </section>
 
-          <div className="footer-links-section">
-            <h4>Productos</h4>
-            <a href="#" onClick={(e) => { e.preventDefault(); navigate('/productos'); }}>Catálogo</a>
-            <a href="#" onClick={(e) => { e.preventDefault(); navigate('/productos?categoria=helados'); }}>Helados</a>
-            <a href="#" onClick={(e) => { e.preventDefault(); navigate('/productos?categoria=dulces'); }}>Dulces</a>
-          </div>
-
-          <div className="footer-links-section">
-            <h4>Cuenta</h4>
-            <a href="#" onClick={(e) => { e.preventDefault(); navigate('/login'); }}>Iniciar Sesión</a>
-            <a href="#" onClick={(e) => { e.preventDefault(); navigate('/register'); }}>Registrarse</a>
-            <a href="#" onClick={(e) => { e.preventDefault(); navigate('/mis-pedidos'); }}>Mis Pedidos</a>
-          </div>
-
-          <div className="footer-links-section">
-            <h4>Contacto</h4>
-            <p>info@regma.es</p>
-            <p>Revilla de Camargo, Cantabria</p>
-            <a href="#" onClick={(e) => { e.preventDefault(); navigate('/tiendas'); }} style={{ color: 'inherit', display: 'block', marginTop: '10px' }}>
-              Localizar Tiendas
-            </a>
-          </div>
+      {/* --- 5. FOOTER MASTERPIECE --- */}
+      <div className="footer-wrapper">
+        {/* Wave Separator */}
+        <div className="custom-shape-divider-top">
+          <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" className="shape-fill"></path>
+          </svg>
         </div>
 
+        <footer className="footer-masterpiece">
+          <div className="footer-content-grid">
+
+            {/* Brand Section */}
+            <div className="footer-brand-section">
+              <img
+                src="https://regma.es/wp-content/uploads/2024/09/240503-regma-logotipo-rgb-logo-con-tagline-e1721651920696.png"
+                alt="Regma"
+                className="footer-logo-official"
+              />
+              <p className="footer-mission">
+                El sabor de lo natural. Ingredientes seleccionados, recetas únicas, calidad y tradición desde 1933.
+              </p>
+            </div>
+
+            {/* Menu Sections */}
+            <div className="footer-menus">
+              <div className="menu-col">
+                <h6 className="menu-title">MENÚ</h6>
+                <ul className="menu-list">
+                  <li onClick={() => navigate('/productos?categoria=Helados')}>Helados y Dulces</li>
+                  <li onClick={() => navigate('/tiendas')}>Trabaja con nosotros</li>
+                  <li onClick={() => navigate('/tiendas')}>Regma para profesionales</li>
+                  <li onClick={() => navigate('/tiendas')}>Localizador de tiendas</li>
+                  <li onClick={() => navigate('/contacto')}>Contacto</li>
+                </ul>
+              </div>
+
+              <div className="menu-col">
+                <h6 className="menu-title">PRODUCTO</h6>
+                <ul className="menu-list">
+                  <li onClick={() => navigate('/productos?categoria=Helados')}>Helados Regma</li>
+                  <li onClick={() => navigate('/productos?categoria=Salados')}>Nuestros Salados</li>
+                  <li onClick={() => navigate('/productos?categoria=Dulces')}>Dulces Regma</li>
+                </ul>
+              </div>
+
+              <div className="menu-col">
+                <h6 className="menu-title">LEGAL</h6>
+                <ul className="menu-list">
+                  <li>Política de privacidad</li>
+                  <li>Política de Cookies</li>
+                  <li>Aviso legal</li>
+                  <li>Canal interno</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </footer>
+
+        {/* Orange Bottom Bar */}
         <div className="footer-bottom-bar">
-          <p>&copy; 2024 REGMA. Todos los derechos reservados.</p>
-          <div className="footer-social-links">
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">Facebook</a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">Instagram</a>
+          <div className="bottom-bar-content">
+            <span className="copyright-text">© 2025 Regma - Tradición y Sabor desde 1933.</span>
+            <div className="bottom-socials">
+              <a href="#" aria-label="Facebook">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+              </a>
+              <a href="#" aria-label="Instagram">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+              </a>
+              <a href="#" aria-label="Email">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+              </a>
+            </div>
           </div>
         </div>
-      </footer>
+      </div>
+
     </div>
   );
 }

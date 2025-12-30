@@ -1,0 +1,942 @@
+/* LandingPageAdvanced.css - Vibrant Summer Design System */
+
+:root {
+    --regma-orange: #ff6600;
+    --regma-orange-light: #ff8533;
+    --regma-teal: #008080;
+    /* Fresh accent */
+    --shimmer-sand: #fdfbf7;
+    /* Off-white warm background */
+    --text-dark: #2c3e50;
+    --text-light: #ffffff;
+    --font-display: 'Outfit', sans-serif;
+}
+
+/* Import Font if needed */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&display=swap');
+
+body {
+    background-color: var(--shimmer-sand);
+    color: var(--text-dark);
+    font-family: var(--font-display);
+    overflow-x: hidden;
+    margin: 0;
+}
+
+/* --- NAVBAR STYLES (Light Mode) --- */
+.navbar-glass {
+    transition: all 0.4s ease;
+}
+
+/* --- NAVBAR STYLES (Light Mode) --- */
+.navbar-glass.scrolled .btn-text-light {
+    color: #ffffff;
+    /* White text when scrolled (dark bg) */
+}
+
+.btn-text-light {
+    background: transparent;
+    border: none;
+    color: var(--text-dark);
+    /* Dark text for light navbar */
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: color 0.3s ease;
+}
+
+/* ... existing code ... */
+
+.horizontal-track {
+    display: flex;
+    gap: 40px;
+    padding: 0 5vw;
+    overflow-x: auto;
+    justify-content: center;
+    /* Center cards */
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    padding-bottom: 80px;
+    /* Space for shadows */
+}
+
+.btn-text-light:hover {
+    color: var(--regma-orange);
+}
+
+.btn-premium-outline {
+    background: transparent;
+    border: 2px solid var(--regma-orange);
+    color: var(--regma-orange);
+    padding: 8px 25px;
+    border-radius: 30px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.btn-premium-outline:hover {
+    background: var(--regma-orange);
+    color: #fff;
+    box-shadow: 0 5px 15px rgba(255, 102, 0, 0.3);
+    transform: translateY(-2px);
+}
+
+
+/* --- 1. HERO VIDEO SECTION (Bright & Sunny) --- */
+.hero-video-container {
+    position: relative;
+    height: 95vh;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fdfbf7;
+}
+
+.hero-video-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    opacity: 0.8;
+}
+
+/* Clear overlay for sunny feel */
+.hero-overlay-gradient {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.2);
+    z-index: 1;
+}
+
+.hero-content-advanced {
+    position: absolute;
+    /* Changed from relative */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    /* Changed from 10 */
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), transparent);
+    display: flex;
+    /* Added for centering content */
+    flex-direction: column;
+    /* Added for vertical stacking */
+    align-items: center;
+    /* Added for horizontal centering */
+    justify-content: center;
+    /* Added for vertical centering */
+    text-align: center;
+    max-width: 100%;
+    /* Adjusted from 1200px */
+    padding: 0 20px;
+}
+
+.hero-logo-main {
+    width: 60vw;
+    max-width: 800px;
+    height: auto;
+    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+    margin-bottom: 20px;
+}
+
+/* 
+.hero-title-mega {
+    font-size: clamp(4rem, 12vw, 15rem);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 0.85;
+    text-transform: uppercase;
+    margin: 0;
+    color: var(--regma-orange);
+    text-shadow: 2px 2px 0px rgba(255, 255, 255, 0.5);
+}
+*/
+
+.hero-subtitle-advanced {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 15px 40px;
+    border-radius: 50px;
+    font-size: clamp(1rem, 1.5vw, 1.2rem);
+    font-weight: 700;
+    margin-top: 3rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dark);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Scroll Indicator - Modern Mouse */
+.scroll-indicator {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 10;
+    opacity: 1;
+    cursor: pointer;
+}
+
+.mouse {
+    width: 30px;
+    height: 50px;
+    border: 2px solid var(--text-dark);
+    /* Dark border for contrast */
+    border-radius: 20px;
+    position: relative;
+    margin-bottom: 10px;
+    background: rgba(255, 255, 255, 0.5);
+    /* Substle fill */
+    backdrop-filter: blur(2px);
+}
+
+.wheel {
+    width: 4px;
+    height: 8px;
+    background: var(--regma-orange);
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 2px;
+    animation: scrollWheel 2s infinite;
+}
+
+.arrow-scroll span {
+    display: block;
+    width: 10px;
+    height: 10px;
+    border-bottom: 2px solid var(--regma-orange);
+    border-right: 2px solid var(--regma-orange);
+    transform: rotate(45deg);
+    margin: -5px auto 0;
+    animation: arrowScroll 2s infinite;
+}
+
+.arrow-scroll span:nth-child(2) {
+    animation-delay: -0.2s;
+}
+
+.arrow-scroll span:nth-child(3) {
+    animation-delay: -0.4s;
+}
+
+@keyframes scrollWheel {
+    0% {
+        top: 10px;
+        opacity: 1;
+        height: 8px;
+    }
+
+    100% {
+        top: 30px;
+        opacity: 0;
+        height: 4px;
+    }
+}
+
+@keyframes arrowScroll {
+    0% {
+        opacity: 0;
+        transform: rotate(45deg) translate(-5px, -5px);
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        transform: rotate(45deg) translate(5px, 5px);
+    }
+}
+
+/* --- 2. 100% NATURAL SECTION (Redesign) --- */
+.natural-section {
+    padding: 120px 5vw;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.natural-content {
+    max-width: 800px;
+}
+
+.natural-title {
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 900;
+    line-height: 0.9;
+    color: var(--regma-orange);
+    text-transform: uppercase;
+    margin-bottom: 30px;
+}
+
+.natural-desc {
+    font-size: 1.5rem;
+    color: var(--text-dark);
+    line-height: 1.6;
+}
+
+/* --- 3. HORIZONTAL SCROLL CATALOG (Refresh) --- */
+.horizontal-section {
+    padding: 100px 0;
+    background: var(--shimmer-sand);
+    /* Light sandy bg */
+    overflow: hidden;
+    position: relative;
+}
+
+.horizontal-track {
+    display: flex;
+    gap: 40px;
+    padding: 0 5vw;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    padding-bottom: 80px;
+    /* Space for shadows */
+}
+
+.product-card-3d {
+    min-width: 350px;
+    height: 550px;
+    position: relative;
+    border-radius: 30px;
+    overflow: hidden;
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    cursor: pointer;
+    background: white;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    /* Softer shadow */
+}
+
+.product-card-3d:hover {
+    transform: scale(1.02) translateY(-10px);
+    box-shadow: 0 30px 60px rgba(255, 102, 0, 0.15);
+    /* Orange glow on hover */
+}
+
+.card-img-bg {
+    width: 100%;
+    height: 70%;
+    object-fit: cover;
+    transition: transform 0.8s ease;
+}
+
+.product-card-3d:hover .card-img-bg {
+    transform: scale(1.05);
+}
+
+.card-content-bottom {
+    height: 30%;
+    padding: 20px 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: white;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.card-title-lg {
+    font-size: 2rem;
+    font-weight: 800;
+    margin: 0;
+    color: var(--text-dark);
+}
+
+.card-desc {
+    color: #888;
+    margin-top: 5px;
+    font-size: 1rem;
+}
+
+/* --- 4. MAP TEASER (Vibrant) --- */
+.map-teaser-section {
+    height: 70vh;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f0f0f0;
+    overflow: hidden;
+}
+
+.map-bg-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    opacity: 0.8;
+}
+
+.map-content-center {
+    z-index: 10;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    padding: 60px 80px;
+    border-radius: 40px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+    border: 1px solid white;
+}
+
+.btn-premium {
+    padding: 20px 50px;
+    background: var(--regma-orange);
+    color: white;
+    border: none;
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(255, 102, 0, 0.3);
+}
+
+.btn-premium:hover {
+    transform: scale(1.05);
+    box-shadow: 0 20px 40px rgba(255, 102, 0, 0.4);
+}
+
+/* --- FOOTER (Clean White) --- */
+.footer-minimal {
+    background: white;
+    color: var(--text-dark);
+    padding: 80px 5vw;
+    border-top: 1px solid #eee;
+}
+
+.footer-logo {
+    filter: none;
+    /* Show original colors */
+}
+
+/* --- NEW COMPONENT STYLES --- */
+.btn-card-action {
+    margin-top: 15px;
+    padding: 10px 0;
+    width: 180px;
+    /* Fixed width for consistency */
+    border: 2px solid var(--regma-orange);
+    background: transparent;
+    color: var(--regma-orange);
+    border-radius: 50px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    align-self: flex-start;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn-card-action:hover {
+    background: var(--regma-orange);
+    color: white;
+    box-shadow: 0 5px 15px rgba(255, 102, 0, 0.2);
+    transform: translateY(-2px);
+}
+
+.section-tag {
+    display: block;
+    color: var(--regma-orange);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+}
+
+.section-heading-fresh {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    color: var(--text-dark);
+    font-weight: 900;
+    margin: 0 0 50px 0;
+    line-height: 1.1;
+    letter-spacing: -1px;
+}/* User Dropdown */
+.user-dropdown-container {
+    position: relative;
+    display: inline-block;
+}
+
+.user-dropdown-menu {
+    position: absolute;
+    top: 120%; /* Below avatar */
+    right: 0;
+    margin-top: 10px;
+    background: white;
+    border-radius: 16px; /* Smooth corners */
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15); /* Soft premium shadow */
+    min-width: 220px;
+    overflow: hidden;
+    z-index: 2000;
+    border: 1px solid rgba(0,0,0,0.05);
+    animation: fadeInDropdown 0.2s ease forwards;
+}
+
+@keyframes fadeInDropdown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-item {
+    padding: 15px 20px;
+    color: #333;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+}
+
+.dropdown-item:hover {
+    background: #fff8f2; /* Light orange tint */
+    color: var(--regma-orange);
+    padding-left: 25px; /* Slight movement effect */
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: #f0f0f0;
+    margin: 0;
+}
+
+/* --- PREMIUM FOOTER STYLES --- */
+.footer-premium {
+    background: #0a0a0a; /* Deep black/dark */
+    color: #e0e0e0;
+    padding: 80px 5% 40px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    font-family: 'Outfit', sans-serif;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 60px;
+    max-width: 1400px;
+    margin: 0 auto 80px;
+}
+
+.footer-col.brand-col {
+    padding-right: 40px;
+}
+
+.footer-logo {
+    height: 45px;
+    filter: brightness(0) invert(1);
+    margin-bottom: 25px;
+    opacity: 0.9;
+}
+
+.footer-tagline {
+    font-size: 1.1rem;
+    color: #888;
+    line-height: 1.6;
+    margin-bottom: 25px;
+}
+
+.footer-year {
+    font-size: 0.9rem;
+    color: #555;
+    font-weight: 500;
+}
+
+.footer-heading {
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: white;
+    margin-bottom: 25px;
+    font-weight: 700;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.footer-links li {
+    color: #999;
+    cursor: pointer;
+    transition: color 0.3s, transform 0.3s;
+    font-size: 0.95rem;
+}
+
+.footer-links li:hover {
+    color: var(--regma-orange);
+    transform: translateX(5px);
+}
+
+.contact-info li {
+    cursor: default;
+    color: #777;
+}
+
+.contact-info li:hover {
+    transform: none;
+    color: #777;
+}
+
+/* Social Icons */
+.social-links {
+    display: flex;
+    gap: 15px;
+}
+
+.social-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: all 0.3s;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.social-icon:hover {
+    background: var(--regma-orange);
+    border-color: var(--regma-orange);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(255, 102, 0, 0.3);
+}
+
+/* Footer Bottom */
+.footer-bottom {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding-top: 40px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    font-size: 0.85rem;
+    color: #555;
+}
+
+.legal-links {
+    display: flex;
+    gap: 30px;
+}
+
+.legal-links span {
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.legal-links span:hover {
+    color: white;
+}
+
+.made-with {
+    font-weight: 500;
+}
+
+@media (max-width: 1024px) {
+    .footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+    }
+}
+
+@media (max-width: 768px) {
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+    .footer-bottom {
+        flex-direction: column;
+        text-align: center;
+    }
+    .legal-links {
+        justify-content: center;
+    }
+}
+
+/* --- FOOTER MASTERPIECE (OFFICIAL REPLICA) --- */
+.footer-wrapper {
+    position: relative;
+    background: #fdfbf7; /* Cream/Natural background like official */
+    color: #333;
+    font-family: 'Outfit', sans-serif;
+}
+
+/* Wave */
+.custom-shape-divider-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    overflow: hidden;
+    line-height: 0;
+    transform: rotate(180deg);
+}
+
+.custom-shape-divider-top svg {
+    position: relative;
+    display: block;
+    width: calc(100% + 1.3px);
+    height: 50px;
+    transform: rotateY(180deg);
+}
+
+.custom-shape-divider-top .shape-fill {
+    fill: #fdfbf7;
+}
+
+/* Main Body */
+.footer-masterpiece {
+    padding: 80px 5% 60px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.footer-content-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 80px;
+}
+
+.footer-brand-section {
+    max-width: 350px;
+}
+
+.footer-logo-official {
+    height: 40px;
+    margin-bottom: 25px;
+    /* No invert filter needed if using correct logo, assuming logo is already colored/orange */
+    /* If logo is white, we might need: filter: brightness(0) saturate(100%) invert(43%) sepia(98%) saturate(1633%) hue-rotate(346deg) brightness(101%) contrast(105%); for orange */
+}
+
+.footer-mission {
+    font-size: 1.1rem;
+    color: #666;
+    line-height: 1.6;
+    font-weight: 300;
+}
+
+/* Menus */
+.footer-menus {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+}
+
+.menu-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #999;
+    margin-bottom: 25px;
+    text-transform: uppercase;
+}
+
+.menu-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.menu-list li {
+    font-size: 1rem;
+    color: #444;
+    cursor: pointer;
+    transition: color 0.2s;
+    font-weight: 400;
+}
+
+.menu-list li:hover {
+    color: var(--regma-orange);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+/* Bottom Bar */
+.footer-bottom-bar {
+    background: var(--regma-orange); /* Vibrant Orange */
+    padding: 20px 5%;
+    color: white;
+}
+
+.bottom-bar-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.copyright-text {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.bottom-socials {
+    display: flex;
+    gap: 20px;
+}
+
+.bottom-socials a {
+    color: white;
+    transition: transform 0.2s;
+}
+
+.bottom-socials a:hover {
+    transform: scale(1.1);
+}
+
+@media (max-width: 1024px) {
+    .footer-content-grid {
+        grid-template-columns: 1fr;
+        gap: 50px;
+    }
+    .footer-menus {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .footer-menus {
+        grid-template-columns: 1fr;
+    }
+    .bottom-bar-content {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+}
+
+/* --- AESTHETIC REFINEMENTS --- */
+
+/* 1. Background Gradient & Depth */
+.footer-wrapper {
+    background: linear-gradient(to bottom, #fcfbf9, #f7f3ed); /* Subtle warm gradient */
+    position: relative;
+    overflow: hidden; /* For watermark */
+}
+
+/* 2. Brand Watermark (Decorative) */
+.footer-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 5%;
+    transform: translateY(-50%) rotate(-10deg);
+    width: 400px;
+    height: 400px;
+    background-image: url('https://regma.es/wp-content/uploads/2024/09/240503-regma-logotipo-rgb-logo-con-tagline-e1721651920696.png');
+    background-repeat: no-repeat;
+    background-size: contain;
+    opacity: 0.03; /* Very subtle */
+    pointer-events: none;
+    z-index: 0;
+    filter: grayscale(1);
+}
+
+/* 3. Orange Gradient Bar */
+.footer-bottom-bar {
+    background: linear-gradient(90deg, #ff6600, #ff8533); /* Vibrant gradient */
+    box-shadow: 0 -4px 20px rgba(255, 102, 0, 0.15); /* Orange glow up */
+    position: relative;
+    z-index: 1;
+}
+
+/* 4. Interactive Links (Underline Slide) */
+.menu-list li {
+    position: relative;
+    width: fit-content;
+}
+
+.menu-list li::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 1px;
+    bottom: -2px;
+    left: 0;
+    background-color: var(--regma-orange);
+    transition: width 0.3s ease;
+}
+
+.menu-list li:hover::after {
+    width: 100%;
+}
+
+.menu-list li:hover {
+    text-decoration: none; /* Remove default underline */
+    color: var(--regma-orange);
+    transform: translateX(5px);
+}
+
+/* 5. Typography Polish */
+.menu-title {
+    color: #ff6600; /* Orange headings */
+    opacity: 0.8;
+}
+
+.footer-mission {
+    font-size: 1.05rem;
+    color: #555;
+    font-weight: 350; /* Slightly lighter/cleaner */
+}
+
+/* 6. Socials Enhancement */
+.bottom-socials a {
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    padding: 8px;
+    display: flex; /* Center SVG */
+    transition: all 0.3s;
+}
+
+.bottom-socials a:hover {
+    background: white;
+    color: #ff6600;
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
