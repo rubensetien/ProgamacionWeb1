@@ -33,6 +33,7 @@ const ubicacionSchema = new mongoose.Schema({
   contacto: {
     telefono: { type: String, trim: true },
     email: { type: String, lowercase: true, trim: true },
+    password: { type: String, trim: true }, // ✅ AÑADIDO: Contraseña del correo
     horario: { type: String }
   },
 

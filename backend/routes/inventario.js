@@ -130,6 +130,40 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
+// GET /api/inventario/producto/:id - Obtener inventario por ID de PRODUCTO
+router.get('/producto/:id', auth, async (req, res) => {
+  try {
+    const inventario = await Inventario.findOne({ producto: req.params.id })
+      .populate({
+        path: 'producto',
+        populate: [
+          { path: 'categoria', select: 'nombre' },
+          { path: 'variante', select: 'nombre' },
+          { path: 'formato', select: 'nombre' }
+        ]
+      });
+
+    if (!inventario) {
+      return res.status(404).json({
+        success: false,
+        message: 'Inventario no encontrado para este producto'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: inventario
+    });
+  } catch (error) {
+    console.error('Error obteniendo inventario por producto:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener inventario',
+      error: error.message
+    });
+  }
+});
+
 // POST /api/inventario - Crear inventario para un producto
 router.post('/', auth, isAdmin, async (req, res) => {
   try {

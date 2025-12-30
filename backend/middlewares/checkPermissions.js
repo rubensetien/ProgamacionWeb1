@@ -4,19 +4,19 @@ export const checkPermission = (permisoRequerido) => {
   return (req, res, next) => {
     try {
       const usuario = req.usuario;
-      
+
       if (!usuario) {
         return res.status(401).json({
           success: false,
           message: 'No autenticado'
         });
       }
-      
+
       // Admin tiene todos los permisos
       if (usuario.rol === 'admin') {
         return next();
       }
-      
+
       // Verificar si tiene el permiso específico
       if (!usuario.permisos || !usuario.permisos[permisoRequerido]) {
         return res.status(403).json({
@@ -25,7 +25,7 @@ export const checkPermission = (permisoRequerido) => {
           permisoRequerido
         });
       }
-      
+
       next();
     } catch (error) {
       console.error('Error verificando permisos:', error);
@@ -42,24 +42,24 @@ export const checkPermissions = (permisosRequeridos = []) => {
   return (req, res, next) => {
     try {
       const usuario = req.usuario;
-      
+
       if (!usuario) {
         return res.status(401).json({
           success: false,
           message: 'No autenticado'
         });
       }
-      
+
       // Admin tiene todos los permisos
       if (usuario.rol === 'admin') {
         return next();
       }
-      
+
       // Verificar que tiene TODOS los permisos requeridos
-      const tienePermisos = permisosRequeridos.every(permiso => 
+      const tienePermisos = permisosRequeridos.every(permiso =>
         usuario.permisos && usuario.permisos[permiso]
       );
-      
+
       if (!tienePermisos) {
         return res.status(403).json({
           success: false,
@@ -67,7 +67,7 @@ export const checkPermissions = (permisosRequeridos = []) => {
           permisosRequeridos
         });
       }
-      
+
       next();
     } catch (error) {
       console.error('Error verificando permisos:', error);
@@ -84,24 +84,24 @@ export const checkAnyPermission = (permisosRequeridos = []) => {
   return (req, res, next) => {
     try {
       const usuario = req.usuario;
-      
+
       if (!usuario) {
         return res.status(401).json({
           success: false,
           message: 'No autenticado'
         });
       }
-      
+
       // Admin tiene todos los permisos
       if (usuario.rol === 'admin') {
         return next();
       }
-      
+
       // Verificar que tiene AL MENOS UNO de los permisos
-      const tieneAlgunPermiso = permisosRequeridos.some(permiso => 
+      const tieneAlgunPermiso = permisosRequeridos.some(permiso =>
         usuario.permisos && usuario.permisos[permiso]
       );
-      
+
       if (!tieneAlgunPermiso) {
         return res.status(403).json({
           success: false,
@@ -109,7 +109,7 @@ export const checkAnyPermission = (permisosRequeridos = []) => {
           permisosRequeridos
         });
       }
-      
+
       next();
     } catch (error) {
       console.error('Error verificando permisos:', error);
@@ -126,17 +126,17 @@ export const checkRole = (rolesPermitidos = []) => {
   return (req, res, next) => {
     try {
       const usuario = req.usuario;
-      
+
       if (!usuario) {
         return res.status(401).json({
           success: false,
           message: 'No autenticado'
         });
       }
-      
+
       // Normalizar a array
       const roles = Array.isArray(rolesPermitidos) ? rolesPermitidos : [rolesPermitidos];
-      
+
       if (!roles.includes(usuario.rol)) {
         return res.status(403).json({
           success: false,
@@ -145,7 +145,7 @@ export const checkRole = (rolesPermitidos = []) => {
           rolesPermitidos: roles
         });
       }
-      
+
       next();
     } catch (error) {
       console.error('Error verificando rol:', error);
@@ -163,19 +163,19 @@ export const checkUbicacionAccess = (tipoUbicacion) => {
     try {
       const usuario = req.usuario;
       const ubicacionId = req.params.id || req.params.ubicacionId || req.body.ubicacionId;
-      
+
       if (!usuario) {
         return res.status(401).json({
           success: false,
           message: 'No autenticado'
         });
       }
-      
+
       // Admin tiene acceso a todo
       if (usuario.rol === 'admin') {
         return next();
       }
-      
+
       // Verificar acceso según rol
       if (usuario.rol === 'gestor-tienda' && tipoUbicacion === 'tienda') {
         if (usuario.tiendaAsignada?.toString() !== ubicacionId?.toString()) {
@@ -186,10 +186,22 @@ export const checkUbicacionAccess = (tipoUbicacion) => {
         }
         return next();
       }
-      
+
+      // La "Cuenta de Tienda" (entidad) usa ubicacionAsignada
+      if (usuario.rol === 'tienda') {
+        if (usuario.ubicacionAsignada?.tipo !== tipoUbicacion ||
+          usuario.ubicacionAsignada?.referencia?.toString() !== ubicacionId?.toString()) {
+          return res.status(403).json({
+            success: false,
+            message: `No tienes acceso a esta ${tipoUbicacion}`
+          });
+        }
+        return next();
+      }
+
       if (usuario.rol === 'trabajador') {
         if (usuario.ubicacionAsignada?.tipo !== tipoUbicacion ||
-            usuario.ubicacionAsignada?.referencia?.toString() !== ubicacionId?.toString()) {
+          usuario.ubicacionAsignada?.referencia?.toString() !== ubicacionId?.toString()) {
           return res.status(403).json({
             success: false,
             message: `No tienes acceso a este ${tipoUbicacion}`
@@ -197,13 +209,13 @@ export const checkUbicacionAccess = (tipoUbicacion) => {
         }
         return next();
       }
-      
+
       // Si no cumple ninguna condición
       return res.status(403).json({
         success: false,
         message: 'No tienes acceso a esta ubicación'
       });
-      
+
     } catch (error) {
       console.error('Error verificando acceso a ubicación:', error);
       res.status(500).json({
@@ -217,11 +229,11 @@ export const checkUbicacionAccess = (tipoUbicacion) => {
 // Solo admin
 export const onlyAdmin = checkRole(['admin']);
 
-// Admin o gestor de tienda
-export const adminOrGestor = checkRole(['admin', 'gestor-tienda']);
+// Admin, gestor de tienda o cuenta de tienda
+export const adminOrGestor = checkRole(['admin', 'gestor-tienda', 'tienda']);
 
 // Personal empresarial (excluye clientes)
-export const onlyStaff = checkRole(['admin', 'gestor-tienda', 'trabajador']);
+export const onlyStaff = checkRole(['admin', 'gestor-tienda', 'trabajador', 'tienda']);
 
 export default {
   checkPermission,

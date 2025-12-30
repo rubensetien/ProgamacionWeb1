@@ -32,6 +32,9 @@ const io = new Server(server, {
   }
 });
 
+// Hacer dideal io accesible desde las rutas
+app.set('io', io);
+
 // Importar manejadores de Socket.IO
 import('./socketHandlers.js').then(module => {
   if (module.default) module.default(io);
@@ -112,6 +115,11 @@ try {
   const dashboardRoutes = await import('./routes/dashboard.js');
   app.use('/api/dashboard', dashboardRoutes.default);
 } catch (e) { console.log('⚠️ dashboard.js no encontrado'); }
+
+try {
+  const solicitudesStockRoutes = await import('./routes/solicitudesStock.js');
+  app.use('/api/solicitudes-stock', solicitudesStockRoutes.default);
+} catch (e) { console.log('⚠️ solicitudesStock.js no encontrado'); }
 
 // Ruta de prueba
 app.get('/', (req, res) => {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../context/AuthContext'; // ✅ Correct path
 import axios from 'axios';
+import Swal from 'sweetalert2';
 import '../../../styles/admin/gestion/GestionProductos.css';
 import '../../../styles/admin/gestion/GestionTurnos.css'; // ✅ Correct path
 
@@ -15,7 +16,7 @@ const GestionTurnos = () => {
     const [fechaInicioSemana, setFechaInicioSemana] = useState(getLunesActual());
     const [loading, setLoading] = useState(false);
     const [guardando, setGuardando] = useState(false);
-    const [mensaje, setMensaje] = useState(null);
+    // const [mensaje, setMensaje] = useState(null);
 
     // Obtener el lunes de la semana actual
     function getLunesActual() {
@@ -61,7 +62,14 @@ const GestionTurnos = () => {
             }
         } catch (error) {
             console.error('Error cargando ubicaciones:', error);
-            setMensaje({ tipo: 'error', texto: 'Error cargando tiendas' });
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error cargando tiendas',
+                toast: true,
+                position: 'top-end',
+                timer: 4000
+            });
         }
     };
 
@@ -119,7 +127,14 @@ const GestionTurnos = () => {
 
         } catch (error) {
             console.error('Error cargando datos:', error);
-            setMensaje({ tipo: 'error', texto: 'Error cargando datos' });
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error cargando datos',
+                toast: true,
+                position: 'top-end',
+                timer: 4000
+            });
         } finally {
             setLoading(false);
         }
@@ -163,7 +178,6 @@ const GestionTurnos = () => {
 
     const guardarCambios = async () => {
         setGuardando(true);
-        setMensaje(null);
         try {
             // Preparar payload
             // Filtramos solo los turnos que corresponden a la semana y ubicación actuales
@@ -184,15 +198,30 @@ const GestionTurnos = () => {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
-            setMensaje({ tipo: 'success', texto: 'Turnos guardados correctamente' });
-            setTimeout(() => setMensaje(null), 3000);
+            Swal.fire({
+                icon: 'success',
+                title: 'Guardado',
+                text: 'Turnos guardados correctamente',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
 
             // Recargar para asegurar consistencia
             fetchTrabajadoresYTurnos();
 
         } catch (error) {
             console.error('Error guardando turnos:', error);
-            setMensaje({ tipo: 'error', texto: 'Error al guardar cambios' });
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al guardar cambios',
+                toast: true,
+                position: 'top-end',
+                timer: 4000
+            });
         } finally {
             setGuardando(false);
         }
@@ -229,11 +258,7 @@ const GestionTurnos = () => {
                 </div>
             </div>
 
-            {mensaje && (
-                <div className={`alert alert-${mensaje.tipo === 'error' ? 'error' : 'success'}`}>
-                    {mensaje.texto}
-                </div>
-            )}
+            {/* Alerta eliminada, reemplazada con SweetAlert2 */}
 
             <div className="filtros-bar">
                 <div className="select-container">
@@ -260,7 +285,9 @@ const GestionTurnos = () => {
             </div>
 
             {loading ? (
-                <div className="loading-spinner">Cargando turnos...</div>
+                <div style={{ padding: '50px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <div className="loading-spinner"></div>
+                </div>
             ) : (
                 <div className="tabla-container">
                     <div className="grid-turnos">

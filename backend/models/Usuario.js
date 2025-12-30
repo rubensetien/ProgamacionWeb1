@@ -34,7 +34,7 @@ const usuarioSchema = new mongoose.Schema({
   // ========== ROL Y TIPO ==========
   rol: {
     type: String,
-    enum: ['admin', 'gestor-tienda', 'trabajador', 'cliente'],
+    enum: ['admin', 'gestor-tienda', 'trabajador', 'cliente', 'tienda'],
     default: 'cliente',
     required: true
   },
@@ -200,6 +200,7 @@ usuarioSchema.pre('save', function (next) {
       break;
 
     case 'gestor-tienda':
+      // Legacy support
       this.permisos.verStockTienda = true;
       this.permisos.gestionarStock = true;
       this.permisos.solicitarProductos = true;
@@ -207,6 +208,19 @@ usuarioSchema.pre('save', function (next) {
       this.permisos.procesarPedidos = true;
       this.permisos.accederChatEmpresarial = true;
       this.permisos.verReportesVentas = true;
+      break;
+
+    case 'tienda':
+      // Nueva Cuenta de Tienda (Entidad)
+      this.permisos.verStockTienda = true;
+      this.permisos.gestionarStock = true;
+      this.permisos.solicitarProductos = true;
+      this.permisos.verPedidosTienda = true;
+      this.permisos.procesarPedidos = true;
+      this.permisos.accederChatEmpresarial = true;
+      this.permisos.verReportesVentas = true;
+      // Permisos adicionales de gestión de equipo propios si aplica
+      this.permisos.gestionarUsuarios = false; // Por seguridad, la tienda no crea usuarios, solo el admin
       break;
 
     case 'trabajador':

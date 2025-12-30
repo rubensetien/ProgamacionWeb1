@@ -1,5 +1,6 @@
 import express from 'express';
 import Ubicacion from '../models/Ubicacion.js';
+import Usuario from '../models/Usuario.js'; // ✅ Importante para sync de usuarios
 import { auth, isAdmin } from '../middlewares/auth.js'; // ✅ Importante
 
 const router = express.Router();
@@ -238,6 +239,42 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const ubicacion = await Ubicacion.create(req.body);
+
+    // ✅ SYNC: Crear/Actualizar usuario de tienda si hay credenciales
+    if (req.body.contacto?.email && req.body.contacto?.password) {
+      try {
+        const { email, password } = req.body.contacto;
+        const nombreTienda = req.body.nombre;
+
+        // Buscar si ya existe usuario
+        let usuario = await Usuario.findOne({ email });
+
+        if (usuario) {
+          // Actualizar usuario existente
+          usuario.password = password;
+          usuario.rol = 'tienda'; // Asegurar rol
+          usuario.tiendaAsignada = ubicacion._id;
+          usuario.nombre = nombreTienda; // Opcional: actualizar nombre
+          await usuario.save();
+          console.log(`[SYNC] Usuario actualizado para tienda: ${nombreTienda}`);
+        } else {
+          // Crear nuevo usuario
+          await Usuario.create({
+            nombre: nombreTienda,
+            email: email,
+            password: password,
+            rol: 'tienda',
+            tiendaAsignada: ubicacion._id,
+            activo: true
+          });
+          console.log(`[SYNC] Usuario creado para tienda: ${nombreTienda}`);
+        }
+      } catch (syncError) {
+        console.error('Error sincronizando usuario de tienda:', syncError);
+        // No fallamos la request principal, solo logueamos el error
+      }
+    }
+
     res.status(201).json({
       success: true,
       data: ubicacion
@@ -273,6 +310,45 @@ router.put('/:id', async (req, res) => {
         success: false,
         message: 'Ubicación no encontrada'
       });
+    }
+
+    // ✅ SYNC: Actualizar usuario si cambiaron credenciales
+    if (req.body.contacto?.email && req.body.contacto?.password) {
+      try {
+        const { email, password } = req.body.contacto;
+        const nombreTienda = req.body.nombre || ubicacion.nombre;
+
+        // Estrategia: Buscar por tiendaAsignada O por email
+        let usuario = await Usuario.findOne({
+          $or: [
+            { tiendaAsignada: ubicacion._id },
+            { email: email }
+          ]
+        });
+
+        if (usuario) {
+          usuario.email = email; // Actualizar email si cambió
+          usuario.password = password;
+          usuario.rol = 'tienda';
+          usuario.tiendaAsignada = ubicacion._id;
+          usuario.nombre = nombreTienda;
+          await usuario.save();
+          console.log(`[SYNC] Usuario actualizado en edición de tienda: ${nombreTienda}`);
+        } else {
+          // Crear si no existía (raro en update, pero posible si se añaden credenciales tarde)
+          await Usuario.create({
+            nombre: nombreTienda,
+            email: email,
+            password: password,
+            rol: 'tienda',
+            tiendaAsignada: ubicacion._id,
+            activo: true
+          });
+          console.log(`[SYNC] Usuario creado en edición de tienda: ${nombreTienda}`);
+        }
+      } catch (syncError) {
+        console.error('Error sincronizando usuario en update:', syncError);
+      }
     }
 
     res.json({

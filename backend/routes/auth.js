@@ -134,6 +134,8 @@ router.post('/login', loginLimiter, async (req, res) => {
         telefono: usuario.telefono,
         permisos: usuario.permisos,
         activo: usuario.activo,
+        tipoTrabajador: usuario.tipoTrabajador,
+        ubicacionAsignada: usuario.ubicacionAsignada,
         token
       }
     });

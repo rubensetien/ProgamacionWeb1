@@ -321,7 +321,7 @@ export default function GestionTrabajadores() {
                 >
                     <option value="todos">Todos los roles</option>
                     <option value="trabajador">Trabajador</option>
-                    <option value="gestor-tienda">Gestor de Tienda</option>
+                    <option value="tienda">Cuenta de Tienda</option>
                     <option value="admin">Administrador</option>
                 </select>
             </div>
@@ -355,11 +355,11 @@ export default function GestionTrabajadores() {
                                     <td>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                             <span className={`badge`} style={{
-                                                background: trabajador.rol === 'admin' ? '#fecaca' : '#dbeafe',
-                                                color: trabajador.rol === 'admin' ? '#991b1b' : '#1e40af',
+                                                background: trabajador.rol === 'admin' ? '#fecaca' : trabajador.rol === 'tienda' ? '#ddd6fe' : '#dbeafe',
+                                                color: trabajador.rol === 'admin' ? '#991b1b' : trabajador.rol === 'tienda' ? '#5b21b6' : '#1e40af',
                                                 textTransform: 'capitalize'
                                             }}>
-                                                {trabajador.rol.replace('-', ' ')}
+                                                {trabajador.rol === 'tienda' ? 'CUENTA TIENDA' : trabajador.rol.replace('-', ' ')}
                                             </span>
                                             {trabajador.tipoTrabajador && (
                                                 <span style={{ fontSize: '0.8em', color: '#666', background: '#f3f4f6', padding: '2px 6px', borderRadius: '4px', width: 'fit-content' }}>
@@ -402,11 +402,11 @@ export default function GestionTrabajadores() {
             </div>
 
             <Pagination
-                page={page}
+                currentPage={page}
                 totalPages={totalPages}
                 onPageChange={setPage}
-                limit={limit}
-                onLimitChange={(newLimit) => {
+                itemsPerPage={limit}
+                onItemsPerPageChange={(newLimit) => {
                     setLimit(newLimit);
                     setPage(1);
                 }}
@@ -479,7 +479,7 @@ export default function GestionTrabajadores() {
                                         onChange={(e) => setFormulario({ ...formulario, rol: e.target.value })}
                                     >
                                         <option value="trabajador">Trabajador</option>
-                                        <option value="gestor-tienda">Gestor de Tienda</option>
+                                        <option value="tienda">Cuenta de Tienda (Entidad)</option>
                                         <option value="admin">Administrador</option>
                                     </select>
                                 </div>

@@ -165,6 +165,37 @@ export default function GestionProductos() {
     setMostrarModal(true);
   };
 
+  // Auto-generar nombre del producto cuando cambian variante o formato
+  useEffect(() => {
+    if (modoEdicion) return; // No cambiar nombre automáticamente en edición para no perder personalizaciones
+
+    let nuevoNombre = '';
+    const cat = categorias.find(c => c._id === formulario.categoria);
+
+    // 1. Si hay Variante seleccionada, usar su nombre
+    if (formulario.variante) {
+      const v = variantes.find(v => v._id === formulario.variante);
+      if (v) nuevoNombre += v.nombre;
+    } else if (cat && !cat.requiereSabor) {
+      // Si no requiere sabor, usar nombre de categoría como base (opcional, o dejar vacío)
+      // nuevoNombre += cat.nombre; 
+      // Mejor dejar vacío si es producto genérico para que el usuario escriba "Servilletas", etc.
+    }
+
+    // 2. Si hay Formato seleccionado, añadirlo
+    if (formulario.formato) {
+      const f = formatos.find(f => f._id === formulario.formato);
+      if (f) {
+        nuevoNombre = nuevoNombre ? `${nuevoNombre} - ${f.nombre}` : f.nombre;
+      }
+    }
+
+    // Solo actualizar si hemos generado algo con sentido
+    if (nuevoNombre) {
+      setFormulario(prev => ({ ...prev, nombre: nuevoNombre }));
+    }
+  }, [formulario.variante, formulario.formato, categorias, variantes, formatos, modoEdicion]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 

@@ -22,7 +22,7 @@ router.get('/trabajadores', async (req, res) => {
       // Default roles if no specific rol requested
       rol: rol && rol !== 'todos'
         ? rol
-        : { $in: ['admin', 'gestor', 'trabajador', 'gestor-tienda'] }
+        : { $in: ['admin', 'gestor', 'trabajador', 'gestor-tienda', 'tienda'] }
     };
 
     if (search) {
@@ -128,7 +128,7 @@ router.get('/', onlyAdmin, async (req, res) => {
 router.get('/staff', onlyAdmin, async (req, res) => {
   try {
     const usuarios = await Usuario.find({
-      rol: { $in: ['admin', 'gestor-tienda', 'trabajador'] }
+      rol: { $in: ['admin', 'gestor-tienda', 'trabajador', 'tienda'] }
     })
       .populate('ubicacionAsignada.referencia')
       .populate('tiendaAsignada')

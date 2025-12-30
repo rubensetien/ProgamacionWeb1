@@ -14,6 +14,7 @@ import StoreLocator from './components/public/StoreLocator';
 import AdminLayout from './components/admin/AdminLayout';
 import './App.css';
 import TrabajadorLayout from './components/trabajador/TrabajadorLayout';
+import GestorLayout from './components/gestor/GestorLayout';
 
 // Componente para proteger rutas que SÍ requieren autenticación
 const ProtectedRoute = ({ children, rolesPermitidos }) => {
@@ -66,7 +67,8 @@ function AppContent() {
   // Helper para redirección post-login
   const getRedirectPath = () => {
     if (!autenticado) return '/login';
-    if (usuario?.rol === 'admin' || usuario?.rol === 'gestor') return '/admin';
+    if (usuario?.rol === 'admin') return '/admin';
+    if (usuario?.rol === 'tienda' || usuario?.rol === 'gestor-tienda') return '/tienda';
     if (usuario?.rol === 'trabajador') return '/trabajador';
     return '/productos';
   };
@@ -137,8 +139,18 @@ function AppContent() {
         <Route
           path="/admin/*"
           element={
-            <ProtectedRoute rolesPermitidos={['admin', 'gestor']}>
+            <ProtectedRoute rolesPermitidos={['admin']}>
               <AdminLayout />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Rutas de Tienda (Nueva Cuenta de Tienda) */}
+        <Route
+          path="/tienda/*"
+          element={
+            <ProtectedRoute rolesPermitidos={['tienda', 'gestor-tienda']}>
+              <GestorLayout />
             </ProtectedRoute>
           }
         />

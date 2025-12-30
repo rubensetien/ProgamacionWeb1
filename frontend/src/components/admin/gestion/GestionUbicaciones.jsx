@@ -25,7 +25,7 @@ export default function GestionUbicaciones() {
         codigo: '',
         tipo: 'punto-venta',
         direccion: { calle: '', ciudad: '', codigoPostal: '', provincia: '' },
-        contacto: { telefono: '', email: '', horario: '' },
+        contacto: { telefono: '', email: '', password: '', horario: '' },
         coordenadas: { latitud: '', longitud: '' },
         aceptaPedidos: true,
         capacidadDiaria: 50,
@@ -114,6 +114,7 @@ export default function GestionUbicaciones() {
             contacto: {
                 telefono: ubicacion.contacto?.telefono || '',
                 email: ubicacion.contacto?.email || '',
+                password: ubicacion.contacto?.password || '',
                 horario: ubicacion.contacto?.horario || ''
             },
             coordenadas: {
@@ -372,11 +373,11 @@ export default function GestionUbicaciones() {
             </div>
 
             <Pagination
-                page={page}
+                currentPage={page}
                 totalPages={totalPages}
                 onPageChange={setPage}
-                limit={limit}
-                onLimitChange={(newLimit) => {
+                itemsPerPage={limit}
+                onItemsPerPageChange={(newLimit) => {
                     setLimit(newLimit);
                     setPage(1);
                 }}
@@ -510,7 +511,6 @@ export default function GestionUbicaciones() {
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label>Email</label>
                                     <input
                                         type="email"
                                         value={formulario.contacto.email}
@@ -520,6 +520,19 @@ export default function GestionUbicaciones() {
                                         })}
                                     />
                                 </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label>Contraseña del Correo</label>
+                                <input
+                                    type="text"
+                                    value={formulario.contacto.password || ''}
+                                    placeholder="Contraseña para acceso al correo"
+                                    onChange={(e) => setFormulario({
+                                        ...formulario,
+                                        contacto: { ...formulario.contacto, password: e.target.value }
+                                    })}
+                                />
                             </div>
 
                             <div className="form-group">

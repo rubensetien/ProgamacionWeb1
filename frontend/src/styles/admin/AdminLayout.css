@@ -12,7 +12,8 @@
 /* ========== SIDEBAR ========== */
 .admin-sidebar {
   width: 300px;
-  background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+  background: #1e293b;
+  /* background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%); */
   color: white;
   display: flex;
   flex-direction: column;
@@ -26,7 +27,8 @@
 }
 
 /* ✅ Logo Clickeable - SIN FONDO BLANCO */
-.logo-container {
+/* ✅ Logo Clickeable - SIN FONDO BLANCO */
+.admin-sidebar .logo-container {
   margin-bottom: 25px;
   text-align: center;
   padding: 15px;
@@ -39,12 +41,12 @@
   position: relative;
 }
 
-.logo-container:hover {
+.admin-sidebar .logo-container:hover {
   transform: scale(1.05);
   background: rgba(255, 255, 255, 0.05);
 }
 
-.logo-container::after {
+.admin-sidebar .logo-container::after {
   content: '🏠 Ir al Landing';
   position: absolute;
   bottom: -25px;
@@ -62,24 +64,25 @@
   transition: all 0.3s ease;
 }
 
-.logo-container:hover::after {
+.admin-sidebar .logo-container:hover::after {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
 
-.logo-oficial {
+.admin-sidebar .logo-oficial {
   width: 100%;
   max-width: 220px;
   height: auto;
   display: block;
   margin: 0 auto;
   filter: brightness(0) invert(1);
-  /* ✅ Logo blanco */
+  /* ✅ Logo blanco limpio por defecto */
   transition: all 0.3s ease;
 }
 
-.logo-container:hover .logo-oficial {
-  filter: brightness(0) invert(1) drop-shadow(0 0 10px rgba(255, 102, 0, 0.6));
+.admin-sidebar .logo-container:hover .logo-oficial {
+  filter: brightness(0) invert(1) drop-shadow(0 0 12px rgba(255, 102, 0, 0.8));
+  transform: scale(1.02);
 }
 
 /* Info Admin */

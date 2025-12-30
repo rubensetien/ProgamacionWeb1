@@ -8,9 +8,11 @@ import DashboardAdmin from './DashboardAdmin';
 import GestionProductos from './gestion/GestionProductos';
 import GestionUbicaciones from './gestion/GestionUbicaciones';
 import GestionTrabajadores from './gestion/GestionTrabajadores';
-import GestionTurnos from './gestion/GestionTurnos'; // ✅ NEW
+import GestionTurnos from './gestion/GestionTurnos';
+import GestionSolicitudes from './gestion/GestionSolicitudes'; // ✅ NEW
 import PedidosAdmin from './PedidosAdmin';
-import '../../styles/admin/AdminLayout.css';
+
+
 
 const AdminLayout = () => {
   const { logout, usuario } = useAuth();
@@ -78,9 +80,66 @@ const AdminLayout = () => {
       }
     };
 
+
+
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [vistaActual]);
+
+  // Socket.IO Notifications
+  useEffect(() => {
+    import('socket.io-client').then(({ io }) => {
+      const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:3001');
+
+      socket.on('connect', () => {
+        // console.log('Admin connected to socket');
+      });
+
+      socket.on('nuevo-pedido', (pedido) => {
+        // Show notification (simple alert for now as requested, or Toast)
+        import('sweetalert2').then(({ default: Swal }) => {
+          // Play sound?
+          const audio = new Audio('/notification.mp3'); // Optional
+          audio.play().catch(e => { });
+
+          Swal.fire({
+            title: 'Nuevo Pedido!',
+            text: `Pedido #${pedido.numeroPedido} recibido.`,
+            icon: 'info',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 5000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+              toast.onclick = () => cambiarVista('pedidos');
+            }
+          });
+          setNotificaciones(prev => prev + 1);
+        });
+      });
+
+      socket.on('nueva-solicitud-stock', (solicitud) => {
+        import('sweetalert2').then(({ default: Swal }) => {
+          Swal.fire({
+            title: 'Solicitud de Stock',
+            text: `Nueva solicitud de tienda recibida.`,
+            icon: 'warning',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 5000,
+            didOpen: (toast) => {
+              // toast.onclick = () => cambiarVista('stock'); // Need view
+            }
+          });
+          setNotificaciones(prev => prev + 1);
+        });
+      });
+
+      return () => socket.disconnect();
+    });
+  }, []);
 
   return (
     <div className="admin-layout">
@@ -209,6 +268,29 @@ const AdminLayout = () => {
           </button>
 
           <button
+            className={`admin-nav-item ${vistaActual === 'solicitudes' ? 'active' : ''}`}
+            onClick={() => cambiarVista('solicitudes')}
+            title="Alt + S"
+          >
+            <span className="nav-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline>
+                <polyline points="7.5 19.79 7.5 14.6 3 12"></polyline>
+                <polyline points="21 12 16.5 14.6 16.5 19.79"></polyline>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+              </svg>
+            </span>
+            <span className="nav-text">Solicitudes Stock</span>
+            {/* Use a different notification counter if we have one for stock, or just generic notificaciones */}
+            {notificaciones > 0 && (
+              <span className="nav-badge" style={{ background: '#ff6600' }}>!</span>
+            )}
+            <span className="nav-shortcut">Alt+S</span>
+          </button>
+
+          <button
             className={`admin-nav-item ${vistaActual === 'pedidos' ? 'active' : ''}`}
             onClick={() => cambiarVista('pedidos')}
             title="Alt + O"
@@ -284,6 +366,7 @@ const AdminLayout = () => {
         {vistaActual === 'ubicaciones' && <GestionUbicaciones />}
         {vistaActual === 'trabajadores' && <GestionTrabajadores />}
         {vistaActual === 'turnos' && <GestionTurnos />}
+        {vistaActual === 'solicitudes' && <GestionSolicitudes />}
         {vistaActual === 'chat' && <ChatInterno />}
       </main>
 

@@ -126,6 +126,12 @@ router.post('/', auth, async (req, res) => {
 
     console.log('✅ Pedido creado exitosamente:', nuevoPedido.numeroPedido);
 
+    // Emitir evento de socket
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('nuevo-pedido', nuevoPedido);
+    }
+
     res.status(201).json({
       success: true,
       message: 'Pedido creado exitosamente',
@@ -176,6 +182,48 @@ router.get('/mis-pedidos', auth, async (req, res) => {
   }
 });
 
+// @route   GET /api/pedidos/tienda
+// @desc    Obtener pedidos de la tienda asignada
+// @access  Private (Tienda/Admin)
+router.get('/tienda', auth, async (req, res) => {
+  try {
+    const { limit = 50, page = 1 } = req.query;
+
+    if (!req.usuario.tiendaAsignada && req.usuario.rol !== 'admin') {
+      return res.status(400).json({ success: false, message: 'Usuario sin tienda asignada' });
+    }
+
+    const filtro = {};
+    if (req.usuario.tiendaAsignada) {
+      filtro.puntoVenta = req.usuario.tiendaAsignada;
+    }
+
+    const pedidos = await Pedido.find(filtro)
+      .sort({ createdAt: -1 }) // Más recientes primero
+      .limit(parseInt(limit))
+      .skip((parseInt(page) - 1) * parseInt(limit))
+      .populate('items.producto')
+      .populate('items.variante')
+      .populate('items.formato')
+      .populate('usuario', 'nombre email telefono')
+      .populate('puntoVenta');
+
+    const total = await Pedido.countDocuments(filtro);
+
+    res.json({
+      success: true,
+      data: pedidos,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      total,
+      pages: Math.ceil(total / parseInt(limit))
+    });
+  } catch (error) {
+    console.error('Error pedidos tienda:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // @route   GET /api/pedidos/:id
 // @desc    Obtener pedido por ID
 // @access  Private
@@ -212,6 +260,46 @@ router.get('/:id', auth, async (req, res) => {
       success: false,
       message: 'Error al obtener pedido'
     });
+  }
+});
+
+
+// @route   PUT /api/pedidos/:id/estado
+// @desc    Actualizar estado del pedido (Tienda/Admin)
+// @access  Private
+router.put('/:id/estado', auth, async (req, res) => {
+  try {
+    const { estado } = req.body;
+    const pedido = await Pedido.findById(req.params.id);
+
+    if (!pedido) {
+      return res.status(404).json({ success: false, message: 'Pedido no encontrado' });
+    }
+
+    // Verificar permisos
+    if (!['admin', 'tienda', 'gestor-tienda'].includes(req.usuario.rol)) {
+      // Si es la tienda asignada
+      if (pedido.puntoVenta && pedido.puntoVenta.toString() !== req.usuario.tiendaAsignada) {
+        return res.status(403).json({ success: false, message: 'No tienes permiso para modificar este pedido' });
+      }
+    }
+
+    const estadosValidos = ['pendiente', 'confirmado', 'preparando', 'listo', 'entregado', 'no-recogido'];
+    if (!estadosValidos.includes(estado)) {
+      return res.status(400).json({ success: false, message: 'Estado inválido' });
+    }
+
+    await pedido.cambiarEstado(estado, req.usuario.id, 'Cambio de estado manual por tienda/admin');
+
+    res.json({
+      success: true,
+      message: `Pedido actualizado a ${estado}`,
+      data: pedido
+    });
+
+  } catch (error) {
+    console.error('Error actualizando estado:', error);
+    res.status(500).json({ success: false, message: 'Error al actualizar estado' });
   }
 });
 

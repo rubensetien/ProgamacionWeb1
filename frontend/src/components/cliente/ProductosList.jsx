@@ -383,7 +383,10 @@ const ProductosList = () => {
                             className={`format-btn ${prod._id === activeProd._id ? 'active' : ''}`}
                             onClick={() => handleFormatChange(grupo.id, prod._id)}
                           >
-                            {prod.unidadMedida ? prod.unidadMedida : prod.nombre.replace(grupo.nombrePrincipal, '').trim()}
+                            {/* [FIX] Show generic capacity (e.g. 0.5 L) if available, otherwise cleaner name parsing */}
+                            {prod.formato && prod.formato.capacidad
+                              ? `${prod.formato.capacidad} ${prod.formato.unidad}`
+                              : prod.nombre.replace(new RegExp(grupo.nombrePrincipal, 'gi'), '').replace(/^[\s-]+/, '').trim() || prod.nombre}
                           </button>
                         ))}
                       </div>
