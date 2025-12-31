@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCarrito } from '../../context/CarritoContext';
+import Navbar from '../common/Navbar';
 import Swal from 'sweetalert2';
 import '../../styles/cliente/ProductosListModern.css'; // New CSS
 
@@ -17,7 +18,7 @@ const ProductosList = () => {
   const [busqueda, setBusqueda] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedVariations, setSelectedVariations] = useState({});
-  const [menuAbierto, setMenuAbierto] = useState(false);
+
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -25,7 +26,7 @@ const ProductosList = () => {
   const { agregarAlCarrito, cantidadTotal } = useCarrito();
 
   // Helper Initials
-  const getInitials = (name) => name ? name.substring(0, 2).toUpperCase() : 'U';
+  // Helper Initials (Removed: Handled in Navbar)
 
   // 1. Fetch Data
   useEffect(() => {
@@ -156,87 +157,7 @@ const ProductosList = () => {
     <div className="catalogo-modern-container">
 
       {/* 1. NAVBAR OVERLAY (Absolute) */}
-      <nav style={{
-        position: 'absolute', top: 0, left: 0, width: '100%', padding: '20px 40px',
-        zIndex: 50, display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-      }}>
-        <img
-          src="https://regma.es/wp-content/uploads/2024/09/240503-regma-logotipo-rgb-logo-con-tagline-e1721651920696.png"
-          alt="Regma"
-          style={{ height: '35px', filter: 'brightness(0) invert(1)' }} // White logo for video
-          onClick={() => navigate('/')}
-        />
-
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          <span onClick={() => navigate('/')} style={{ color: 'white', fontWeight: '600', cursor: 'pointer', textTransform: 'uppercase' }}>Inicio</span>
-          <span onClick={() => navigate('/historia')} style={{ color: 'white', fontWeight: '600', cursor: 'pointer', textTransform: 'uppercase' }}>Historia</span>
-
-          <div onClick={() => navigate('/carrito')} style={{ position: 'relative', cursor: 'pointer', color: 'white' }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 20a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm7 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-11-2h15.6l1.4-10H5.2L4 .5H1" />
-            </svg>
-            {cantidadTotal() > 0 &&
-              <span style={{
-                position: 'absolute', top: -8, right: -8, background: '#ff6600',
-                color: 'white', fontSize: '0.7rem', width: '18px', height: '18px',
-                borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }}>
-                {cantidadTotal()}
-              </span>
-            }
-          </div>
-
-          {autenticado ? (
-            <div className="user-dropdown-container" style={{ position: 'relative' }}>
-              <div
-                onClick={() => setMenuAbierto(!menuAbierto)}
-                style={{ width: '35px', height: '35px', background: 'white', color: '#ff6600', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', cursor: 'pointer' }}
-              >
-                {getInitials(usuario?.nombre)}
-              </div>
-
-              {menuAbierto && (
-                <div className="user-dropdown-menu active">
-                  <div className="dropdown-item" onClick={() => {
-                    const path = usuario?.rol === 'admin' ? '/admin' : usuario?.rol === 'trabajador' ? '/trabajador' : '/perfil';
-                    navigate(path);
-                  }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="3" width="7" height="7"></rect>
-                      <rect x="14" y="3" width="7" height="7"></rect>
-                      <rect x="14" y="14" width="7" height="7"></rect>
-                      <rect x="3" y="14" width="7" height="7"></rect>
-                    </svg>
-                    {usuario?.rol === 'admin' || usuario?.rol === 'trabajador' ? 'Dashboard' : 'Mi Perfil'}
-                  </div>
-                  {(usuario?.rol === 'admin' || usuario?.rol === 'trabajador') && (
-                    <div className="dropdown-item" onClick={() => navigate('/perfil')}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                      </svg>
-                      Mi Cuenta
-                    </div>
-                  )}
-                  <div className="dropdown-divider"></div>
-                  <div className="dropdown-item logout" onClick={logout}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                      <polyline points="16 17 21 12 16 7"></polyline>
-                      <line x1="21" y1="12" x2="9" y2="12"></line>
-                    </svg>
-                    Cerrar Sesión
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <button onClick={() => navigate('/login')} style={{ background: 'transparent', border: '1px solid white', color: 'white', borderRadius: '20px', padding: '5px 15px', cursor: 'pointer' }}>
-              Entrar
-            </button>
-          )}
-        </div>
-      </nav>
+      <Navbar transparent={true} />
 
       {/* 2. HERO VIDEO */}
       <header className="catalog-hero">
@@ -248,7 +169,7 @@ const ProductosList = () => {
           playsInline
           poster={`${API_URL}/uploads/landing/hero-principal.jpg`}
         >
-          <source src={`${API_URL}/uploads/regma-pantallas-16x9-1.mp4`} type="video/mp4" />
+          <source src={`${API_URL}/uploads/videoBola.mp4`} type="video/mp4" />
         </video>
         <div className="hero-overlay-content">
           <h1 className="hero-title-cat">CATÁLOGO 2025</h1>
@@ -316,7 +237,9 @@ const ProductosList = () => {
                           onClick={() => handleFormatChange(grupo.id, p._id)}
                         >
                           {p.formato?.capacidad
-                            ? `${p.formato.capacidad} ${p.formato.unidad}`
+                            ? (['unidades', 'unidad'].includes(p.formato.unidad?.toLowerCase())
+                              ? p.formato.nombre
+                              : `${p.formato.capacidad} ${p.formato.unidad}`)
                             : p.nombre.replace(grupo.nombrePrincipal, '').trim() || 'Estándar'}
                         </button>
                       ))}

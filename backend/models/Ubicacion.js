@@ -16,7 +16,7 @@ const ubicacionSchema = new mongoose.Schema({
   },
   tipo: {
     type: String,
-    enum: ['obrador', 'cafeteria', 'punto-venta', 'oficina'],
+    enum: ['obrador', 'cafeteria', 'heladeria', 'oficina'],
     required: true
   },
   direccion: {

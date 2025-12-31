@@ -60,7 +60,13 @@ ProgamacionWeb1/
 *   **Sincronización de Carrito**: Unificación de la arquitectura de carrito. `CarritoContext` ahora actúa como fuente única de verdad, sincronizando automáticamente el estado local con la base de datos al autenticarse, resolviendo inconsistencias en el contador de items.
 *   **Gestión de Productos**: Implementación de paginación configurable (items por página) y mejoras visuales en el listado de administración (`GestionProductos.jsx`).
 *   **Gestión de Turnos**: Corrección de errores de autenticación (401) mediante la exposición adecuada del token JWT en el contexto global y mejoras en el filtrado de trabajadores.
-*   **UI/UX**: Rediseño "Living Glass" en el catálogo de clientes, textos promocionales actualizados en Landing Page ("+80 Años") y mejoras de visibilidad en formularios.
+*   **Frontend & UX (Major Update)**:
+    *   **Navegación Unificada**: Implementación de una `Navbar` única y responsiva para todo el sitio público (Landing, Historia, Catálogo, Buscador de Tiendas).
+    *   **Localizador de Tiendas Avanzado**: Nueva funcionalidad "Cerca de mí" con geolocalización, visualización de radio de búsqueda en mapa y cálculo de distancia en tiempo real.
+    *   **Catálogo Premium**: Fondos de video dinámicos, efecto *Glassmorphism* y chips de formato inteligentes (ej. mostrando "Barra de Corte" en lugar de "1 unidad").
+*   **Datos y Contenido**:
+    *   **Descripciones Enriquecidas**: El sistema ahora genera descripciones detalladas y apetitosas específicas para cada formato (tarrina, familiar, etc.) y tipo de dulce.
+    
 
 ---
 

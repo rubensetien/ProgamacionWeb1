@@ -6,7 +6,7 @@ const varianteSchema = new mongoose.Schema({
     ref: 'Categoria',
     required: [true, 'La categoría es obligatoria']
   },
-  
+
   nombre: {
     type: String,
     required: [true, 'El nombre es obligatorio'],
@@ -20,7 +20,7 @@ const varianteSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  
+
   // Clasificación
   tipoVariante: {
     type: String,
@@ -31,7 +31,7 @@ const varianteSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  
+
   // Visual
   imagen: {
     type: String,
@@ -45,14 +45,14 @@ const varianteSchema = new mongoose.Schema({
     type: String,
     default: '#ffffff'
   },
-  
+
   // Características
   ingredientes: [{
     type: String
   }],
   alergenos: [{
     type: String,
-    enum: ['lactosa', 'gluten', 'frutos-secos', 'huevo', 'soja', 'pescado', 'ninguno']
+    enum: ['lactosa', 'gluten', 'frutos-secos', 'huevo', 'soja', 'pescado', 'crustaceos', 'moluscos', 'sulfitos', 'ninguno']
   }],
   valoresNutricionales: {
     calorias: Number,
@@ -62,7 +62,7 @@ const varianteSchema = new mongoose.Schema({
     azucares: Number,
     sal: Number
   },
-  
+
   // Etiquetas
   temporada: {
     type: String,
@@ -90,7 +90,7 @@ const varianteSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
-  
+
   // Estado
   destacado: {
     type: Boolean,
@@ -108,7 +108,7 @@ const varianteSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  
+
   // Disponibilidad
   disponibleDesde: Date,
   disponibleHasta: Date
@@ -117,7 +117,7 @@ const varianteSchema = new mongoose.Schema({
 });
 
 // Middleware: generar slug ANTES de validar
-varianteSchema.pre('validate', function(next) {
+varianteSchema.pre('validate', function (next) {
   if (!this.slug && this.nombre) {
     this.slug = this.nombre
       .toLowerCase()

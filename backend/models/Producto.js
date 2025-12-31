@@ -141,6 +141,12 @@ const productoSchema = new mongoose.Schema({
   },
   diasCaducidad: Number,
 
+  // Características
+  alergenos: [{
+    type: String,
+    enum: ['lactosa', 'gluten', 'frutos-secos', 'huevo', 'soja', 'pescado', 'crustaceos', 'moluscos', 'sulfitos', 'ninguno']
+  }],
+
   // Estadísticas
   ventasTotales: {
     type: Number,

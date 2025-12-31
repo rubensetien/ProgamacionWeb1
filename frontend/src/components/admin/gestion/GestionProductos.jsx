@@ -70,7 +70,7 @@ export default function GestionProductos() {
       const token = localStorage.getItem('token');
 
       let url = `${API_URL}/api/productos?page=${page}&limit=${limit}`;
-      if (busqueda) url += `&search=${encodeURIComponent(busqueda)}`;
+      if (busqueda) url += `&buscar=${encodeURIComponent(busqueda)}`;
       if (categoriaFiltro && categoriaFiltro !== 'todas') url += `&categoria=${categoriaFiltro}`;
 
       const res = await fetch(url, {
@@ -93,8 +93,10 @@ export default function GestionProductos() {
   }, [page, limit, busqueda, categoriaFiltro]);
 
   useEffect(() => {
-    cargarDatosAuxiliares();
-  }, [cargarDatosAuxiliares]);
+    if (seccionActiva === 'productos') {
+      cargarDatosAuxiliares();
+    }
+  }, [seccionActiva, cargarDatosAuxiliares]);
 
   useEffect(() => {
     cargarProductos();

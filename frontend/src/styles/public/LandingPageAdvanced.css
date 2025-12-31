@@ -483,7 +483,9 @@ body {
     margin: 0 0 50px 0;
     line-height: 1.1;
     letter-spacing: -1px;
-}/* User Dropdown */
+}
+
+/* User Dropdown */
 .user-dropdown-container {
     position: relative;
     display: inline-block;
@@ -491,22 +493,32 @@ body {
 
 .user-dropdown-menu {
     position: absolute;
-    top: 120%; /* Below avatar */
+    top: 120%;
+    /* Below avatar */
     right: 0;
     margin-top: 10px;
     background: white;
-    border-radius: 16px; /* Smooth corners */
-    box-shadow: 0 10px 40px rgba(0,0,0,0.15); /* Soft premium shadow */
+    border-radius: 16px;
+    /* Smooth corners */
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    /* Soft premium shadow */
     min-width: 220px;
     overflow: hidden;
     z-index: 2000;
-    border: 1px solid rgba(0,0,0,0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
     animation: fadeInDropdown 0.2s ease forwards;
 }
 
 @keyframes fadeInDropdown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .dropdown-item {
@@ -523,9 +535,11 @@ body {
 }
 
 .dropdown-item:hover {
-    background: #fff8f2; /* Light orange tint */
+    background: #fff8f2;
+    /* Light orange tint */
     color: var(--regma-orange);
-    padding-left: 25px; /* Slight movement effect */
+    padding-left: 25px;
+    /* Slight movement effect */
 }
 
 .dropdown-divider {
@@ -536,10 +550,11 @@ body {
 
 /* --- PREMIUM FOOTER STYLES --- */
 .footer-premium {
-    background: #0a0a0a; /* Deep black/dark */
+    background: #0a0a0a;
+    /* Deep black/dark */
     color: #e0e0e0;
     padding: 80px 5% 40px;
-    border-top: 1px solid rgba(255,255,255,0.05);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
     font-family: 'Outfit', sans-serif;
 }
 
@@ -625,13 +640,13 @@ body {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: rgba(255,255,255,0.05);
+    background: rgba(255, 255, 255, 0.05);
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     transition: all 0.3s;
-    border: 1px solid rgba(255,255,255,0.05);
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .social-icon:hover {
@@ -646,7 +661,7 @@ body {
     max-width: 1400px;
     margin: 0 auto;
     padding-top: 40px;
-    border-top: 1px solid rgba(255,255,255,0.05);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -686,10 +701,12 @@ body {
         grid-template-columns: 1fr;
         gap: 40px;
     }
+
     .footer-bottom {
         flex-direction: column;
         text-align: center;
     }
+
     .legal-links {
         justify-content: center;
     }
@@ -698,7 +715,8 @@ body {
 /* --- FOOTER MASTERPIECE (OFFICIAL REPLICA) --- */
 .footer-wrapper {
     position: relative;
-    background: #fdfbf7; /* Cream/Natural background like official */
+    background: #fdfbf7;
+    /* Cream/Natural background like official */
     color: #333;
     font-family: 'Outfit', sans-serif;
 }
@@ -798,7 +816,8 @@ body {
 
 /* Bottom Bar */
 .footer-bottom-bar {
-    background: var(--regma-orange); /* Vibrant Orange */
+    background: var(--regma-orange);
+    /* Vibrant Orange */
     padding: 20px 5%;
     color: white;
 }
@@ -835,6 +854,7 @@ body {
         grid-template-columns: 1fr;
         gap: 50px;
     }
+
     .footer-menus {
         grid-template-columns: 1fr 1fr;
     }
@@ -844,6 +864,7 @@ body {
     .footer-menus {
         grid-template-columns: 1fr;
     }
+
     .bottom-bar-content {
         flex-direction: column;
         gap: 15px;
@@ -855,9 +876,11 @@ body {
 
 /* 1. Background Gradient & Depth */
 .footer-wrapper {
-    background: linear-gradient(to bottom, #fcfbf9, #f7f3ed); /* Subtle warm gradient */
+    background: linear-gradient(to bottom, #fcfbf9, #f7f3ed);
+    /* Subtle warm gradient */
     position: relative;
-    overflow: hidden; /* For watermark */
+    overflow: hidden;
+    /* For watermark */
 }
 
 /* 2. Brand Watermark (Decorative) */
@@ -872,7 +895,8 @@ body {
     background-image: url('https://regma.es/wp-content/uploads/2024/09/240503-regma-logotipo-rgb-logo-con-tagline-e1721651920696.png');
     background-repeat: no-repeat;
     background-size: contain;
-    opacity: 0.03; /* Very subtle */
+    opacity: 0.03;
+    /* Very subtle */
     pointer-events: none;
     z-index: 0;
     filter: grayscale(1);
@@ -880,8 +904,10 @@ body {
 
 /* 3. Orange Gradient Bar */
 .footer-bottom-bar {
-    background: linear-gradient(90deg, #ff6600, #ff8533); /* Vibrant gradient */
-    box-shadow: 0 -4px 20px rgba(255, 102, 0, 0.15); /* Orange glow up */
+    background: linear-gradient(90deg, #ff6600, #ff8533);
+    /* Vibrant gradient */
+    box-shadow: 0 -4px 20px rgba(255, 102, 0, 0.15);
+    /* Orange glow up */
     position: relative;
     z-index: 1;
 }
@@ -908,29 +934,33 @@ body {
 }
 
 .menu-list li:hover {
-    text-decoration: none; /* Remove default underline */
+    text-decoration: none;
+    /* Remove default underline */
     color: var(--regma-orange);
     transform: translateX(5px);
 }
 
 /* 5. Typography Polish */
 .menu-title {
-    color: #ff6600; /* Orange headings */
+    color: #ff6600;
+    /* Orange headings */
     opacity: 0.8;
 }
 
 .footer-mission {
     font-size: 1.05rem;
     color: #555;
-    font-weight: 350; /* Slightly lighter/cleaner */
+    font-weight: 350;
+    /* Slightly lighter/cleaner */
 }
 
 /* 6. Socials Enhancement */
 .bottom-socials a {
-    background: rgba(255,255,255,0.2);
+    background: rgba(255, 255, 255, 0.2);
     border-radius: 50%;
     padding: 8px;
-    display: flex; /* Center SVG */
+    display: flex;
+    /* Center SVG */
     transition: all 0.3s;
 }
 
@@ -938,5 +968,83 @@ body {
     background: white;
     color: #ff6600;
     transform: translateY(-3px) scale(1.1);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* --- DYNAMIC 3D TEXT EFFECT (VIA CORE STYLE) --- */
+.hero-content-advanced {
+    /* Ensure container has perspective for 3D */
+    perspective: 1000px;
+    /* Variables initialized */
+    --mouse-x: 0;
+    --mouse-y: 0;
+}
+
+.hero-title-dynamic {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(4rem, 18vw, 250px);
+    /* Massive responsive size */
+    font-weight: 900;
+    text-transform: uppercase;
+    line-height: 0.8;
+    margin: 0;
+    letter-spacing: -5px;
+    /* Tight for mask effect */
+
+    /* Solid Orange Style */
+    color: var(--regma-orange);
+    -webkit-text-fill-color: var(--regma-orange);
+    background: none;
+    background-clip: border-box;
+    -webkit-background-clip: border-box;
+
+    /* 3D Transform */
+    transform:
+        rotateX(calc(var(--mouse-y) * -15deg)) rotateY(calc(var(--mouse-x) * 15deg));
+
+    /* Paint Drop Shadow for depth */
+    filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.5));
+    text-shadow: 0 10px 0 #cc5200;
+    /* Deep 3D side */
+
+    will-change: transform, background-position;
+    transition: transform 0.1s linear, background-position 0.1s linear;
+    cursor: default;
+}
+
+/* Subtitle adjustment for the new huge title */
+.hero-subtitle-advanced {
+    font-size: 1.5rem;
+    letter-spacing: 5px;
+    margin-top: 20px;
+    font-weight: 600;
+    text-shadow: 0 5px 15px rgba(0, 0, 0, 0.8);
+    opacity: 0.9;
+}
+/* --- DYNAMIC LOGO IMAGE STYLE --- */
+.hero-logo-dynamic {
+    width: 60vw; /* Responsively smaller than full screen */
+    max-width: 700px; /* Cap width to match reference */
+    height: auto;
+    
+    /* 3D Transform Logic */
+    transform: 
+        rotateX(calc(var(--mouse-y) * -20deg)) 
+        rotateY(calc(var(--mouse-x) * 20deg));
+        
+    /* Depth */
+    filter: drop-shadow(0 30px 40px rgba(0,0,0,0.6));
+    
+    will-change: transform;
+    transition: transform 0.1s cubic-bezier(0.215, 0.61, 0.355, 1); /* Smooth hover */
+    
+    /* Essential to prevent image dragging/selecting interference */
+    pointer-events: none; 
+    user-select: none;
+}
+
+@media (max-width: 768px) {
+    .hero-logo-dynamic {
+        width: 85vw;
+    }
 }

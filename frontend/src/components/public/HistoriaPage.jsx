@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react'; // Removed useState
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import Navbar from '../common/Navbar';
 import '../../styles/public/HistoriaPageModern.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -26,7 +27,7 @@ const storyData = [
         year: 'Expansión',
         title: 'Creciendo Juntos',
         desc: 'Con el tiempo, la bicicleta dio paso a nuestros primeros locales. Entendimos que para ser parte de la vida de los cántabros, necesitábamos lugares de encuentro.\n\nAbrimos nuestras heladerías emblemáticas, convirtiéndonos en una parada obligatoria en el Paseo de Pereda y en cada barrio. El "helado de Regma" pasó de ser un producto a ser una tradición local, un ritual compartido entre abuelos y nietos.',
-        img: `${API_URL}/uploads/landing/foto-local.jpeg`
+        img: `${API_URL}/uploads/landing/foto-local.jpg`
     },
     {
         id: 4,
@@ -38,81 +39,16 @@ const storyData = [
 ];
 
 export default function HistoriaPage() {
-    const navigate = useNavigate();
-    const { autenticado, usuario, logout } = useAuth(); // [FIX] Added logout
-    const [menuAbierto, setMenuAbierto] = useState(false);
+    // const navigate = useNavigate(); // Not strictly needed anymore if only Navbar uses it, but maybe for click handlers in components? Kept if needed.
+    // const { autenticado, usuario, logout } = useAuth(); // Auth handled in Navbar
+    // const [menuAbierto, setMenuAbierto] = useState(false); // Handled in Navbar
 
-    // Helper para iniciales
-    const getInitials = (name) => {
-        return name ? name.substring(0, 2).toUpperCase() : 'R';
-    };
+    // Helper para iniciales moved to Navbar
 
     return (
         <div className="historia-page-editorial">
             {/* --- FULL NAVBAR --- */}
-            <nav className="nav-solid">
-                <div className="nav-brand" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-                    <img src="https://regma.es/wp-content/uploads/2024/09/240503-regma-logotipo-rgb-logo-con-tagline-e1721651920696.png" alt="REGMA" />
-                </div>
-
-                <div className="nav-links">
-                    <span className="nav-link" onClick={() => navigate('/')}>Inicio</span>
-                    <span className="nav-link" onClick={() => navigate('/productos')}>Catálogo</span>
-                    <span className="nav-link" onClick={() => navigate('/tiendas')}>Tiendas</span>
-
-                    {!autenticado ? (
-                        <button className="btn-nav-action" onClick={() => navigate('/login')}>
-                            Entrar
-                        </button>
-                    ) : (
-                        <div className="user-dropdown-container" style={{ position: 'relative' }}>
-                            <div
-                                className="user-avatar-nav"
-                                onClick={() => setMenuAbierto(!menuAbierto)}
-                                title="Mi Cuenta"
-                                style={{ cursor: 'pointer' }}
-                            >
-                                {getInitials(usuario?.nombre)}
-                            </div>
-
-                            {menuAbierto && (
-                                <div className="user-dropdown-menu active">
-                                    <div className="dropdown-item" onClick={() => {
-                                        const path = usuario?.rol === 'admin' ? '/admin' : usuario?.rol === 'trabajador' ? '/trabajador' : '/perfil';
-                                        navigate(path);
-                                    }}>
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <rect x="3" y="3" width="7" height="7"></rect>
-                                            <rect x="14" y="3" width="7" height="7"></rect>
-                                            <rect x="14" y="14" width="7" height="7"></rect>
-                                            <rect x="3" y="14" width="7" height="7"></rect>
-                                        </svg>
-                                        {usuario?.rol === 'admin' || usuario?.rol === 'trabajador' ? 'Dashboard' : 'Mi Perfil'}
-                                    </div>
-                                    {(usuario?.rol === 'admin' || usuario?.rol === 'trabajador') && (
-                                        <div className="dropdown-item" onClick={() => navigate('/perfil')}>
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                                <circle cx="12" cy="7" r="4"></circle>
-                                            </svg>
-                                            Mi Cuenta
-                                        </div>
-                                    )}
-                                    <div className="dropdown-divider"></div>
-                                    <div className="dropdown-item logout" onClick={logout}>
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                                            <polyline points="16 17 21 12 16 7"></polyline>
-                                            <line x1="21" y1="12" x2="9" y2="12"></line>
-                                        </svg>
-                                        Cerrar Sesión
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-            </nav>
+            <Navbar transparent={false} />
 
             {/* --- HERO BANNER --- */}
             <header className="history-hero">

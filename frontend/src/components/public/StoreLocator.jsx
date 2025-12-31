@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, Circle, CircleMarker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import Navbar from '../common/Navbar';
 
 // Fix default leaflet icon
 delete L.Icon.Default.prototype._getIconUrl;
@@ -66,14 +67,36 @@ function MapEffect({ coords }) {
         }
     }, [coords, map]);
     return null;
+    return null;
 }
+
+// Helper: Haversine Distance (km)
+const haversineDistance = (coords1, coords2) => {
+    const toRad = (x) => (x * Math.PI) / 180;
+    const R = 6371; // km
+    const dLat = toRad(coords2.lat - coords1.lat);
+    const dLon = toRad(coords2.lng - coords1.lng);
+    const lat1 = toRad(coords1.lat);
+    const lat2 = toRad(coords2.lat);
+
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+};
 
 const StoreLocator = () => {
     const navigate = useNavigate();
     const { autenticado, usuario } = useAuth();
     const [tiendas, setTiendas] = useState([]);
+    const [filteredTiendas, setFilteredTiendas] = useState([]); // List to display
     const [selectedStore, setSelectedStore] = useState(null);
     const [loading, setLoading] = useState(true);
+
+    // Filters & Sort State
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterType, setFilterType] = useState('Todas'); // Todas, heladeria, cafeteria
+    const [userLocation, setUserLocation] = useState(null);
 
     // Centro inicial (Cantabria)
     const center = [43.3949, -4.0326];
@@ -81,6 +104,64 @@ const StoreLocator = () => {
     useEffect(() => {
         fetchPublicStores();
     }, []);
+
+    // Logic: Filter & Sort
+    useEffect(() => {
+        let result = [...tiendas];
+
+        // 1. Text Filter
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase();
+            result = result.filter(s =>
+                s.nombre.toLowerCase().includes(term) ||
+                (s.direccion?.calle || '').toLowerCase().includes(term) ||
+                (s.direccion?.ciudad || '').toLowerCase().includes(term)
+            );
+        }
+
+        // 2. Type Filter
+        if (filterType !== 'Todas') {
+            result = result.filter(s => s.tipo?.toLowerCase() === filterType.toLowerCase());
+        }
+
+        // 3. Sort (Distance or Alpha)
+        if (userLocation) {
+            result = result.map(store => {
+                const dist = (store.coordenadas?.latitud && store.coordenadas?.longitud)
+                    ? haversineDistance(
+                        { lat: userLocation.lat, lng: userLocation.lng },
+                        { lat: store.coordenadas.latitud, lng: store.coordenadas.longitud }
+                    )
+                    : Infinity;
+                return { ...store, distance: dist };
+            }).sort((a, b) => a.distance - b.distance);
+        } else {
+            result.sort((a, b) => a.nombre.localeCompare(b.nombre));
+        }
+
+        setFilteredTiendas(result);
+    }, [tiendas, searchTerm, filterType, userLocation]);
+
+    const handleGeolocation = () => {
+        if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setUserLocation({
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                        accuracy: position.coords.accuracy // Store accuracy
+                    });
+                },
+                (error) => {
+                    console.error("Geo error:", error);
+                    alert("No pudimos obtener tu ubicación.");
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } // Request high accuracy
+            );
+        } else {
+            alert("La geolocalización no es soportada por este navegador.");
+        }
+    };
 
     const fetchPublicStores = async () => {
         try {
@@ -100,108 +181,13 @@ const StoreLocator = () => {
         }
     };
 
-    // Helper para iniciales
-    const getInitials = (name) => {
-        return name ? name.substring(0, 2).toUpperCase() : 'U';
-    };
+    // Helper para iniciales moved to Navbar
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', fontFamily: "'Outfit', sans-serif" }}>
 
             {/* Header / Nav - Modern White & Clean */}
-            <header style={{
-                padding: '1rem 2rem',
-                background: 'rgba(255, 255, 255, 0.95)',
-                backdropFilter: 'blur(10px)',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                zIndex: 1000,
-                position: 'relative',
-                borderBottom: '1px solid #f0f0f0'
-            }}>
-                <div
-                    style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                    onClick={() => navigate('/')}
-                >
-                    <img
-                        src="https://regma.es/wp-content/uploads/2024/09/240503-regma-logotipo-rgb-logo-con-tagline-e1721651920696.png"
-                        alt="REGMA"
-                        style={{ height: '40px' }}
-                    />
-                </div>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <button
-                        onClick={() => navigate('/productos')}
-                        className="btn-nav-modern"
-                        style={{
-                            padding: '0.6rem 1.2rem',
-                            border: '1px solid #eee',
-                            background: 'white',
-                            color: '#555',
-                            borderRadius: '12px',
-                            cursor: 'pointer',
-                            fontWeight: '600',
-                            transition: 'all 0.2s',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px'
-                        }}
-                    >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="21" r="1" /><circle cx="20" cy="21" r="1" /><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" /></svg>
-                        Catálogo
-                    </button>
-
-                    {!autenticado ? (
-                        <button
-                            onClick={() => navigate('/login')}
-                            className="btn-nav-primary"
-                            style={{
-                                padding: '0.6rem 1.5rem',
-                                border: 'none',
-                                background: '#ff6600',
-                                color: 'white',
-                                borderRadius: '50px',
-                                cursor: 'pointer',
-                                fontWeight: '700',
-                                transition: 'all 0.2s',
-                                boxShadow: '0 4px 10px rgba(255, 102, 0, 0.2)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px'
-                            }}
-                        >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /><polyline points="10 17 15 12 10 7" /><line x1="15" y1="12" x2="3" y2="12" /></svg>
-                            Entrar
-                        </button>
-                    ) : (
-                        <div
-                            onClick={() => navigate('/perfil')}
-                            title="Ir a mi perfil"
-                            style={{
-                                width: '45px',
-                                height: '45px',
-                                borderRadius: '50%',
-                                background: '#ff6600',
-                                color: 'white',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontWeight: '700',
-                                fontSize: '1rem',
-                                border: '3px solid white', // Borde blanco prominente como en la imagen
-                                boxShadow: '0 4px 12px rgba(255, 102, 0, 0.3)', // Sombra con color marca
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease',
-                                userSelect: 'none'
-                            }}
-                        >
-                            {getInitials(usuario?.nombre)}
-                        </div>
-                    )}
-                </div>
-            </header>
+            <Navbar transparent={false} />
 
             <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
 
@@ -214,15 +200,58 @@ const StoreLocator = () => {
                     zIndex: 500,
                     borderRight: '1px solid #eee'
                 }}>
-                    <div style={{ padding: '2rem' }}>
-                        <div style={{ marginBottom: '2rem', borderBottom: '2px solid #fff5eb', paddingBottom: '1rem' }}>
-                            <h2 style={{ fontSize: '1.8rem', color: '#1a1a1a', fontWeight: '800', marginBottom: '0.5rem', letterSpacing: '-0.5px' }}>
+                    <div style={{ padding: '2rem', position: 'sticky', top: 0, background: 'white', zIndex: 10, borderBottom: '1px solid #f0f0f0', paddingBottom: '1rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <h2 style={{ fontSize: '1.5rem', color: '#1a1a1a', fontWeight: '800', margin: 0, letterSpacing: '-0.5px' }}>
                                 Tiendas <span style={{ color: '#ff6600' }}>Regma</span>
                             </h2>
-                            <p style={{ color: '#7f8c8d', fontSize: '0.95rem', lineHeight: '1.4' }}>
-                                {tiendas.length} ubicaciones activas cerca de ti
-                            </p>
                         </div>
+
+                        {/* Search Bar */}
+                        <div style={{ position: 'relative', marginBottom: '1rem' }}>
+                            <input
+                                type="text"
+                                placeholder="Buscar calle, ciudad..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                style={{
+                                    width: '100%', padding: '12px 15px 12px 40px', borderRadius: '12px',
+                                    border: '1px solid #eee', background: '#f9f9f9', fontSize: '0.95rem', outline: 'none',
+                                    fontFamily: "'Outfit', sans-serif"
+                                }}
+                            />
+                            <svg style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#aaa' }} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </div>
+
+                        {/* Filter Chips */}
+                        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '5px' }}>
+                            {['Todas', 'Heladeria', 'Cafeteria'].map(type => (
+                                <button
+                                    key={type}
+                                    onClick={() => setFilterType(type)}
+                                    style={{
+                                        border: 'none',
+                                        padding: '6px 14px',
+                                        borderRadius: '20px',
+                                        fontSize: '0.85rem',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        background: filterType === type ? '#ff6600' : '#f0f0f0', // CHANGE: Orange active
+                                        color: filterType === type ? 'white' : '#555',
+                                        transition: 'all 0.2s'
+                                    }}
+                                >
+                                    {type}
+                                </button>
+                            ))}
+                        </div>
+
+                        <p style={{ marginTop: '10px', fontSize: '0.85rem', color: '#888', fontStyle: 'italic' }}>
+                            {filteredTiendas.length} resultados encontrados
+                        </p>
+                    </div>
+
+                    <div style={{ padding: '0 2rem 2rem 2rem' }}>
 
                         {loading ? (
                             <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem', color: '#ff6600' }}>
@@ -230,7 +259,7 @@ const StoreLocator = () => {
                             </div>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-                                {tiendas.map(store => {
+                                {filteredTiendas.map(store => {
                                     const isSelected = selectedStore?._id === store._id;
                                     return (
                                         <div
@@ -252,6 +281,9 @@ const StoreLocator = () => {
                                             {/* Decoración lateral naranja si está seleccionado */}
                                             {isSelected && <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '6px', background: '#ff6600' }} />}
 
+                                            {/* Distance Badge */}
+                                            {/* Distance Badge REMOVED from top-right, moving to content */}
+
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.8rem', paddingLeft: isSelected ? '10px' : '0' }}>
                                                 <h3 style={{ margin: 0, color: '#2c3e50', fontSize: '1.2rem', fontWeight: 'bold' }}>{store.nombre}</h3>
                                                 <span style={{
@@ -265,9 +297,20 @@ const StoreLocator = () => {
                                                     letterSpacing: '0.5px',
                                                     boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
                                                 }}>
-                                                    {store.tipo}
+                                                    {store.tipo === 'heladeria' ? 'Heladería' : store.tipo === 'cafeteria' ? 'Cafetería' : store.tipo}
                                                 </span>
                                             </div>
+
+                                            {/* Distance Integration in Card Content */}
+                                            {store.distance && store.distance !== Infinity && (
+                                                <div style={{
+                                                    display: 'flex', alignItems: 'center', gap: '6px',
+                                                    marginBottom: '10px', fontSize: '0.9rem', color: '#ff6600', fontWeight: '600'
+                                                }}>
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"></path><circle cx="12" cy="9" r="2.5"></circle></svg>
+                                                    <span>A {store.distance.toFixed(2)} km de ti</span>
+                                                </div>
+                                            )}
 
                                             <div style={{ paddingLeft: isSelected ? '10px' : '0' }}>
                                                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '8px', color: '#555' }}>
@@ -328,7 +371,25 @@ const StoreLocator = () => {
 
                         <MapEffect coords={selectedStore?.coordenadas ? [selectedStore.coordenadas.latitud, selectedStore.coordenadas.longitud] : null} />
 
-                        {tiendas.map(store => (
+                        {/* ✅ User Location Marker */}
+                        {userLocation && (
+                            <>
+                                <Circle
+                                    center={[userLocation.lat, userLocation.lng]}
+                                    radius={userLocation.accuracy || 100}
+                                    pathOptions={{ fillColor: '#4285F4', fillOpacity: 0.1, color: '#4285F4', weight: 1 }}
+                                />
+                                <CircleMarker
+                                    center={[userLocation.lat, userLocation.lng]}
+                                    radius={8}
+                                    pathOptions={{ fillColor: '#4285F4', fillOpacity: 1, color: 'white', weight: 3 }}
+                                >
+                                    <Popup>Estás aquí</Popup>
+                                </CircleMarker>
+                            </>
+                        )}
+
+                        {filteredTiendas.map(store => (
                             store.coordenadas?.latitud && (
                                 <Marker
                                     key={store._id}
@@ -366,6 +427,38 @@ const StoreLocator = () => {
                         background: 'radial-gradient(circle, transparent 70%, rgba(255,102,0,0.02) 100%)',
                         zIndex: 400
                     }} />
+
+                    {/* Botón Flotante de Geolocalización (FAB) */}
+                    <button
+                        onClick={handleGeolocation}
+                        style={{
+                            position: 'absolute',
+                            bottom: '30px',
+                            right: '30px',
+                            zIndex: 1000,
+                            background: 'white',
+                            color: '#ff6600',
+                            border: 'none',
+                            padding: '12px 24px',
+                            borderRadius: '50px',
+                            boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                            fontWeight: '700',
+                            fontSize: '0.95rem',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            transition: 'transform 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                    >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"></path>
+                            <circle cx="12" cy="9" r="2.5"></circle>
+                        </svg>
+                        Cerca de mí
+                    </button>
                 </div>
             </div>
 

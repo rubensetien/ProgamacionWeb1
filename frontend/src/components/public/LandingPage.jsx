@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import Navbar from '../common/Navbar';
 import '../../styles/public/LandingPageAdvanced.css';
 
 // Videos de stock de alta calidad (Placeholders)
@@ -12,7 +13,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 export default function LandingPage() {
   const navigate = useNavigate();
   const { autenticado, usuario, logout } = useAuth();
-  const [menuAbierto, setMenuAbierto] = useState(false); // [NEW] Menu State
+  // const [menuAbierto, setMenuAbierto] = useState(false); // Removed: Handled in Navbar
   const [scrollY, setScrollY] = useState(0);
   const horizontalScrollRef = useRef(null);
 
@@ -54,100 +55,16 @@ export default function LandingPage() {
     }
   };
 
-  // Helper para iniciales (mismo estilo que StoreLocator)
-  const getInitials = (name) => {
-    return name ? name.substring(0, 2).toUpperCase() : 'U';
-  };
+  // Helper para iniciales moved to Navbar
+  // const getInitials = (name) => ...
 
   return (
     <div className="landing-advanced">
 
-      {/* --- NAVBAR FLOTANTE MINIMALISTA --- */}
-      <nav className={`navbar-glass ${scrollY > 50 ? 'scrolled' : ''}`} style={{
-        position: 'fixed', top: 0, width: '100%', zIndex: 1000,
-        padding: '20px 40px', transition: 'all 0.4s ease',
-        background: scrollY > 50 ? 'rgba(18,18,18,0.8)' : 'transparent',
-        backdropFilter: scrollY > 50 ? 'blur(10px)' : 'none',
-        borderBottom: scrollY > 50 ? '1px solid rgba(255,255,255,0.05)' : 'none'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '1400px', margin: '0 auto' }}>
-          <img
-            src="https://regma.es/wp-content/uploads/2024/09/240503-regma-logotipo-rgb-logo-con-tagline-e1721651920696.png"
-            alt="REGMA"
-            style={{ height: '40px', filter: 'brightness(0) invert(1)' }}
-          />
-          <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-            <button className="btn-text-light" onClick={() => navigate('/productos')}>Catálogo</button>
-            {!autenticado ? (
-              <button className="btn-premium-outline" onClick={() => navigate('/login')}>Entrar</button>
-            ) : (
-              <div className="user-dropdown-container" style={{ position: 'relative' }}>
-                <div
-                  onClick={() => setMenuAbierto(!menuAbierto)}
-                  title="Mi Cuenta"
-                  style={{
-                    width: '45px',
-                    height: '45px',
-                    borderRadius: '50%',
-                    background: '#ff6600',
-                    color: 'white',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: '700',
-                    fontSize: '1rem',
-                    border: '3px solid rgba(255,255,255,0.3)',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    userSelect: 'none'
-                  }}
-                >
-                  {getInitials(usuario?.nombre)}
-                </div>
 
-                {/* DROPDOWN MENU */}
-                {menuAbierto && (
-                  <div className="user-dropdown-menu active">
-                    <div className="dropdown-item" onClick={() => {
-                      const path = usuario?.rol === 'admin' ? '/admin' : usuario?.rol === 'trabajador' ? '/trabajador' : '/perfil';
-                      navigate(path);
-                    }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="3" width="7" height="7"></rect>
-                        <rect x="14" y="3" width="7" height="7"></rect>
-                        <rect x="14" y="14" width="7" height="7"></rect>
-                        <rect x="3" y="14" width="7" height="7"></rect>
-                      </svg>
-                      {usuario?.rol === 'admin' || usuario?.rol === 'trabajador' ? 'Dashboard' : 'Mi Perfil'}
-                    </div>
 
-                    {(usuario?.rol === 'admin' || usuario?.rol === 'trabajador') && (
-                      <div className="dropdown-item" onClick={() => navigate('/perfil')}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                          <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                        Mi Cuenta
-                      </div>
-                    )}
-
-                    <div className="dropdown-divider"></div>
-
-                    <div className="dropdown-item logout" onClick={logout}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 0 0 1 2-2h4"></path>
-                        <polyline points="16 17 21 12 16 7"></polyline>
-                        <line x1="21" y1="12" x2="9" y2="12"></line>
-                      </svg>
-                      Cerrar Sesión
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
+      {/* --- UNITY NAVBAR (Transparent initially) --- */}
+      <Navbar transparent={true} />
 
       {/* --- 1. HERO CINEMATOGRÁFICO --- */}
       <section className="hero-video-container">
@@ -158,19 +75,41 @@ export default function LandingPage() {
           muted
           playsInline
         >
-          <source src={`${API_URL}/uploads/REGMA_FLZNVD1933_V6-3-2.mp4`} type="video/mp4" />
+          <source src={`${API_URL}/uploads/PreparacionCucurucho.mp4`} type="video/mp4" />
           Tu navegador no soporta video HTML5.
         </video>
         <div className="hero-overlay-gradient" />
 
-        <div className="hero-content-advanced" style={{
-          transform: `translateY(${scrollY * 0.3}px)`, // Parallax simple
-          opacity: 1 - scrollY / 700
-        }}>
+        <div
+          className="hero-content-advanced"
+          style={{
+            transform: `translateY(${scrollY * 0.3}px)`, // Parallax simple
+            opacity: 1 - scrollY / 700,
+            perspective: '1000px' // Enable 3D space
+          }}
+          onMouseMove={(e) => {
+            const { clientX, clientY, currentTarget } = e;
+            const { width, height, left, top } = currentTarget.getBoundingClientRect();
+            const x = clientX - left;
+            const y = clientY - top;
+            const xPct = (x / width) - 0.5;
+            const yPct = (y / height) - 0.5;
+
+            // Set CSS variables for the tilt effect
+            currentTarget.style.setProperty('--mouse-x', xPct);
+            currentTarget.style.setProperty('--mouse-y', yPct);
+          }}
+          onMouseLeave={(e) => {
+            // Reset on leave
+            e.currentTarget.style.setProperty('--mouse-x', 0);
+            e.currentTarget.style.setProperty('--mouse-y', 0);
+          }}
+        >
+          {/* DYNAMIC LOGO IMAGE */}
           <img
             src="https://regma.es/wp-content/uploads/2024/09/240503-regma-logotipo-rgb-logo-con-tagline-e1721651920696.png"
             alt="REGMA"
-            className="hero-logo-main"
+            className="hero-logo-dynamic"
           />
           <p className="hero-subtitle-advanced">Pasión Helada desde 1940</p>
         </div>
