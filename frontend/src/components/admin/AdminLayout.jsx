@@ -10,6 +10,9 @@ import GestionUbicaciones from './gestion/GestionUbicaciones';
 import GestionTrabajadores from './gestion/GestionTrabajadores';
 import GestionTurnos from './gestion/GestionTurnos';
 import GestionSolicitudes from './gestion/GestionSolicitudes'; // ✅ NEW
+import ValidacionNegocios from './ValidacionNegocios';
+import GestionNegocios from './GestionNegocios'; // ✅ NEW
+import PedidosB2B from './PedidosB2B'; // ✅ NEW
 import PedidosAdmin from './PedidosAdmin';
 
 
@@ -19,68 +22,72 @@ const AdminLayout = () => {
   const navigate = useNavigate();
   const [vistaActual, setVistaActual] = useState('dashboard');
   const [mostrarModalRegistro, setMostrarModalRegistro] = useState(false);
-  const [notificaciones, setNotificaciones] = useState(0);
-  const [cargandoVista, setCargandoVista] = useState(false); // ✅ Estado de carga
+  const [notificaciones, setNotificaciones] = useState(0); // Chat
+  const [pendingSolicitudes, setPendingSolicitudes] = useState(0);
+  const [pendingPedidos, setPendingPedidos] = useState(0);
+  const [cargandoVista, setCargandoVista] = useState(false);
 
   const irAlLanding = () => {
     navigate('/');
   };
 
-  // ✅ Función mejorada para cambiar vista con transición
   const cambiarVista = (nuevaVista) => {
     if (nuevaVista === vistaActual) return;
-
     setCargandoVista(true);
-
-    // Pequeño delay para transición suave
     setTimeout(() => {
       setVistaActual(nuevaVista);
       setCargandoVista(false);
     }, 150);
   };
 
+  // Fetch initial notifications
+  const fetchNotificaciones = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { 'Authorization': `Bearer ${token}` };
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+      // 1. Solicitudes Pendientes
+      const resSol = await fetch(`${API_URL}/api/profesionales/pendientes`, { headers });
+      if (resSol.ok) {
+        const dataSol = await resSol.json();
+        setPendingSolicitudes(Array.isArray(dataSol) ? dataSol.length : 0);
+      }
+
+      // 2. Pedidos Pendientes
+      const resPed = await fetch(`${API_URL}/api/pedidos/b2b?estado=pendiente&limit=1`, { headers }); // Limit 1 just to get total count
+      if (resPed.ok) {
+        const dataPed = await resPed.json();
+        setPendingPedidos(dataPed.total || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotificaciones();
+    // Optional: Poll every 60s
+    const interval = setInterval(fetchNotificaciones, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Atajos de teclado
   useEffect(() => {
     const handleKeyPress = (e) => {
-      if (e.altKey && e.key === 'd') {
-        e.preventDefault();
-        cambiarVista('dashboard');
-      }
-      if (e.altKey && e.key === 'p') {
-        e.preventDefault();
-        cambiarVista('productos');
-      }
-      if (e.altKey && e.key === 'c') {
-        e.preventDefault();
-        cambiarVista('catalogo');
-      }
-      if (e.altKey && e.key === 't') {
-        e.preventDefault();
-        cambiarVista('ubicaciones');
-      }
-      if (e.altKey && e.key === 'e') {
-        e.preventDefault();
-        cambiarVista('trabajadores');
-      }
-      if (e.altKey && e.key === 'm') {
-        e.preventDefault();
-        cambiarVista('chat');
-      }
-      if (e.altKey && e.key === 'k') { // Usando 'k' para evitar conflicto con 'c' de catálogo
-        e.preventDefault();
-        cambiarVista('turnos'); // Calendario/Turnos
-      }
-      if (e.altKey && e.key === 'o') {
-        e.preventDefault();
-        cambiarVista('pedidos');
-      }
-      if (e.altKey && e.key === 'u') {
-        e.preventDefault();
-        setMostrarModalRegistro(true);
-      }
+      if (e.altKey && e.key === 'd') { e.preventDefault(); cambiarVista('dashboard'); }
+      if (e.altKey && e.key === 'p') { e.preventDefault(); cambiarVista('productos'); }
+      if (e.altKey && e.key === 'c') { e.preventDefault(); cambiarVista('catalogo'); }
+      if (e.altKey && e.key === 't') { e.preventDefault(); cambiarVista('ubicaciones'); }
+      if (e.altKey && e.key === 'e') { e.preventDefault(); cambiarVista('trabajadores'); }
+      if (e.altKey && e.key === 'm') { e.preventDefault(); cambiarVista('chat'); }
+      if (e.altKey && e.key === 'k') { e.preventDefault(); cambiarVista('turnos'); }
+      if (e.altKey && e.key === 'o') { e.preventDefault(); cambiarVista('pedidos'); }
+      if (e.altKey && e.key === 'u') { e.preventDefault(); setMostrarModalRegistro(true); }
+      if (e.altKey && e.key === 'v') { e.preventDefault(); cambiarVista('validacion'); }
+      if (e.altKey && e.key === 'n') { e.preventDefault(); cambiarVista('negocios'); }
+      if (e.altKey && e.key === 'b') { e.preventDefault(); cambiarVista('pedidos-b2b'); }
     };
-
-
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
@@ -91,15 +98,11 @@ const AdminLayout = () => {
     import('socket.io-client').then(({ io }) => {
       const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:3001');
 
-      socket.on('connect', () => {
-        // console.log('Admin connected to socket');
-      });
+      socket.on('connect', () => { });
 
       socket.on('nuevo-pedido', (pedido) => {
-        // Show notification (simple alert for now as requested, or Toast)
         import('sweetalert2').then(({ default: Swal }) => {
-          // Play sound?
-          const audio = new Audio('/notification.mp3'); // Optional
+          const audio = new Audio('/notification.mp3');
           audio.play().catch(e => { });
 
           Swal.fire({
@@ -112,30 +115,14 @@ const AdminLayout = () => {
             timer: 5000,
             timerProgressBar: true,
             didOpen: (toast) => {
-              toast.onclick = () => cambiarVista('pedidos');
+              toast.onclick = () => cambiarVista('pedidos-b2b');
             }
           });
-          setNotificaciones(prev => prev + 1);
+          setPendingPedidos(prev => prev + 1); // Increment badget
         });
       });
 
-      socket.on('nueva-solicitud-stock', (solicitud) => {
-        import('sweetalert2').then(({ default: Swal }) => {
-          Swal.fire({
-            title: 'Solicitud de Stock',
-            text: `Nueva solicitud de tienda recibida.`,
-            icon: 'warning',
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 5000,
-            didOpen: (toast) => {
-              // toast.onclick = () => cambiarVista('stock'); // Need view
-            }
-          });
-          setNotificaciones(prev => prev + 1);
-        });
-      });
+      // We could also listen for 'nueva-solicitud' if backend emitted it
 
       return () => socket.disconnect();
     });
@@ -291,6 +278,66 @@ const AdminLayout = () => {
           </button>
 
           <button
+            className={`admin-nav-item ${vistaActual === 'validacion' ? 'active' : ''}`}
+            onClick={() => cambiarVista('validacion')}
+            title="Alt + V"
+          >
+            <span className="nav-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+            </span>
+            <span className="nav-text">Validar B2B</span>
+            {pendingSolicitudes > 0 && (
+              <span className="nav-badge" style={{ background: '#dc3545', marginLeft: 'auto', padding: '2px 6px', borderRadius: '10px', fontSize: '0.75rem', color: 'white' }}>
+                {pendingSolicitudes}
+              </span>
+            )}
+            <span className="nav-shortcut">Alt+V</span>
+          </button>
+
+          <button
+            className={`admin-nav-item ${vistaActual === 'negocios' ? 'active' : ''}`}
+            onClick={() => cambiarVista('negocios')}
+            title="Alt + N"
+          >
+            <span className="nav-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M3 21h18v-8a2 2 0 0 0-2-2h-3v-7a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v7H4a2 2 0 0 0-2 2v8z" />
+              </svg>
+            </span>
+            <span className="nav-text">Gestión Negocios</span>
+            <span className="nav-shortcut">Alt+N</span>
+          </button>
+
+          <button
+            className={`admin-nav-item ${vistaActual === 'pedidos-b2b' ? 'active' : ''}`}
+            onClick={() => cambiarVista('pedidos-b2b')}
+            title="Alt + B"
+          >
+            <span className="nav-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+            </span>
+            <span className="nav-text">Pedidos B2B</span>
+            {pendingPedidos > 0 && (
+              <span className="nav-badge" style={{ background: '#ff6600', marginLeft: 'auto', padding: '2px 6px', borderRadius: '10px', fontSize: '0.75rem', color: 'white' }}>
+                {pendingPedidos}
+              </span>
+            )}
+            <span className="nav-shortcut">Alt+B</span>
+          </button>
+
+          <button
             className={`admin-nav-item ${vistaActual === 'pedidos' ? 'active' : ''}`}
             onClick={() => cambiarVista('pedidos')}
             title="Alt + O"
@@ -367,6 +414,9 @@ const AdminLayout = () => {
         {vistaActual === 'trabajadores' && <GestionTrabajadores />}
         {vistaActual === 'turnos' && <GestionTurnos />}
         {vistaActual === 'solicitudes' && <GestionSolicitudes />}
+        {vistaActual === 'validacion' && <ValidacionNegocios />}
+        {vistaActual === 'negocios' && <GestionNegocios />}
+        {vistaActual === 'pedidos-b2b' && <PedidosB2B />}
         {vistaActual === 'chat' && <ChatInterno />}
       </main>
 

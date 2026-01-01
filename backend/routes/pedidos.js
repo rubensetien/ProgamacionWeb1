@@ -224,6 +224,65 @@ router.get('/tienda', auth, async (req, res) => {
   }
 });
 
+// @route   GET /api/pedidos/b2b
+// @desc    Obtener pedidos B2B (Admin/Oficina/Profesional)
+// @access  Private
+router.get('/b2b', auth, async (req, res) => {
+  try {
+    const { limit = 50, page = 1 } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    let query = {};
+
+    // Importar Usuario para buscar IDs
+    const Usuario = (await import('../models/Usuario.js')).default;
+
+    // 1. Admin/Oficina: Ver pedidos de TODOS los profesionales
+    if (req.usuario.rol === 'admin' || req.usuario.rol === 'oficina' || (req.usuario.permisos && req.usuario.permisos.gestionarNegocios)) {
+      const usuariosProfesionales = await Usuario.find({ rol: 'profesional' }).distinct('_id');
+      query.usuario = { $in: usuariosProfesionales };
+    }
+    // 2. Profesional: Ver pedidos de MI negocio
+    else if (req.usuario.rol === 'profesional') {
+      if (req.usuario.negocioId) {
+        const compis = await Usuario.find({ negocioId: req.usuario.negocioId }).distinct('_id');
+        query.usuario = { $in: compis };
+      } else {
+        query.usuario = req.usuario.id;
+      }
+    } else {
+      return res.status(403).json({ success: false, message: 'Acceso denegado a pedidos B2B' });
+    }
+
+    // Filtros adicionales (e.g. estado)
+    if (req.query.estado) {
+      query.estado = req.query.estado;
+    }
+
+    const pedidos = await Pedido.find(query)
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit))
+      .skip(skip)
+      .populate('usuario', 'nombre email telefono')
+      .populate('items.producto')
+      .populate('items.variante')
+      .populate('items.formato');
+
+    const total = await Pedido.countDocuments(query);
+
+    res.json({
+      success: true,
+      data: pedidos,
+      total,
+      page: parseInt(page),
+      pages: Math.ceil(total / parseInt(limit))
+    });
+
+  } catch (error) {
+    console.error('Error pedidos B2B:', error);
+    res.status(500).json({ success: false, message: 'Error al obtener pedidos B2B' });
+  }
+});
+
 // @route   GET /api/pedidos/:id
 // @desc    Obtener pedido por ID
 // @access  Private

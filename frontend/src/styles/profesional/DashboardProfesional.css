@@ -1,0 +1,216 @@
+/* =========================================
+   DASHBOARD PROFESIONAL - DISEÑO PREMIUM
+   ========================================= */
+
+:root {
+    --prof-primary: #ff6600;
+    --prof-secondary: #2c3e50;
+    --prof-bg: #f8f9fa;
+    --prof-card-bg: #ffffff;
+    --prof-text: #2d3436;
+    --prof-text-light: #636e72;
+}
+
+.profesional-dashboard {
+    min-height: 100vh;
+    background-color: var(--prof-bg);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    padding-bottom: 60px;
+}
+
+/* HEADER SECTION */
+.dashboard-header {
+    background: white;
+    padding: 120px 5% 60px;
+    /* Top padding for fixed navbar */
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    margin-bottom: 40px;
+}
+
+.header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.dashboard-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--prof-secondary);
+    margin-bottom: 10px;
+    letter-spacing: -1px;
+}
+
+.dashboard-subtitle {
+    font-size: 1.1rem;
+    color: var(--prof-text-light);
+    font-weight: 500;
+}
+
+.user-highlight {
+    color: var(--prof-primary);
+    font-weight: 700;
+}
+
+/* MAIN CONTENT GRID */
+.dashboard-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 5%;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+}
+
+/* MAIN CARD (Business Info) */
+.business-card {
+    background: var(--prof-card-bg);
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.business-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background: linear-gradient(90deg, var(--prof-primary), #ff9f43);
+}
+
+.business-header {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 30px;
+}
+
+.business-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    background: #fff3e0;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--prof-primary);
+}
+
+.business-info h2 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--prof-secondary);
+    margin: 0 0 5px 0;
+}
+
+.business-info p {
+    color: var(--prof-text-light);
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* ACTION CARDS GRID (Right Side) */
+.actions-grid {
+    display: grid;
+    grid-template-rows: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.action-card {
+    background: var(--prof-card-bg);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.03);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    border: 1px solid transparent;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-decoration: none;
+    /* For Link components */
+    position: relative;
+}
+
+.action-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+    border-color: rgba(255, 102, 0, 0.2);
+}
+
+.action-icon {
+    width: 50px;
+    height: 50px;
+    background: #f8f9fa;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--prof-secondary);
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.action-card:hover .action-icon {
+    background: var(--prof-primary);
+    color: white;
+}
+
+.action-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--prof-secondary);
+    margin: 0 0 8px 0;
+}
+
+.action-desc {
+    font-size: 0.9rem;
+    color: var(--prof-text-light);
+    margin: 0 0 20px 0;
+    line-height: 1.4;
+}
+
+.action-link {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--prof-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.action-card.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #fdfdfd;
+}
+
+.action-card.disabled:hover {
+    transform: none;
+    border-color: transparent;
+    box-shadow: none;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+    .dashboard-content {
+        grid-template-columns: 1fr;
+    }
+
+    .actions-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-rows: auto;
+    }
+
+    .dashboard-title {
+        font-size: 2rem;
+    }
+}

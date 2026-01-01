@@ -4,6 +4,7 @@ import { CarritoProvider } from './context/CarritoContext';
 import LandingPage from './components/public/LandingPage';
 import LoginForm from './components/common/LoginForm';
 import RegisterForm from './components/common/RegisterForm';
+import RegisterNegocio from './components/auth/RegisterNegocio';
 import ProductosList from './components/cliente/ProductosList';
 import Carrito from './components/cliente/Carrito';
 import FinalizarPedido from './components/cliente/FinalizarPedido';
@@ -11,11 +12,15 @@ import MisPedidos from './components/cliente/MisPedidos';
 import PerfilCliente from './components/cliente/PerfilCliente';
 import MisSolicitudes from './components/trabajador/MisSolicitudes';
 import StoreLocator from './components/public/StoreLocator';
+import DashboardProfesional from './components/profesional/Dashboard';
+import ProfesionalesPage from './components/public/ProfesionalesPage';
+import ProfesionalesDetail from './components/public/ProfesionalesDetail';
 import HistoriaPage from './components/public/HistoriaPage';
 import AdminLayout from './components/admin/AdminLayout';
 import './App.css';
 import TrabajadorLayout from './components/trabajador/TrabajadorLayout';
 import GestorLayout from './components/gestor/GestorLayout';
+import AlbaranPrint from './components/admin/AlbaranPrint'; // ✅ NEW
 
 // Componente para proteger rutas que SÍ requieren autenticación
 const ProtectedRoute = ({ children, rolesPermitidos }) => {
@@ -71,6 +76,7 @@ function AppContent() {
     if (usuario?.rol === 'admin') return '/admin';
     if (usuario?.rol === 'tienda' || usuario?.rol === 'gestor-tienda') return '/tienda';
     if (usuario?.rol === 'trabajador') return '/trabajador';
+    if (usuario?.rol === 'profesional') return '/profesional';
     return '/productos';
   };
 
@@ -80,6 +86,8 @@ function AppContent() {
         {/* Rutas públicas */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/tiendas" element={<StoreLocator />} />
+        <Route path="/profesionales" element={<ProfesionalesPage />} />
+        <Route path="/profesionales/:slug" element={<ProfesionalesDetail />} />
         <Route path="/productos" element={<ProductosList />} />
         <Route path="/historia" element={<HistoriaPage />} />
 
@@ -90,6 +98,11 @@ function AppContent() {
         <Route
           path="/register"
           element={autenticado ? <Navigate to="/productos" /> : <RegisterForm />}
+        />
+
+        <Route
+          path="/profesionales/registro-negocio"
+          element={<RegisterNegocio />}
         />
 
         {/* Rutas que requieren autenticación */}
@@ -137,12 +150,40 @@ function AppContent() {
           }
         />
 
+        {/* Ruta Dashboard Profesional (B2B) */}
+        <Route
+          path="/profesional"
+          element={
+            <ProtectedRoute rolesPermitidos={['profesional']}>
+              <DashboardProfesional />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/trabajador"
+          element={
+            <ProtectedRoute rolesPermitidos={['trabajador']}>
+              <TrabajadorLayout />
+            </ProtectedRoute>
+          }
+        />
+
         {/* Rutas de administrador */}
         <Route
           path="/admin/*"
           element={
             <ProtectedRoute rolesPermitidos={['admin']}>
               <AdminLayout />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Ruta para imprimir albarán (sin layout, protegida) */}
+        <Route
+          path="/albaran/:id"
+          element={
+            <ProtectedRoute rolesPermitidos={['admin', 'oficina', 'profesional']}>
+              <AlbaranPrint />
             </ProtectedRoute>
           }
         />

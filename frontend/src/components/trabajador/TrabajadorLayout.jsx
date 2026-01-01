@@ -1,8 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Calendar, LogOut, MessageSquare, Home } from 'lucide-react';
+import { LayoutDashboard, Calendar, LogOut, MessageSquare, Home, BarChart2, ClipboardCheck, Building } from 'lucide-react';
 import io from 'socket.io-client';
+import ValidacionNegocios from '../admin/ValidacionNegocios'; // Reusing admin component
+import GestionNegocios from '../admin/GestionNegocios'; // Reusing admin component
+import InventarioObrador from './InventarioObrador';
+import ProduccionObrador from './ProduccionObrador';
 import TrabajadorTienda from './TrabajadorTienda';
 import TrabajadorObrador from './TrabajadorObrador';
 import TrabajadorOficina from './TrabajadorOficina';
@@ -69,8 +73,8 @@ const TrabajadorLayout = () => {
   const cargarNoLeidos = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`${SOCKET_URL}/api/mensajes/no-leidos`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const res = await fetch(`${SOCKET_URL} /api/mensajes / no - leidos`, {
+        headers: { Authorization: `Bearer ${token} ` }
       });
       const data = await res.json();
       if (data.success) {
@@ -139,15 +143,46 @@ const TrabajadorLayout = () => {
 
         <nav className="sidebar-nav">
           <button
-            className={`admin-nav-item ${vistaActual === 'dashboard' ? 'active' : ''}`}
+            className={`admin - nav - item ${vistaActual === 'dashboard' ? 'active' : ''} `}
             onClick={() => setVistaActual('dashboard')}
           >
             <span className="nav-icon"><LayoutDashboard size={20} /></span>
             <span className="nav-text">Dashboard</span>
           </button>
 
+          {usuario?.permisos?.verReportesProduccion && (
+            <button
+              className={`admin-nav-item ${vistaActual === 'reportes-produccion' ? 'active' : ''}`}
+              onClick={() => setVistaActual('reportes-produccion')}
+            >
+              <span className="nav-icon"><BarChart2 size={20} /></span>
+              <span className="nav-text">Reportes Prod.</span>
+            </button>
+          )}
+
+          {/* This button should likely be conditional based on permissions, similar to the one above */}
+          {usuario?.permisos?.gestionarNegocios && (
+            <>
+              <button
+                className={`admin-nav-item ${vistaActual === 'validacion' ? 'active' : ''}`}
+                onClick={() => setVistaActual('validacion')}
+              >
+                <span className="nav-icon"><ClipboardCheck size={20} /></span>
+                <span className="nav-text">Validar B2B</span>
+              </button>
+
+              <button
+                className={`admin-nav-item ${vistaActual === 'negocios' ? 'active' : ''}`}
+                onClick={() => setVistaActual('negocios')}
+              >
+                <span className="nav-icon"><Building size={20} /></span>
+                <span className="nav-text">Gestión Negocios</span>
+              </button>
+            </>
+          )}
+
           <button
-            className={`admin-nav-item ${vistaActual === 'turnos' ? 'active' : ''}`}
+            className={`admin - nav - item ${vistaActual === 'turnos' ? 'active' : ''} `}
             onClick={() => setVistaActual('turnos')}
           >
             <span className="nav-icon"><Calendar size={20} /></span>
@@ -155,7 +190,7 @@ const TrabajadorLayout = () => {
           </button>
 
           <button
-            className={`admin-nav-item ${vistaActual === 'chat' ? 'active' : ''}`}
+            className={`admin - nav - item ${vistaActual === 'chat' ? 'active' : ''} `}
             onClick={() => setVistaActual('chat')}
             style={{ position: 'relative' }}
           >
@@ -189,6 +224,10 @@ const TrabajadorLayout = () => {
       <main className="admin-content">
         {vistaActual === 'dashboard' && renderDashboard()}
         {vistaActual === 'turnos' && <MisTurnos />}
+        {vistaActual === 'reportes-ventas' && <ReportesVentas />}
+        {vistaActual === 'reportes-produccion' && <div>Reportes de Producción (WIP)</div>}
+        {vistaActual === 'validacion' && <ValidacionNegocios />}
+        {vistaActual === 'negocios' && <GestionNegocios />}
         {/* Pass socket instance and unread map/handler to ChatInterno */}
         {vistaActual === 'chat' && (
           <ChatInterno

@@ -1,4 +1,5 @@
 import Avatar from '../../Avatar';
+import { Shield, Briefcase, Store, User } from 'lucide-react';
 
 const ListaTrabajadores = ({
   trabajadores,
@@ -23,10 +24,10 @@ const ListaTrabajadores = ({
 
   const getRolBadge = (rol) => {
     const badges = {
-      admin: { color: '#e74c3c', icon: '👑', text: 'Admin' },
-      gestor: { color: '#3498db', icon: '📊', text: 'Gestor' },
-      'gestor-tienda': { color: '#3498db', icon: '🏪', text: 'Gestor' },
-      trabajador: { color: '#27ae60', icon: '👷', text: 'Trabajador' }
+      admin: { color: '#e74c3c', icon: <Shield size={14} />, text: 'Admin' },
+      gestor: { color: '#3498db', icon: <Briefcase size={14} />, text: 'Gestor' },
+      'gestor-tienda': { color: '#3498db', icon: <Store size={14} />, text: 'Gestor' },
+      trabajador: { color: '#27ae60', icon: <User size={14} />, text: 'Trabajador' }
     };
     return badges[rol] || badges.trabajador;
   };

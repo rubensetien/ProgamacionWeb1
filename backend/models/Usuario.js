@@ -34,7 +34,7 @@ const usuarioSchema = new mongoose.Schema({
   // ========== ROL Y TIPO ==========
   rol: {
     type: String,
-    enum: ['admin', 'gestor-tienda', 'trabajador', 'cliente', 'tienda'],
+    enum: ['admin', 'gestor-tienda', 'trabajador', 'cliente', 'tienda', 'profesional'],
     default: 'cliente',
     required: true
   },
@@ -44,6 +44,19 @@ const usuarioSchema = new mongoose.Schema({
     type: String,
     enum: ['tienda', 'obrador', 'oficina', 'repartidor'],
     default: null
+  },
+
+  // ========== B2B / NEGOCIO ==========
+  // Si el usuario es un profesional, pertenece a un Negocio
+  negocioId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Negocio',
+    default: null
+  },
+  // Si es el administrador/creador de la cuenta del negocio
+  esAdminNegocio: {
+    type: Boolean,
+    default: false
   },
 
   // ========== UBICACIÓN ASIGNADA ==========
@@ -122,7 +135,10 @@ const usuarioSchema = new mongoose.Schema({
 
     // Usuarios
     gestionarUsuarios: { type: Boolean, default: false },
-    gestionarPermisos: { type: Boolean, default: false }
+    gestionarPermisos: { type: Boolean, default: false },
+
+    // B2B
+    gestionarNegocios: { type: Boolean, default: false }
   },
 
   // ========== HORARIOS Y TURNOS ==========
@@ -239,10 +255,19 @@ usuarioSchema.pre('save', function (next) {
       } else if (this.tipoTrabajador === 'oficina') {
         this.permisos.verReportesVentas = true;
         this.permisos.verReportesProduccion = true;
+        this.permisos.gestionarNegocios = true; // Oficina valida negocios
       } else if (this.tipoTrabajador === 'repartidor') {
         this.permisos.verPedidosAsignados = true;
         this.permisos.procesarPedidos = true; // Para cambiar estados (entregado)
       }
+      break;
+
+    case 'profesional':
+      // Permisos base para profesionales
+      this.permisos.gestionarCatalogo = false; // Solo ver
+      this.permisos.solicitarProductos = true; // Hacer pedidos B2B
+      this.permisos.verPedidosTienda = false; // No es tienda
+      // TODO: Añadir permisos específicos B2B si es necesario
       break;
 
     case 'cliente':
@@ -312,6 +337,10 @@ usuarioSchema.virtual('esTrabajador').get(function () {
 
 usuarioSchema.virtual('esCliente').get(function () {
   return this.rol === 'cliente';
+});
+
+usuarioSchema.virtual('esProfesional').get(function () {
+  return this.rol === 'profesional';
 });
 
 usuarioSchema.set('toJSON', { virtuals: true });

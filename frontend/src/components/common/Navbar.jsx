@@ -37,24 +37,39 @@ export default function Navbar({ transparent = false }) {
     // Helper for active link class
     const isActive = (path) => location.pathname === path ? 'active' : '';
 
-    return (
-        <nav className={navbarClass}>
-            <div className="navbar-content">
+    const isB2B = location.pathname.startsWith('/profesionales');
 
+    return (
+        <nav className={`${navbarClass} ${isB2B ? 'navbar-b2b' : ''}`}>
+            <div className="navbar-content">
                 {/* LOGO */}
-                <img
-                    src="https://regma.es/wp-content/uploads/2024/09/240503-regma-logotipo-rgb-logo-con-tagline-e1721651920696.png"
-                    alt="REGMA"
-                    className="nav-logo-img"
-                    onClick={() => navigate('/')}
-                />
+                <div className="nav-logo-container" onClick={() => navigate(isB2B ? '/profesionales' : '/')}>
+                    <img
+                        src="https://regma.es/wp-content/uploads/2024/09/240503-regma-logotipo-rgb-logo-con-tagline-e1721651920696.png"
+                        alt="Regma"
+                        className="nav-logo-img"
+                    />
+                    {isB2B && <span className="nav-logo-badge">PROFESIONAL</span>}
+                </div>
 
                 {/* CENTER LINKS */}
                 <div className="nav-links">
-                    <a onClick={() => navigate('/')} className={`nav-link ${isActive('/')}`}>Inicio</a>
-                    <a onClick={() => navigate('/historia')} className={`nav-link ${isActive('/historia')}`}>Historia</a>
-                    <a onClick={() => navigate('/tiendas')} className={`nav-link ${isActive('/tiendas')}`}>Tiendas</a>
-                    <a onClick={() => navigate('/productos')} className={`btn-nav-catalog ${location.pathname === '/productos' ? 'active-catalog' : ''}`}>Catálogo</a>
+                    {isB2B ? (
+                        <>
+                            <a onClick={() => navigate('/')} className={`nav-link`}>Volver a Regma</a>
+                            <a onClick={() => navigate('/profesionales')} className={`nav-link ${isActive('/profesionales') && location.pathname === '/profesionales' ? 'active' : ''}`}>Inicio</a>
+                            <a onClick={() => navigate('/profesionales/hosteleria')} className={`nav-link ${isActive('/profesionales/hosteleria')}`}>Hostelería</a>
+                            <a onClick={() => navigate('/profesionales/retail')} className={`nav-link ${isActive('/profesionales/retail')}`}>Retail</a>
+                            <a onClick={() => navigate('/contacto')} className={`nav-link ${isActive('/contacto')}`}>Contacto</a>
+                        </>
+                    ) : (
+                        <>
+                            <a onClick={() => navigate('/')} className={`nav-link ${isActive('/')}`}>Inicio</a>
+                            <a onClick={() => navigate('/historia')} className={`nav-link ${isActive('/historia')}`}>Historia</a>
+                            <a onClick={() => navigate('/tiendas')} className={`nav-link ${isActive('/tiendas')}`}>Tiendas</a>
+                            <a onClick={() => navigate('/productos')} className={`btn-nav-catalog ${location.pathname === '/productos' ? 'active-catalog' : ''}`}>Catálogo</a>
+                        </>
+                    )}
                 </div>
 
                 {/* RIGHT ACTIONS (AUTH & CART) */}
@@ -92,7 +107,12 @@ export default function Navbar({ transparent = false }) {
                             {menuAbierto && (
                                 <div className="nav-dropdown-menu" onMouseLeave={() => setMenuAbierto(false)}>
                                     <div className="nav-dropdown-item" onClick={() => {
-                                        const path = usuario?.rol === 'admin' ? '/admin' : usuario?.rol === 'trabajador' ? '/trabajador' : '/perfil';
+                                        let path = '/perfil';
+                                        if (usuario?.rol === 'admin') path = '/admin';
+                                        else if (usuario?.rol === 'trabajador') path = '/trabajador';
+                                        else if (usuario?.rol === 'profesional') path = '/profesional';
+                                        else if (usuario?.rol === 'tienda' || usuario?.rol === 'gestor-tienda') path = '/tienda';
+
                                         navigate(path);
                                     }}>
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
@@ -104,7 +124,7 @@ export default function Navbar({ transparent = false }) {
                                         {usuario?.rol === 'publico' ? 'Mi Perfil' : 'Dashboard'}
                                     </div>
 
-                                    {(usuario?.rol === 'admin' || usuario?.rol === 'trabajador') && (
+                                    {(usuario?.rol === 'admin' || usuario?.rol === 'trabajador' || usuario?.rol === 'profesional' || usuario?.rol === 'tienda' || usuario?.rol === 'gestor-tienda') && (
                                         <div className="nav-dropdown-item" onClick={() => navigate('/perfil')}>
                                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
                                                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>

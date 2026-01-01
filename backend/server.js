@@ -86,9 +86,11 @@ import pedidosRoutes from './routes/pedidos.js';
 import mensajesRoutes from './routes/mensajes.js';
 import uploadRoutes from './routes/upload.js';
 import carritoRoutes from './routes/carrito.js';
+import profesionalRoutes from './routes/profesionalRoutes.js';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/usuarios', usuariosRoutes);
+app.use('/api/profesionales', profesionalRoutes);
 app.use('/api/productos', productosRoutes);
 app.use('/api/categorias', categoriasRoutes);
 app.use('/api/variantes', variantesRoutes);
