@@ -54,7 +54,7 @@ export default function Navbar({ transparent = false }) {
                     <a onClick={() => navigate('/')} className={`nav-link ${isActive('/')}`}>Inicio</a>
                     <a onClick={() => navigate('/historia')} className={`nav-link ${isActive('/historia')}`}>Historia</a>
                     <a onClick={() => navigate('/tiendas')} className={`nav-link ${isActive('/tiendas')}`}>Tiendas</a>
-                    <a onClick={() => navigate('/productos')} className={`btn-nav-catalog`}>Catálogo</a>
+                    <a onClick={() => navigate('/productos')} className={`btn-nav-catalog ${location.pathname === '/productos' ? 'active-catalog' : ''}`}>Catálogo</a>
                 </div>
 
                 {/* RIGHT ACTIONS (AUTH & CART) */}

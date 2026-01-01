@@ -1018,29 +1018,40 @@ body {
     letter-spacing: 5px;
     margin-top: 20px;
     font-weight: 600;
-    text-shadow: 0 5px 15px rgba(0, 0, 0, 0.8);
+    /* Removed text-shadow as requested */
+    color: var(--text-dark);
+    /* Ensure contrast on light pill */
     opacity: 0.9;
 }
+
 /* --- DYNAMIC LOGO IMAGE STYLE --- */
 .hero-logo-dynamic {
-    width: 60vw; /* Responsively smaller than full screen */
-    max-width: 700px; /* Cap width to match reference */
+    width: 60vw;
+    /* Responsively smaller than full screen */
+    max-width: 700px;
+    /* Cap width to match reference */
     height: auto;
-    
+
     /* 3D Transform Logic */
-    transform: 
-        rotateX(calc(var(--mouse-y) * -20deg)) 
-        rotateY(calc(var(--mouse-x) * 20deg));
-        
+    transform:
+        rotateX(calc(var(--mouse-y) * -20deg)) rotateY(calc(var(--mouse-x) * 20deg));
+
     /* Depth */
-    filter: drop-shadow(0 30px 40px rgba(0,0,0,0.6));
-    
+    filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.6));
+
     will-change: transform;
-    transition: transform 0.1s cubic-bezier(0.215, 0.61, 0.355, 1); /* Smooth hover */
-    
-    /* Essential to prevent image dragging/selecting interference */
-    pointer-events: none; 
+    transition: transform 0.1s cubic-bezier(0.215, 0.61, 0.355, 1);
+    /* Smooth hover */
+
+    /* Enabled pointer events for interaction */
+    pointer-events: auto;
+    cursor: pointer;
     user-select: none;
+    transition: transform 0.3s ease;
+}
+
+.hero-logo-dynamic:hover {
+    transform: scale(1.05) rotateX(calc(var(--mouse-y) * -20deg)) rotateY(calc(var(--mouse-x) * 20deg));
 }
 
 @media (max-width: 768px) {
