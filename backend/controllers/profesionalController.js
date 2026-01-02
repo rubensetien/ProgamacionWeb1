@@ -149,7 +149,29 @@ export {
     validarNegocio,
     rechazarNegocio,
     getAllNegocios,
-    addEmpleado
+    addEmpleado,
+    getMiNegocio
+};
+
+// @desc    Obtener mi negocio (Profesional autenticado)
+// @route   GET /api/profesionales/mi-negocio
+// @access  Private (Profesional con negocioId)
+const getMiNegocio = async (req, res) => {
+    try {
+        if (!req.usuario.negocioId) {
+            return res.status(404).json({ msg: 'No tienes un negocio asignado' });
+        }
+
+        const negocio = await Negocio.findById(req.usuario.negocioId);
+        if (!negocio) {
+            return res.status(404).json({ msg: 'Negocio no encontrado' });
+        }
+
+        res.json(negocio);
+    } catch (error) {
+        console.error('Error al obtener mi negocio:', error);
+        res.status(500).json({ msg: 'Error al obtener datos del negocio' });
+    }
 };
 
 // @desc    Obtener todos los negocios (incluyendo activos y rechazados)

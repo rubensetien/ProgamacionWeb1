@@ -1,4 +1,4 @@
-import React from 'react'; // Removed useState
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Navbar from '../common/Navbar';
@@ -39,11 +39,21 @@ const storyData = [
 ];
 
 export default function HistoriaPage() {
-    // const navigate = useNavigate(); // Not strictly needed anymore if only Navbar uses it, but maybe for click handlers in components? Kept if needed.
-    // const { autenticado, usuario, logout } = useAuth(); // Auth handled in Navbar
-    // const [menuAbierto, setMenuAbierto] = useState(false); // Handled in Navbar
 
-    // Helper para iniciales moved to Navbar
+    useEffect(() => {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                }
+            });
+        }, { threshold: 0.15 });
+
+        const elements = document.querySelectorAll('.reveal-on-scroll');
+        elements.forEach(el => observer.observe(el));
+
+        return () => observer.disconnect();
+    }, []);
 
     return (
         <div className="historia-page-editorial">
@@ -65,7 +75,7 @@ export default function HistoriaPage() {
             {/* --- EDITORIAL CONTENT --- */}
             <div className="editorial-container">
                 {storyData.map((story, index) => (
-                    <section key={story.id} className={`story-section ${index % 2 !== 0 ? 'reverse' : ''}`}>
+                    <section key={story.id} className={`story-section reveal-on-scroll ${index % 2 !== 0 ? 'reverse' : ''}`}>
                         <div className="story-media">
                             <span className="story-year">{story.year}</span>
                             <div className="story-img-frame">
@@ -81,7 +91,7 @@ export default function HistoriaPage() {
             </div>
 
             {/* --- LEGACY BANNER --- */}
-            <section className="legacy-banner">
+            <section className="legacy-banner reveal-on-scroll">
                 <div className="legacy-content">
                     <p className="legacy-quote">
                         "No heredamos Regma para cambiarlo, sino para asegurar que nuestros hijos y los tuyos sigan disfrutando del mismo sabor auténtico que creó nuestro abuelo."

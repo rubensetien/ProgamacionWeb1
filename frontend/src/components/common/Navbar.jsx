@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCarrito } from '../../context/CarritoContext';
+import { LogOut, User, LayoutDashboard, ShoppingCart, Menu, X } from 'lucide-react';
 import '../../styles/common/Navbar.css';
 
 export default function Navbar({ transparent = false }) {
@@ -27,9 +28,7 @@ export default function Navbar({ transparent = false }) {
         return name ? name.substring(0, 2).toUpperCase() : 'U';
     };
 
-    // Determine container class: 
-    // If 'transparent' prop is true, it starts transparent and becomes solid on scroll (glass effect).
-    // If 'transparent' prop is false, it is always solid/dark.
+    // Determine container class
     const navbarClass = transparent
         ? `navbar-container ${scrolled ? 'scrolled' : ''}`
         : 'navbar-container solid-mode';
@@ -81,11 +80,7 @@ export default function Navbar({ transparent = false }) {
                         onClick={() => navigate('/carrito')}
                         title="Ver mi carrito"
                     >
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="9" cy="21" r="1"></circle>
-                            <circle cx="20" cy="21" r="1"></circle>
-                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                        </svg>
+                        <ShoppingCart size={24} />
                         {cantidadTotal() > 0 && (
                             <span className="nav-cart-badge">{cantidadTotal()}</span>
                         )}
@@ -115,21 +110,13 @@ export default function Navbar({ transparent = false }) {
 
                                         navigate(path);
                                     }}>
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                                            <rect x="3" y="3" width="7" height="7"></rect>
-                                            <rect x="14" y="3" width="7" height="7"></rect>
-                                            <rect x="14" y="14" width="7" height="7"></rect>
-                                            <rect x="3" y="14" width="7" height="7"></rect>
-                                        </svg>
+                                        <LayoutDashboard size={18} />
                                         {usuario?.rol === 'publico' ? 'Mi Perfil' : 'Dashboard'}
                                     </div>
 
                                     {(usuario?.rol === 'admin' || usuario?.rol === 'trabajador' || usuario?.rol === 'profesional' || usuario?.rol === 'tienda' || usuario?.rol === 'gestor-tienda') && (
                                         <div className="nav-dropdown-item" onClick={() => navigate('/perfil')}>
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                                <circle cx="12" cy="7" r="4"></circle>
-                                            </svg>
+                                            <User size={18} />
                                             Mi Cuenta
                                         </div>
                                     )}
@@ -137,11 +124,7 @@ export default function Navbar({ transparent = false }) {
                                     <div className="nav-dropdown-divider"></div>
 
                                     <div className="nav-dropdown-item logout" onClick={logout}>
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 0 0 1 2-2h4"></path>
-                                            <polyline points="16 17 21 12 16 7"></polyline>
-                                            <line x1="21" y1="12" x2="9" y2="12"></line>
-                                        </svg>
+                                        <LogOut size={18} />
                                         Cerrar Sesión
                                     </div>
                                 </div>

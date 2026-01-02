@@ -10,6 +10,7 @@ import Carrito from './components/cliente/Carrito';
 import FinalizarPedido from './components/cliente/FinalizarPedido';
 import MisPedidos from './components/cliente/MisPedidos';
 import PerfilCliente from './components/cliente/PerfilCliente';
+import PerfilDatos from './components/cliente/PerfilDatos';
 import MisSolicitudes from './components/trabajador/MisSolicitudes';
 import StoreLocator from './components/public/StoreLocator';
 import DashboardProfesional from './components/profesional/Dashboard';
@@ -132,13 +133,17 @@ function AppContent() {
           }
         />
         <Route
-          path="/perfil"
+          path="/perfil/*"
           element={
             <ProtectedRoute>
               <PerfilCliente />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<Navigate to="datos" replace />} />
+          <Route path="datos" element={<PerfilDatos />} />
+          <Route path="pedidos" element={<MisPedidos embedded={true} />} />
+        </Route>
 
         {/* Rutas de trabajador */}
         <Route

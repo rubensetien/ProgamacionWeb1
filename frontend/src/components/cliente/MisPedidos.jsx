@@ -2,8 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Clock, CheckCircle, ChefHat, PackageCheck, CheckCheck, XCircle, AlertCircle,
-  MapPin, Calendar, ShoppingBag, CreditCard, FileText, Star, ArrowLeft, Package
+  MapPin, Calendar, ShoppingBag, CreditCard, FileText, Star, ArrowLeft, Package,
+  ChevronDown, ChevronUp
 } from 'lucide-react';
+import Navbar from '../common/Navbar';
+import Footer from '../common/Footer';
 import '../../styles/cliente/MisPedidos.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -26,7 +29,7 @@ const ESTADOS = {
   'no-recogido': { color: '#6c757d', icon: AlertCircle, texto: 'No recogido' }
 };
 
-export default function MisPedidos() {
+export default function MisPedidos({ embedded = false }) {
   const [pedidos, setPedidos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -103,10 +106,13 @@ export default function MisPedidos() {
 
   if (loading) {
     return (
-      <div className="mis-pedidos-container">
-        <div className="pedidos-loading">
-          <div className="spinner"></div>
-          <p>Cargando tus pedidos...</p>
+      <div className="mis-pedidos-page">
+        {!embedded && <Navbar />}
+        <div className="mis-pedidos-container">
+          <div className="pedidos-loading">
+            <div className="spinner"></div>
+            <p>Cargando tus pedidos...</p>
+          </div>
         </div>
       </div>
     );
@@ -114,96 +120,114 @@ export default function MisPedidos() {
 
   if (error) {
     return (
-      <div className="mis-pedidos-container">
-        <div className="pedidos-error">
-          <p><XCircle className="icon-inline" /> {error}</p>
-          <button onClick={cargarPedidos}>Reintentar</button>
+      <div className="mis-pedidos-page">
+        {!embedded && <Navbar />}
+        <div className="mis-pedidos-container">
+          <div className="pedidos-error">
+            <p><XCircle className="icon-inline" /> {error}</p>
+            <button onClick={cargarPedidos}>Reintentar</button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="mis-pedidos-container">
-      {/* Header */}
-      <div className="pedidos-header">
-        <div className="header-top">
-          <button
-            className="btn-volver-landing"
-            onClick={() => navigate('/')}
-          >
-            <ArrowLeft className="icon-small" /> Volver al Inicio
-          </button>
-        </div>
-        <div className="header-content">
-          <div>
-            <h1><Package className="icon-large" /> Mis Pedidos</h1>
-            <p className="pedidos-subtitulo">
-              Tienes {pedidos.length} {pedidos.length === 1 ? 'pedido' : 'pedidos'}
-            </p>
+    <div className="mis-pedidos-page">
+      {!embedded && <Navbar />}
+
+      <div className="mis-pedidos-container">
+        {/* Header (adjusted) */}
+        {/* Header (Adaptive) */}
+        {embedded ? (
+          <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <h2>Mis Pedidos</h2>
+              <p>Revisa el estado de tus pedidos recientes</p>
+            </div>
+            <button
+              className="btn-nuevo-pedido"
+              style={{ padding: '8px 20px', fontSize: '0.9rem' }}
+              onClick={() => navigate('/productos')}
+            >
+              + Nuevo Pedido
+            </button>
           </div>
+        ) : (
+          <div className="pedidos-header">
+            <div className="header-content">
+              <div>
+                <h1><Package className="icon-large" /> Mis Pedidos</h1>
+                <p className="pedidos-subtitulo">
+                  Tienes {pedidos.length} {pedidos.length === 1 ? 'pedido' : 'pedidos'}
+                </p>
+              </div>
+              <button
+                className="btn-nuevo-pedido"
+                onClick={() => navigate('/productos')}
+              >
+                + Hacer nuevo pedido
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Filtros */}
+        <div className="pedidos-filtros">
           <button
-            className="btn-nuevo-pedido"
-            onClick={() => navigate('/productos')}
+            className={`filtro-btn ${filtroEstado === 'todos' ? 'activo' : ''}`}
+            onClick={() => setFiltroEstado('todos')}
           >
-            + Hacer nuevo pedido
+            Todos ({pedidos.length})
+          </button>
+          <button
+            className={`filtro-btn ${filtroEstado === 'pendiente' ? 'activo' : ''}`}
+            onClick={() => setFiltroEstado('pendiente')}
+          >
+            <Clock className="icon-small" /> Pendientes ({pedidos.filter(p => p.estado === 'pendiente').length})
+          </button>
+          <button
+            className={`filtro-btn ${filtroEstado === 'listo' ? 'activo' : ''}`}
+            onClick={() => setFiltroEstado('listo')}
+          >
+            <PackageCheck className="icon-small" /> Listos ({pedidos.filter(p => p.estado === 'listo').length})
+          </button>
+          <button
+            className={`filtro-btn ${filtroEstado === 'entregado' ? 'activo' : ''}`}
+            onClick={() => setFiltroEstado('entregado')}
+          >
+            <CheckCheck className="icon-small" /> Completados ({pedidos.filter(p => p.estado === 'entregado').length})
           </button>
         </div>
+
+        {/* Lista de pedidos */}
+        {pedidosFiltrados.length === 0 ? (
+          <div className="pedidos-vacio">
+            <div className="icono-vacio"><Package className="icon-huge" /></div>
+            <h2>No hay pedidos {filtroEstado !== 'todos' ? 'en este estado' : ''}</h2>
+            <p>Haz tu primer pedido y aparecerá aquí</p>
+            <button
+              className="btn-ir-productos"
+              onClick={() => navigate('/productos')}
+            >
+              Ver productos
+            </button>
+          </div>
+        ) : (
+          <div className="pedidos-lista">
+            {pedidosFiltrados.map(pedido => (
+              <PedidoCard
+                key={pedido._id}
+                pedido={pedido}
+                onCancelar={cancelarPedido}
+                formatearFecha={formatearFecha}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Filtros */}
-      <div className="pedidos-filtros">
-        <button
-          className={`filtro-btn ${filtroEstado === 'todos' ? 'activo' : ''}`}
-          onClick={() => setFiltroEstado('todos')}
-        >
-          Todos ({pedidos.length})
-        </button>
-        <button
-          className={`filtro-btn ${filtroEstado === 'pendiente' ? 'activo' : ''}`}
-          onClick={() => setFiltroEstado('pendiente')}
-        >
-          <Clock className="icon-small" /> Pendientes ({pedidos.filter(p => p.estado === 'pendiente').length})
-        </button>
-        <button
-          className={`filtro-btn ${filtroEstado === 'listo' ? 'activo' : ''}`}
-          onClick={() => setFiltroEstado('listo')}
-        >
-          <PackageCheck className="icon-small" /> Listos ({pedidos.filter(p => p.estado === 'listo').length})
-        </button>
-        <button
-          className={`filtro-btn ${filtroEstado === 'entregado' ? 'activo' : ''}`}
-          onClick={() => setFiltroEstado('entregado')}
-        >
-          <CheckCheck className="icon-small" /> Completados ({pedidos.filter(p => p.estado === 'entregado').length})
-        </button>
-      </div>
-
-      {/* Lista de pedidos */}
-      {pedidosFiltrados.length === 0 ? (
-        <div className="pedidos-vacio">
-          <div className="icono-vacio"><Package className="icon-huge" /></div>
-          <h2>No hay pedidos {filtroEstado !== 'todos' ? 'en este estado' : ''}</h2>
-          <p>Haz tu primer pedido y aparecerá aquí</p>
-          <button
-            className="btn-ir-productos"
-            onClick={() => navigate('/productos')}
-          >
-            Ver productos
-          </button>
-        </div>
-      ) : (
-        <div className="pedidos-lista">
-          {pedidosFiltrados.map(pedido => (
-            <PedidoCard
-              key={pedido._id}
-              pedido={pedido}
-              onCancelar={cancelarPedido}
-              formatearFecha={formatearFecha}
-            />
-          ))}
-        </div>
-      )}
+      {!embedded && <Footer />}
     </div>
   );
 }
@@ -244,7 +268,7 @@ function PedidoCard({ pedido, onCancelar, formatearFecha }) {
           </span>
 
           <button className="btn-expandir">
-            {expandido ? '▲' : '▼'}
+            {expandido ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
           </button>
         </div>
       </div>

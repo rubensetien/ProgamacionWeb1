@@ -444,12 +444,7 @@ body {
     border: 1px solid #fecaca;
 }
 
-/* Transparent Mode for Pedidos Tab */
-.perfil-content.transparent-mode {
-    background: transparent;
-    box-shadow: none;
-    padding: 0;
-}
+
 
 /* Embed MisPedidos adjustment */
 .perfil-pedidos-wrapper .mis-pedidos-container {
@@ -457,21 +452,7 @@ body {
     min-height: auto;
 }
 
-/* Hide Redundant Title in Embedded Mode */
-.perfil-pedidos-wrapper .pedidos-header {
-    background: transparent;
-    padding: 0 0 20px 0;
-    margin-bottom: 20px;
-    box-shadow: none;
-    border-radius: 0;
-    border-bottom: 2px solid var(--color-border);
-}
 
-.perfil-pedidos-wrapper .header-content h1,
-.perfil-pedidos-wrapper .pedidos-subtitulo {
-    display: none;
-    /* Hide redundant title/subtitle */
-}
 
 /* Keep the "New Order" button visible but aligned */
 .perfil-pedidos-wrapper .header-content {

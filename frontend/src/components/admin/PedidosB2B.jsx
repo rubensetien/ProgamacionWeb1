@@ -67,7 +67,6 @@ const PedidosB2B = () => {
     if (loading) return <div className="pedidos-loading">Cargando pedidos B2B...</div>;
 
     return (
-    return (
         <div className="gestion-productos">
             <div className="gestion-header">
                 <div className="header-content">
@@ -174,7 +173,7 @@ const PedidosB2B = () => {
             )}
         </div>
     );
-    );
+
 };
 
 export default PedidosB2B;

@@ -82,6 +82,27 @@ export default function FinalizarPedido() {
           setObrador(obradorData.data);
         }
       }
+
+      // Si es profesional, cargar datos de su negocio
+      if (usuario?.rol === 'profesional') {
+        const negocioRes = await fetch(`${API_URL}/api/profesionales/mi-negocio`, { headers: getAuthHeaders() });
+        if (negocioRes.ok) {
+          const negocio = await negocioRes.json();
+          if (negocio && negocio.direccion) {
+            setFormulario(prev => ({
+              ...prev,
+              calle: negocio.direccion.calle || '',
+              numero: '0', // Adjust if needed
+              ciudad: negocio.direccion.ciudad || '',
+              codigoPostal: negocio.direccion.codigoPostal || '',
+              provincia: negocio.direccion.provincia || '',
+              pais: negocio.direccion.pais || 'España'
+            }));
+            // Trigger validation if possible or let user click verify
+          }
+        }
+      }
+
     } catch (err) {
       console.error('Error cargando datos:', err);
       setError('No se pudieron cargar los datos. Por favor, recarga la página.');
