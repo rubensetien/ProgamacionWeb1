@@ -209,6 +209,37 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* --- 6. REGMA PARA PROFESIONALES (Alternative Organic Design) --- */}
+      <section className="profesional-section-alt">
+        <div className="profesional-content-alt">
+          <span className="profesional-tag-alt">Regma Profesionales</span>
+          <h2 className="profesional-title-alt">Tu Portal de<br />Gestión</h2>
+          <p className="profesional-desc-alt">
+            Accede a nuestra plataforma exclusiva para hostelería y retail.
+            Gestiona tus pedidos, consulta el catálogo completo y descubre las novedades de temporada en un solo clic.
+            <br /><br />
+            <strong>Eficiencia, rapidez y el sabor de siempre.</strong>
+          </p>
+          <button className="btn-profesional" onClick={() => navigate('/profesionales')}>
+            Entrar al Portal
+          </button>
+        </div>
+
+        <div className="profesional-video-wrapper">
+          <div className="video-portal-frame">
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            >
+              <source src={`${API_URL}/uploads/helados_para_supermercados.mp4`} type="video/mp4" />
+            </video>
+          </div>
+        </div>
+      </section>
+
       {/* --- 5. FOOTER MASTERPIECE --- */}
       <Footer />
 

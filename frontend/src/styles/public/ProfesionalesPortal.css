@@ -1,0 +1,220 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Outfit:wght@300;400;600;800&display=swap');
+
+:root {
+    --regma-orange: #ff5722;
+    /* Slightly more vibrant/reddish orange from screenshot */
+    --regma-cream: #f9f5f0;
+    /* The hero background color */
+    --text-serif: 'Playfair Display', serif;
+    --text-sans: 'Outfit', sans-serif;
+}
+
+.portal-page {
+    font-family: var(--text-sans);
+    color: #333;
+    background: white;
+}
+
+/* --- HEADER SPECIFIC --- */
+.portal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 5%;
+    background: white;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9rem;
+}
+
+.portal-nav {
+    display: flex;
+    gap: 30px;
+    color: #888;
+}
+
+.btn-felicidad {
+    background: var(--regma-orange);
+    color: white;
+    padding: 10px 25px;
+    border-radius: 50px;
+    font-weight: 600;
+    border: none;
+    text-transform: lowercase;
+}
+
+.btn-felicidad::first-letter {
+    text-transform: uppercase;
+}
+
+/* --- HERO --- */
+.portal-hero {
+    background-color: var(--regma-cream);
+    padding: 80px 5%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 80vh;
+    position: relative;
+    overflow: hidden;
+}
+
+.portal-hero-text h1 {
+    font-family: var(--text-serif);
+    font-size: 4rem;
+    color: var(--regma-orange);
+    line-height: 1.1;
+    margin-bottom: 20px;
+}
+
+.portal-hero-text p {
+    font-size: 1.2rem;
+    color: #cc7a5a;
+    /* Muted orange/brown from screenshot */
+    max-width: 500px;
+    margin-bottom: 40px;
+    font-family: var(--text-serif);
+}
+
+.hero-seal {
+    width: 100px;
+    height: 100px;
+    border: 2px solid var(--regma-orange);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--regma-orange);
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* --- STATS ORANGE SECTION --- */
+.portal-stats {
+    background: var(--regma-orange);
+    color: white;
+    padding: 80px 5%;
+    position: relative;
+}
+
+/* Curve separator if needed (screenshot has straight block but visually distinctive) */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 40px;
+}
+
+.stat-item .number {
+    font-size: 3.5rem;
+    font-family: var(--text-sans);
+    font-weight: 300;
+}
+
+/* --- CARDS GRID --- */
+.portal-segments {
+    padding: 80px 5%;
+    text-align: center;
+}
+
+.segment-card {
+    border: 1px solid #ffdcc9;
+    padding: 40px 20px;
+    border-radius: 10px;
+    transition: all 0.3s;
+}
+
+.segment-card:hover {
+    box-shadow: 0 10px 30px rgba(255, 87, 34, 0.1);
+}
+
+.segment-badge {
+    background: #ffede6;
+    color: var(--regma-orange);
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+/* --- MEGA MENU --- */
+.mega-menu-overlay {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: white;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    z-index: 100;
+    border-top: 1px solid #f0f0f0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+}
+
+.portal-nav-links .nav-item:hover .mega-menu-overlay,
+.mega-menu-overlay:hover {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.mega-menu-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    height: 400px; /* Adjust based on preference */
+}
+
+.mega-menu-col {
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    group: hover;
+}
+
+.mega-menu-col video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+    filter: brightness(0.7) contrast(1.1);
+}
+
+.mega-menu-col:hover video {
+    transform: scale(1.05);
+    filter: brightness(0.9) contrast(1.1);
+}
+
+.mega-menu-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 30px;
+    background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+    color: white;
+    z-index: 2;
+}
+
+.mega-menu-content h3 {
+    font-family: var(--text-serif);
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.mega-menu-content p {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    font-weight: 300;
+}
+
+/* Ensure Mega Menu Visibility */
+.mega-menu-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
