@@ -7,6 +7,9 @@ import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { ApolloServer } from 'apollo-server-express'; // [NEW] GraphQL
+import typeDefs from './graphql/typeDefs.js';         // [NEW] GraphQL
+import resolvers from './graphql/resolvers.js';       // [NEW] GraphQL
 
 dotenv.config();
 
@@ -47,7 +50,8 @@ const allowedOrigins = [
   'http://localhost:5175',
   'http://172.18.8.1:5174',
   'http://localhost:3000',
-  'https://progamacionweb1-1.onrender.com'
+  'https://progamacionweb1-1.onrender.com',
+  'https://studio.apollographql.com'
 ];
 
 app.use(cors({
@@ -131,6 +135,21 @@ app.get('/', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
+
+// ========== GRAPHQL SERVER ==========
+const apolloServer = new ApolloServer({
+  typeDefs,
+  resolvers,
+  context: ({ req }) => ({ req }) // Pass request context if needed for auth
+});
+
+await apolloServer.start(); // Apollo Server 3 requires await start()
+apolloServer.applyMiddleware({
+  app,
+  path: '/graphql',
+  cors: false // Disable Apollo's default CORS to use the global Express CORS middleware
+});
+console.log(`🚀 GraphQL listo en http://localhost:${process.env.PORT || 3001}${apolloServer.graphqlPath}`);
 
 // ========== MANEJO DE ERRORES ==========
 app.use((err, req, res, next) => {

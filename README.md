@@ -174,3 +174,73 @@ Usuario final de la plataforma e-commerce.
 *   **Redis Fallback**: El sistema detecta automáticamente si Redis no está disponible y conmuta a "Modo Seguro" usando MongoDB, garantizando la continuidad del servicio.
 *   **Imágenes**: Las imágenes subidas se guardan en `backend/uploads` y **se incluyen** en el repositorio (configurado en `.gitignore`).
 *   **Datos Sensibles**: Carpetas como `scripts/` (con lógicas de migración interna) y `data/` están excluidas del repositorio público.
+---
+
+## 📈 Integra GraphQL
+
+La plataforma ahora soporta **GraphQL** como alternativa o complemento a la API REST, permitiendo consultas más eficientes y flexibles, especialmente para la obtención de productos y gestión de pedidos.
+
+### 🌐 Acceso
+*   **Endpoint:** `/graphql` (ej: `http://localhost:3001/graphql`)
+*   **Herramienta de Pruebas:** Apollo Sandbox (habilitado en entorno de desarrollo).
+
+### 🧪 Verificación y Ejemplos de Uso
+A continuación se muestran ejemplos reales de uso para validar la integración.
+
+#### 1. Crear un Pedido (Mutation)
+Ejemplo de creación de pedido para el usuario **Ruben** incluyendo los productos **"Chocolate 0.5L"** y **"Jaspeado de moka 8L"**.
+
+**Query:**
+```graphql
+mutation CrearPedidoDePrueba {
+  crearPedido(
+    usuarioId: "693155b03956e7d9c27704bd", 
+    items: [
+      { 
+        productoId: "695576806bfef2433fe5e9e6", 
+        cantidad: 2 
+      },
+      { 
+        productoId: "695576826bfef2433fe5ea19", 
+        cantidad: 1 
+      }
+    ]
+  ) {
+    id
+    numeroPedido
+    estado
+    total
+    items {
+      nombreProducto
+      cantidad
+      subtotal
+    }
+  }
+}
+```
+
+**Resultado Esperado:**
+> [!NOTE]
+> ![Apollo Sandbox - Creación Pedido](src/images/GraphQL/mutation_crear_pedido.png)
+
+#### 2. Consultar Productos (Query)
+Obtención optimizada de datos de productos específicos.
+
+**Query:**
+```graphql
+query VerificarProductos {
+  producto1: producto(id: "695576806bfef2433fe5e9e6") {
+    nombre
+    sku
+    precioBase
+  }
+  producto2: producto(id: "695576826bfef2433fe5ea19") {
+    nombre
+    sku
+    precioBase
+  }
+}
+```
+
+> [!NOTE]
+> ![Apollo Sandbox - Consulta Productos](src/images/GraphQL/query_productos.png)
