@@ -221,7 +221,7 @@ mutation CrearPedidoDePrueba {
 
 **Resultado Esperado:**
 > [!NOTE]
-> ![Apollo Sandbox - Creación Pedido](src/images/GraphQL/mutation_crear_pedido.png)
+> ![Apollo Sandbox - Creación Pedido](src/Images/GraphQL/query1.png)
 
 #### 2. Consultar Productos (Query)
 Obtención optimizada de datos de productos específicos.
@@ -243,4 +243,4 @@ query VerificarProductos {
 ```
 
 > [!NOTE]
-> ![Apollo Sandbox - Consulta Productos](src/images/GraphQL/query_productos.png)
+> ![Apollo Sandbox - Consulta Productos](src/Images/GraphQL/query2.png)
