@@ -6,7 +6,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import { dirname, join } from 'path';
 import { ApolloServer } from 'apollo-server-express'; // [NEW] GraphQL
 import typeDefs from './graphql/typeDefs.js';         // [NEW] GraphQL
 import resolvers from './graphql/resolvers.js';       // [NEW] GraphQL
@@ -70,7 +70,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Servir archivos estáticos
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static(join(__dirname, 'uploads')));
 
 // ========== CONEXIÓN A MONGODB ==========
 mongoose.connect(process.env.MONGODB_URI)

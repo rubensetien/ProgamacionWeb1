@@ -91,9 +91,14 @@ const productoSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  // Nuevo flag para exclusividad B2B
+  soloProfesionales: {
+    type: Boolean,
+    default: false
+  },
   canales: [{
     type: String,
-    enum: ['heladeria', 'pasteleria', 'cafeteria', 'ecommerce']
+    enum: ['heladeria', 'pasteleria', 'cafeteria', 'ecommerce', 'b2b']
   }],
 
   // Estado

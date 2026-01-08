@@ -1,5 +1,6 @@
 import Negocio from '../models/Negocio.js';
 import Usuario from '../models/Usuario.js';
+import sendEmail from '../utils/email.js';
 
 // @desc    Registrar un nuevo negocio y su administrador
 // @route   POST /api/profesionales/registro-negocio
@@ -107,8 +108,28 @@ const validarNegocio = async (req, res) => {
         negocio.validadoPor = req.usuario._id; // Del middleware auth
         await negocio.save();
 
-        // 2. Notificar al usuario admin del negocio (Simulado/Email)
-        // TODO: Enviar email
+        // 2. Notificar al usuario admin del negocio via Email
+        const asunto = '¡Bienvenido a Regma Profesionales! Tu cuenta ha sido validada';
+        const html = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h1 style="color: #ff6600;">¡Bienvenido a Regma!</h1>
+                <p>Hola <strong>${negocio.contacto.nombre}</strong>,</p>
+                <p>Nos complace informarte que la solicitud de registro para tu negocio <strong>${negocio.nombre}</strong> ha sido verificada y aprobada.</p>
+                <p>Ya puedes acceder a tu panel de profesional para realizar pedidos y gestionar tu cuenta.</p>
+                <div style="margin: 30px 0; text-align: center;">
+                    <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/login" style="background-color: #ff6600; color: white; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Acceder al Portal</a>
+                </div>
+                <p>Si tienes alguna duda, contacta con nuestro soporte.</p>
+                <p>Atentamente,<br>El equipo de Regma</p>
+            </div>
+        `;
+
+        // Intentar enviar el email (no bloqueante)
+        sendEmail({
+            to: negocio.contacto.email,
+            subject: asunto,
+            html
+        }).catch(err => console.error('Error no bloqueante enviando email bienvenida:', err));
 
         res.json({ msg: 'Negocio validado correctamente', negocio });
 

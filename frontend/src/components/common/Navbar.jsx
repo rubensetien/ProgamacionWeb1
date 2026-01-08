@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCarrito } from '../../context/CarritoContext';
-import { LogOut, User, LayoutDashboard, ShoppingCart, Menu, X } from 'lucide-react';
+import { LogOut, User, LayoutDashboard, ShoppingCart, Menu, X, ChevronDown } from 'lucide-react';
 import '../../styles/common/Navbar.css';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export default function Navbar({ transparent = false }) {
     const navigate = useNavigate();
@@ -13,6 +15,7 @@ export default function Navbar({ transparent = false }) {
 
     const [scrolled, setScrolled] = useState(false);
     const [menuAbierto, setMenuAbierto] = useState(false);
+    const [showProfMenu, setShowProfMenu] = useState(false);
 
     // Handle Scroll Effect
     useEffect(() => {
@@ -39,7 +42,7 @@ export default function Navbar({ transparent = false }) {
     const isB2B = location.pathname.startsWith('/profesionales');
 
     return (
-        <nav className={`${navbarClass} ${isB2B ? 'navbar-b2b' : ''}`}>
+        <nav className={`${navbarClass} ${isB2B ? 'navbar-b2b' : ''}`} onMouseLeave={() => setShowProfMenu(false)}>
             <div className="navbar-content">
                 {/* LOGO */}
                 <div className="nav-logo-container" onClick={() => navigate(isB2B ? '/profesionales' : '/')}>
@@ -48,27 +51,29 @@ export default function Navbar({ transparent = false }) {
                         alt="Regma"
                         className="nav-logo-img"
                     />
-                    {isB2B && <span className="nav-logo-badge">PROFESIONAL</span>}
+
                 </div>
 
                 {/* CENTER LINKS */}
                 <div className="nav-links">
-                    {isB2B ? (
-                        <>
-                            <a onClick={() => navigate('/')} className={`nav-link`}>Volver a Regma</a>
-                            <a onClick={() => navigate('/profesionales')} className={`nav-link ${isActive('/profesionales') && location.pathname === '/profesionales' ? 'active' : ''}`}>Inicio</a>
-                            <a onClick={() => navigate('/profesionales/hosteleria')} className={`nav-link ${isActive('/profesionales/hosteleria')}`}>Hostelería</a>
-                            <a onClick={() => navigate('/profesionales/retail')} className={`nav-link ${isActive('/profesionales/retail')}`}>Retail</a>
-                            <a onClick={() => navigate('/contacto')} className={`nav-link ${isActive('/contacto')}`}>Contacto</a>
-                        </>
-                    ) : (
-                        <>
-                            <a onClick={() => navigate('/')} className={`nav-link ${isActive('/')}`}>Inicio</a>
-                            <a onClick={() => navigate('/historia')} className={`nav-link ${isActive('/historia')}`}>Historia</a>
-                            <a onClick={() => navigate('/tiendas')} className={`nav-link ${isActive('/tiendas')}`}>Tiendas</a>
-                            <a onClick={() => navigate('/productos')} className={`btn-nav-catalog ${location.pathname === '/productos' ? 'active-catalog' : ''}`}>Catálogo</a>
-                        </>
-                    )}
+                    <>
+                        <a onClick={() => navigate('/')} className={`nav-link ${isActive('/')}`}>Inicio</a>
+
+                        {/* PROFESIONALES DROPDOWN TRIGGER */}
+                        <div
+                            className="nav-item-dropdown"
+                            onMouseEnter={() => setShowProfMenu(true)}
+                            onClick={() => navigate('/profesionales')}
+                        >
+                            <span className={`nav-link ${isActive('/profesionales')}`} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                Regma para Profesionales <ChevronDown size={14} />
+                            </span>
+                        </div>
+
+                        <a onClick={() => navigate('/historia')} className={`nav-link ${isActive('/historia')}`}>Sobre Regma</a>
+                        <a onClick={() => navigate('/tiendas')} className={`nav-link ${isActive('/tiendas')}`}>Tiendas</a>
+                        <a onClick={() => navigate('/productos')} className={`btn-nav-catalog ${location.pathname === '/productos' ? 'active-catalog' : ''}`}>Catálogo</a>
+                    </>
                 </div>
 
                 {/* RIGHT ACTIONS (AUTH & CART) */}
@@ -133,6 +138,58 @@ export default function Navbar({ transparent = false }) {
                     )}
                 </div>
             </div>
-        </nav>
+
+            {/* VIDEO MEGA MENU OVERLAY */}
+            <div
+                className={`nav-mega-overlay ${showProfMenu ? 'active' : ''}`}
+                onMouseEnter={() => setShowProfMenu(true)}
+            >
+                <div className="nav-mega-grid">
+                    {/* COL 1: HOSTELERÍA */}
+                    <div className="nav-mega-col" onClick={() => { navigate('/profesionales/hosteleria'); setShowProfMenu(false); }}>
+                        <video autoPlay loop muted playsInline>
+                            <source src={`${API_URL}/uploads/PreparacionCucurucho.mp4`} type="video/mp4" />
+                        </video>
+                        <div className="nav-mega-content">
+                            <h3>Helados artesanales para<br />hostelería y restauración</h3>
+                            <p>El mejor postre para tus clientes.</p>
+                        </div>
+                    </div>
+
+                    {/* COL 2: SUPERMERCADOS */}
+                    <div className="nav-mega-col" onClick={() => { navigate('/profesionales/retail'); setShowProfMenu(false); }}>
+                        <video autoPlay loop muted playsInline>
+                            <source src={`${API_URL}/uploads/helados_para_supermercados.mp4`} type="video/mp4" />
+                        </video>
+                        <div className="nav-mega-content">
+                            <h3>Helados para<br />supermercados</h3>
+                            <p>Los 14 sabores de helados ya disponibles.</p>
+                        </div>
+                    </div>
+
+                    {/* COL 3: CORNER */}
+                    <div className="nav-mega-col" onClick={() => { navigate('/profesionales/corner'); setShowProfMenu(false); }}>
+                        <video autoPlay loop muted playsInline>
+                            <source src={`${API_URL}/uploads/preparacionHelado.mp4`} type="video/mp4" />
+                        </video>
+                        <div className="nav-mega-content">
+                            <h3>Córner Regma</h3>
+                            <p>Un córner refrigerado para tu negocio.</p>
+                        </div>
+                    </div>
+
+                    {/* COL 4: EVENTOS */}
+                    <div className="nav-mega-col" onClick={() => { navigate('/profesionales/eventos'); setShowProfMenu(false); }}>
+                        <video autoPlay loop muted playsInline>
+                            <source src={`${API_URL}/uploads/videoParejaDandoseHelado.mp4`} type="video/mp4" />
+                        </video>
+                        <div className="nav-mega-content">
+                            <h3>Helados para eventos</h3>
+                            <p>Catering y helados para tus invitados.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav >
     );
 }

@@ -1,0 +1,455 @@
+/* CornerPage.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+    /* Palette Overhaul - Premium Regma */
+    --corner-bg: #FDFBF7;
+    /* Creamer, richer background */
+    --corner-orange: #FF5722;
+    /* Deep Regma Orange */
+    --corner-terracotta: #E64A19;
+    /* Darker accent */
+    --corner-text: #2D2D2D;
+    /* Softer black */
+    --corner-light-text: #555555;
+    --corner-border: rgba(220, 220, 220, 0.5);
+
+    /* Fonts */
+    --corner-serif: 'Playfair Display', serif;
+    --corner-sans: 'Outfit', sans-serif;
+
+    /* Effects */
+    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.6);
+    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+}
+
+.corner-page {
+    background-color: var(--corner-bg);
+    color: var(--corner-text);
+    font-family: var(--corner-sans);
+    overflow-x: hidden;
+}
+
+/* --- BRANDING SECTION (HERO) --- */
+.corner-branding {
+    position: relative;
+    height: 100vh;
+    /* Full viewport height */
+    min-height: 700px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 0 5%;
+}
+
+.corner-branding-video-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+.corner-branding-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.corner-branding-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.82);
+    /* Slightly more transparent to reveal video motion */
+    backdrop-filter: blur(2px);
+    /* Subtle blur for depth */
+    z-index: 2;
+}
+
+.corner-branding-content {
+    position: relative;
+    z-index: 3;
+    text-align: center;
+    max-width: 1100px;
+    padding-top: 60px;
+    /* Slight offset for visually centered feel */
+}
+
+/* Premium Typography for Hero */
+.corner-branding h2 {
+    font-family: var(--corner-serif);
+    font-size: 5rem;
+    /* Massive, Editorial Look */
+    line-height: 1.05;
+    color: var(--corner-orange);
+    margin-bottom: 35px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+}
+
+.corner-branding p {
+    font-family: var(--corner-sans);
+    font-size: 1.35rem;
+    color: var(--corner-light-text);
+    max-width: 800px;
+    margin: 0 auto 50px;
+    line-height: 1.6;
+    font-weight: 300;
+}
+
+/* Responsive Type */
+@media (max-width: 768px) {
+    .corner-branding h2 {
+        font-size: 3rem;
+    }
+
+    .corner-branding p {
+        font-size: 1.1rem;
+    }
+}
+
+/* Actions with Magnetic Feel */
+.corner-actions {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+}
+
+.btn-corner-primary {
+    background: var(--corner-orange);
+    color: white;
+    padding: 18px 45px;
+    border-radius: 50px;
+    border: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    /* Bouncy spring */
+    box-shadow: 0 10px 25px rgba(255, 87, 34, 0.3);
+}
+
+.btn-corner-primary:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(255, 87, 34, 0.4);
+    background: var(--corner-terracotta);
+}
+
+.btn-corner-secondary {
+    background: transparent;
+    color: var(--corner-orange);
+    padding: 18px 45px;
+    border-radius: 50px;
+    border: 2px solid var(--corner-orange);
+    /* Thicker border */
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-corner-secondary:hover {
+    background: rgba(255, 87, 34, 0.08);
+    transform: translateY(-2px);
+}
+
+
+/* --- INFO SECTION (BROKEN GRID) --- */
+.corner-info {
+    position: relative;
+    padding: 140px 5%;
+    max-width: 1600px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 60px;
+}
+
+@media (min-width: 992px) {
+    .corner-info {
+        grid-template-columns: 1.1fr 0.9fr;
+        /* Text larger */
+        align-items: center;
+        gap: 80px;
+    }
+}
+
+.corner-info-content {
+    order: 2;
+    /* Image/Video first on desktop? No, keep text (1) image (2) logic from JSX, adjust via Grid */
+}
+
+@media (min-width: 992px) {
+    .corner-info-content {
+        order: 1;
+        z-index: 2;
+    }
+
+    .corner-info-image {
+        order: 2;
+        z-index: 1;
+        transform: translateX(20px);
+        /* Slight overlap potential */
+    }
+}
+
+
+.corner-info-content h1 {
+    font-family: var(--corner-serif);
+    font-size: 3.5rem;
+    line-height: 1.1;
+    color: var(--corner-orange);
+    margin-bottom: 40px;
+    font-weight: 400;
+}
+
+.corner-info-content p {
+    font-size: 1.1rem;
+    line-height: 1.9;
+    /* More breathing room */
+    color: var(--corner-light-text);
+    margin-bottom: 25px;
+    font-weight: 300;
+}
+
+.corner-info-content strong {
+    font-weight: 600;
+    color: var(--corner-terracotta);
+}
+
+/* Glassmorphism Video Container */
+.corner-info-image {
+    position: relative;
+    border-radius: 30px;
+    overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.1);
+    /* Deep shadow */
+}
+
+.corner-info-image img,
+.corner-info-image video {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 30px;
+    transform: scale(1.01);
+    /* Prevent border bleeding */
+}
+
+
+/* --- GALLERY SECTION (INTERACTIVE SLIDER) --- */
+.corner-gallery {
+    padding: 120px 5%;
+    background: white;
+    display: flex;
+    /* Changed from grid to flex for slider */
+    gap: 40px;
+    overflow-x: auto;
+    /* Enable horizontal scroll */
+    scroll-behavior: smooth;
+    cursor: grab;
+    /* Indicate draggable */
+
+    /* Hide scrollbar */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+.corner-gallery::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari, Opera */
+}
+
+.corner-gallery:active {
+    cursor: grabbing;
+}
+
+.corner-gallery-item {
+    border-radius: 24px;
+    overflow: hidden;
+    height: 500px;
+    min-width: 350px;
+    /* Fixed width for items in slider */
+    flex: 0 0 auto;
+    /* Prevent shrinking */
+    position: relative;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+    transition: all 0.5s ease;
+    user-select: none;
+    /* Prevent text selection while dragging */
+}
+
+.corner-gallery-item img {
+    /* width: 100%; removed width 100% to avoid stretch */
+    width: auto;
+    min-width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    /* Prevent image drag ghost */
+    transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Hover Effect: Zoom & Lift (Compatible with Slider) */
+.corner-gallery-item:hover {
+    transform: translateY(-15px);
+    box-shadow: 0 30px 60px rgba(255, 87, 34, 0.15);
+}
+
+.corner-gallery-item:hover img {
+    transform: scale(1.1);
+}
+
+
+/* --- FAQ SECTION (FLOATING CARDS) --- */
+.corner-faq {
+    padding: 140px 5%;
+    background: var(--corner-bg);
+}
+
+.corner-faq-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 60px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+@media (min-width: 992px) {
+    .corner-faq-grid {
+        grid-template-columns: 0.8fr 1.2fr;
+        gap: 120px;
+        align-items: start;
+    }
+}
+
+.corner-faq-intro h3 {
+    font-family: var(--corner-serif);
+    font-size: 3rem;
+    color: var(--corner-orange);
+    margin: 25px 0 35px;
+    line-height: 1.1;
+}
+
+.faq-badge {
+    background: var(--corner-terracotta);
+    padding: 8px 18px;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    color: white;
+    border-radius: 4px;
+    display: inline-block;
+    font-weight: 600;
+}
+
+.faq-intro-text {
+    font-size: 1.2rem;
+    color: var(--corner-light-text);
+    font-weight: 300;
+}
+
+.faq-divider-line {
+    width: 60px;
+    height: 3px;
+    background: var(--corner-terracotta);
+    margin-bottom: 25px;
+}
+
+/* FAQ Items - Floating Cards */
+.faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    /* Space between cards */
+}
+
+.faq-item {
+    background: white;
+    /* Card background */
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    /* Subtle initial shadow */
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.faq-item:hover {
+    transform: translateY(-4px);
+    /* Lift effect */
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+    /* Deeper shadow on hover */
+    border-color: rgba(255, 87, 34, 0.1);
+}
+
+.faq-item.active {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    /* Active state shadow */
+    border-color: rgba(255, 87, 34, 0.2);
+}
+
+.faq-question {
+    font-family: var(--corner-sans);
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.faq-item.active .faq-question {
+    color: var(--corner-orange);
+}
+
+.faq-icon {
+    border: none;
+    background: rgba(255, 87, 34, 0.08);
+    color: var(--corner-orange);
+    padding: 8px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    margin-left: 15px;
+}
+
+.faq-item:hover .faq-icon {
+    background: var(--corner-orange);
+    color: white;
+}
+
+.faq-item.active .faq-icon {
+    background: var(--corner-orange);
+    color: white;
+    transform: rotate(180deg);
+}
+
+.faq-answer {
+    margin-top: 0;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    color: #666;
+    font-size: 1.05rem;
+    line-height: 1.8;
+}
+
+.faq-item.active .faq-answer {
+    margin-top: 25px;
+    max-height: 500px;
+    opacity: 1;
+}

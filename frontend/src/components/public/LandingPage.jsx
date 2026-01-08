@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Navbar from '../common/Navbar';
 import Footer from '../common/Footer';
+import RevealOnScroll from '../common/RevealOnScroll';
 import '../../styles/public/LandingPageAdvanced.css';
 
 // Videos de stock de alta calidad (Placeholders)
@@ -130,13 +131,15 @@ export default function LandingPage() {
 
       {/* --- 2. 100% NATURAL (Clean & Bold) --- */}
       <section className="natural-section">
-        <div className="natural-content">
-          <h2 className="natural-title">100% NATURAL</h2>
-          <p className="natural-desc">
-            Sin aditivos. Sin conservantes.<br />
-            Solo leche fresca de Cantabria, fruta de temporada y pasión.
-          </p>
-        </div>
+        <RevealOnScroll animation="fade-up">
+          <div className="natural-content">
+            <h2 className="natural-title">100% NATURAL</h2>
+            <p className="natural-desc">
+              Sin aditivos. Sin conservantes.<br />
+              Solo leche fresca de Cantabria, fruta de temporada y pasión.
+            </p>
+          </div>
+        </RevealOnScroll>
       </section>
 
       {/* --- 3. SCROLL HORIZONTAL DE PRODUCTOS (Vibrant) --- */}
@@ -167,7 +170,15 @@ export default function LandingPage() {
             </div>
           </div>
 
-
+          {/* Card 3 (Placeholder for Salted/Others if needed) */}
+          <div className="product-card-3d" onClick={() => navigate('/productos?categoria=salados')}>
+            <img className="card-img-bg" src={`${API_URL}/uploads/landing/categoria-salados.jpg`} alt="Salados" />
+            <div className="card-content-bottom">
+              <h3 className="card-title-lg">Salados</h3>
+              <p className="card-desc">Nuestros clásicos</p>
+              <button className="btn-card-action">Ver Catálogo</button>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -180,13 +191,15 @@ export default function LandingPage() {
           style={{ objectPosition: 'center' }}
         />
         <div className="map-content-center">
-          <h2 style={{ fontSize: '3rem', marginBottom: '20px' }}>Nuestra Historia</h2>
-          <p style={{ marginBottom: '40px', fontSize: '1.2rem', color: '#333' }}>
-            Más de 80 años de tradición, calidad y pasión por lo auténtico.
-          </p>
-          <button className="btn-premium" onClick={() => navigate('/historia')}>
-            Conocer Más
-          </button>
+          <RevealOnScroll animation="zoom-in">
+            <h2 style={{ fontSize: '3rem', marginBottom: '20px' }}>Nuestra Historia</h2>
+            <p style={{ marginBottom: '40px', fontSize: '1.2rem', color: '#333' }}>
+              Más de 80 años de tradición, calidad y pasión por lo auténtico.
+            </p>
+            <button className="btn-premium" onClick={() => navigate('/historia')}>
+              Conocer Más
+            </button>
+          </RevealOnScroll>
         </div>
       </section>
 
@@ -199,30 +212,34 @@ export default function LandingPage() {
           className="map-bg-image"
         />
         <div className="map-content-center">
-          <h2 style={{ fontSize: '3rem', marginBottom: '20px' }}>Estamos Cerca de Ti</h2>
-          <p style={{ marginBottom: '40px', fontSize: '1.2rem', color: '#333' }}>
-            Descubre nuestras más de 25 ubicaciones en el norte de España.
-          </p>
-          <button className="btn-premium" onClick={() => navigate('/tiendas')}>
-            Ver Mapa
-          </button>
+          <RevealOnScroll animation="zoom-in" delay={0.2}>
+            <h2 style={{ fontSize: '3rem', marginBottom: '20px' }}>Estamos Cerca de Ti</h2>
+            <p style={{ marginBottom: '40px', fontSize: '1.2rem', color: '#333' }}>
+              Descubre nuestras más de 25 ubicaciones en el norte de España.
+            </p>
+            <button className="btn-premium" onClick={() => navigate('/tiendas')}>
+              Ver Mapa
+            </button>
+          </RevealOnScroll>
         </div>
       </section>
 
       {/* --- 6. REGMA PARA PROFESIONALES (Alternative Organic Design) --- */}
       <section className="profesional-section-alt">
         <div className="profesional-content-alt">
-          <span className="profesional-tag-alt">Regma Profesionales</span>
-          <h2 className="profesional-title-alt">Tu Portal de<br />Gestión</h2>
-          <p className="profesional-desc-alt">
-            Accede a nuestra plataforma exclusiva para hostelería y retail.
-            Gestiona tus pedidos, consulta el catálogo completo y descubre las novedades de temporada en un solo clic.
-            <br /><br />
-            <strong>Eficiencia, rapidez y el sabor de siempre.</strong>
-          </p>
-          <button className="btn-profesional" onClick={() => navigate('/profesionales')}>
-            Entrar al Portal
-          </button>
+          <RevealOnScroll animation="fade-left">
+            <span className="profesional-tag-alt">Regma Profesionales</span>
+            <h2 className="profesional-title-alt">Tu Portal de<br />Gestión</h2>
+            <p className="profesional-desc-alt">
+              Accede a nuestra plataforma exclusiva para hostelería y retail.
+              Gestiona tus pedidos, consulta el catálogo completo y descubre las novedades de temporada en un solo clic.
+              <br /><br />
+              <strong>Eficiencia, rapidez y el sabor de siempre.</strong>
+            </p>
+            <button className="btn-profesional" onClick={() => navigate('/profesionales')}>
+              Entrar al Portal
+            </button>
+          </RevealOnScroll>
         </div>
 
         <div className="profesional-video-wrapper">

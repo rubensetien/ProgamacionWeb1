@@ -66,6 +66,13 @@ ProgamacionWeb1/
     *   **Catálogo Premium**: Fondos de video dinámicos, efecto *Glassmorphism* y chips de formato inteligentes (ej. mostrando "Barra de Corte" en lugar de "1 unidad").
 *   **Datos y Contenido**:
     *   **Descripciones Enriquecidas**: El sistema ahora genera descripciones detalladas y apetitosas específicas para cada formato (tarrina, familiar, etc.) y tipo de dulce.
+69: *   **Portal de Profesionales (B2B)**:
+70:     *   **Registro Premium**: Rediseño completo del formulario de alta de negocios (`/profesionales/registro-negocio`) con estética animada y *Glassmorphism*, alineada con el login.
+71:     *   **Notificaciones Automáticas**: Implementación de sistema de email (`nodemailer`) para enviar bienvenidas automáticas cuando un administrador valida una cuenta de negocio.
+72:     *   **Navegación Inteligente**: Botones de acción en la landing de profesionales con lógica condicional según el estado de autenticación.
+73: *   **Correcciones y Mejoras UX**:
+74:     *   **Landing Page**: Solución a problema de visibilidad en tarjetas de productos (eliminación de conflicto con *Scroll Reveal*).
+75:     *   **Carrito**: Validación de sesión antes de añadir productos, redirigiendo a login si es invitado.
     
 
 ---
@@ -221,7 +228,7 @@ mutation CrearPedidoDePrueba {
 
 **Resultado Esperado:**
 > [!NOTE]
-> ![Apollo Sandbox - Creación Pedido](src/Images/GraphQL/query1.png)
+> ![Apollo Sandbox - Creación Pedido](src/Images/GraphQl/query1.png)
 
 #### 2. Consultar Productos (Query)
 Obtención optimizada de datos de productos específicos.
@@ -243,4 +250,4 @@ query VerificarProductos {
 ```
 
 > [!NOTE]
-> ![Apollo Sandbox - Consulta Productos](src/Images/GraphQL/query2.png)
+> ![Apollo Sandbox - Consulta Productos](src/Images/GraphQl/query2.png)

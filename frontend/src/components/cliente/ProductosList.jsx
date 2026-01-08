@@ -109,7 +109,13 @@ const ProductosList = () => {
 
   const fetchProductos = async () => {
     try {
-      const res = await axios.get(`${API_URL}/api/productos`);
+      // Logic: If professional, fetch ALL (undefined params). If public, fetch only public (false).
+      const params = {};
+      if (usuario?.rol !== 'profesional') {
+        params.soloProfesionales = false;
+      }
+
+      const res = await axios.get(`${API_URL}/api/productos`, { params });
       const productosActivos = res.data.data.filter(p => p.activo);
       setProductos(productosActivos);
 
@@ -129,6 +135,24 @@ const ProductosList = () => {
   };
 
   const handleAddToCart = (grupo) => {
+    // [NEW] Check authentication first
+    if (!autenticado) {
+      Swal.fire({
+        title: 'Inicia sesión',
+        text: 'Debes estar registrado para comprar',
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonText: 'Ir al Login',
+        cancelButtonText: 'Cerrar',
+        confirmButtonColor: '#ff5722'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate('/login');
+        }
+      });
+      return;
+    }
+
     const activeId = selectedVariations[grupo.id];
     const activeProd = grupo.productos.find(p => p._id === activeId) || grupo.productos[0];
 
@@ -172,7 +196,7 @@ const ProductosList = () => {
           <source src={`${API_URL}/uploads/videoBola.mp4`} type="video/mp4" />
         </video>
         <div className="hero-overlay-content">
-          <h1 className="hero-title-cat">CATÁLOGO 2025</h1>
+          <h1 className="hero-title-cat">CATÁLOGO 2026</h1>
           <p className="hero-subtitle-cat">Colección de Sabores & Tradición</p>
         </div>
       </header>

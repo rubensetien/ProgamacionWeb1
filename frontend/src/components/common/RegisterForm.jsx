@@ -288,19 +288,33 @@ const RegisterForm = () => {
 
           {/* Footer */}
           <div className="auth-footer">
-            <p className="fade-in-up">
-              ¿Ya tienes cuenta?{' '}
+            <p className="fade-in-up" style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center' }}>
+              <span>
+                ¿Ya tienes cuenta?{' '}
+                <button
+                  type="button"
+                  className="link-button link-animated"
+                  onClick={() => navigate('/login')}
+                  disabled={cargando}
+                >
+                  Inicia sesión aquí
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
+                  </svg>
+                </button>
+              </span>
+
+              <span className="auth-separator">o</span>
+
               <button
                 type="button"
-                className="link-button link-animated"
-                onClick={() => navigate('/login')}
+                className="link-button link-animated feature-link"
+                onClick={() => navigate('/profesionales/registro-negocio')}
                 disabled={cargando}
+                style={{ color: '#FF5722', fontWeight: 600 }}
               >
-                Inicia sesión aquí
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                  <polyline points="12 5 19 12 12 19" />
-                </svg>
+                ¿Eres un negocio? Solicitar alta profesional
               </button>
             </p>
           </div>
@@ -308,7 +322,7 @@ const RegisterForm = () => {
 
         {/* Info adicional */}
         <div className="auth-info fade-in-up">
-          <p>© 2024 REGMA - El sabor de lo natural</p>
+          <p>© 2026 REGMA - El sabor de lo natural</p>
         </div>
       </div>
     </div>

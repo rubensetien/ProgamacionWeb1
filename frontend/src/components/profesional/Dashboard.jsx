@@ -43,7 +43,7 @@ export default function Dashboard() {
                 {/* RIGHT: ACTIONS GRID */}
                 <div className="actions-grid">
                     {/* CARD 1: PEDIDOS */}
-                    <div className="action-card" onClick={() => navigate('/productos')}>
+                    <div className="action-card" onClick={() => navigate('/profesional/catalogo')}>
                         <div>
                             <div className="action-icon">
                                 <ShoppingBag size={24} />

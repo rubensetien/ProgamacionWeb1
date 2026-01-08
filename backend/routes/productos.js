@@ -69,6 +69,15 @@ router.get('/', async (req, res) => {
     if (canal) filtro.canales = canal;
     if (seVendeOnline !== undefined) filtro.seVendeOnline = seVendeOnline === 'true';
 
+    // Filtro B2B
+    // Si se pasa 'true', solo muestra exclusivos. Si 'false', muestra todo lo que NO es exclusivo.
+    // Si no se pasa, muestra todo.
+    if (req.query.soloProfesionales === 'true') {
+      filtro.soloProfesionales = true;
+    } else if (req.query.soloProfesionales === 'false') {
+      filtro.soloProfesionales = { $ne: true }; // Include false AND undefined/null
+    }
+
     // Búsqueda por nombre o SKU
     if (buscar) {
       filtro.$or = [

@@ -186,12 +186,24 @@ const LoginForm = () => {
                 </button>
               </span>
 
+              <span className="auth-separator">o</span>
+
+              <button
+                type="button"
+                className="link-button link-animated feature-link"
+                onClick={() => navigate('/profesionales/registro-negocio')}
+                disabled={cargando}
+                style={{ color: '#FF5722', fontWeight: 600 }}
+              >
+                ¿Eres un negocio? Solicitar alta profesional
+              </button>
+
               <button
                 type="button"
                 className="link-button link-animated"
                 onClick={() => navigate('/')}
                 disabled={cargando}
-                style={{ fontSize: '14px', opacity: 0.8 }}
+                style={{ fontSize: '14px', opacity: 0.8, marginTop: '10px' }}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ transform: 'rotate(180deg)' }}>
                   <line x1="5" y1="12" x2="19" y2="12" />
@@ -207,7 +219,7 @@ const LoginForm = () => {
 
         {/* Info adicional */}
         <div className="auth-info fade-in-up">
-          <p>© 2025 REGMA - El sabor de lo natural</p>
+          <p>© 2026 REGMA - El sabor de lo natural</p>
         </div>
       </div>
     </div>

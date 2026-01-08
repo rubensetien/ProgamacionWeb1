@@ -14,6 +14,7 @@ import PerfilDatos from './components/cliente/PerfilDatos';
 import MisSolicitudes from './components/trabajador/MisSolicitudes';
 import StoreLocator from './components/public/StoreLocator';
 import DashboardProfesional from './components/profesional/Dashboard';
+import CatalogoProfesional from './components/profesional/CatalogoProfesional';
 import ProfesionalesPage from './components/public/ProfesionalesPage';
 import ProfesionalesDetail from './components/public/ProfesionalesDetail';
 import HistoriaPage from './components/public/HistoriaPage';
@@ -21,7 +22,8 @@ import AdminLayout from './components/admin/AdminLayout';
 import './App.css';
 import TrabajadorLayout from './components/trabajador/TrabajadorLayout';
 import GestorLayout from './components/gestor/GestorLayout';
-import AlbaranPrint from './components/admin/AlbaranPrint'; // ✅ NEW
+import AlbaranPrint from './components/admin/AlbaranPrint';
+import CornerPage from './components/public/CornerPage'; // ✅ NEW
 
 // Componente para proteger rutas que SÍ requieren autenticación
 const ProtectedRoute = ({ children, rolesPermitidos }) => {
@@ -88,6 +90,7 @@ function AppContent() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/tiendas" element={<StoreLocator />} />
         <Route path="/profesionales" element={<ProfesionalesPage />} />
+        <Route path="/profesionales/corner" element={<CornerPage />} />
         <Route path="/profesionales/:slug" element={<ProfesionalesDetail />} />
         <Route path="/productos" element={<ProductosList />} />
         <Route path="/historia" element={<HistoriaPage />} />
@@ -161,6 +164,14 @@ function AppContent() {
           element={
             <ProtectedRoute rolesPermitidos={['profesional']}>
               <DashboardProfesional />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profesional/catalogo"
+          element={
+            <ProtectedRoute rolesPermitidos={['profesional']}>
+              <ProductosList />
             </ProtectedRoute>
           }
         />
