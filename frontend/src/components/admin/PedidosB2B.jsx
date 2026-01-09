@@ -60,7 +60,7 @@ const PedidosB2B = () => {
         // The plan asks for "Frontend: AlbaranPrint.jsx (Printable Layout)".
         // We will implement that component next and maybe route to it.
         // For now, let's assume we navigate to /admin/albaran/:id or store in local state to print.
-        localStorage.setItem('print_pedido', JSON.stringify(pedido));
+        // localStorage.setItem('print_pedido', JSON.stringify(pedido)); // REMOVED FOR SECURITY
         window.open(`/albaran/${pedido._id}`, '_blank');
     };
 

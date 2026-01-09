@@ -13,7 +13,7 @@
 }
 
 /* Import Font if needed */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&display=swap');
+/* Font imported in index.html for performance */
 
 body {
     background-color: var(--shimmer-sand);

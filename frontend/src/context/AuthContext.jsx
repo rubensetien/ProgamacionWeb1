@@ -87,7 +87,7 @@ export const AuthProvider = ({ children }) => {
         ubicacionAsignada: userData.ubicacionAsignada
       };
 
-      localStorage.setItem('usuario', JSON.stringify(usuarioFormateado));
+      // localStorage.setItem('usuario', JSON.stringify(usuarioFormateado)); // REMOVED SECURITY
       setUsuario(usuarioFormateado);
       setAutenticado(true);
 
@@ -132,7 +132,7 @@ export const AuthProvider = ({ children }) => {
         ubicacionAsignada: userData.ubicacionAsignada
       };
 
-      localStorage.setItem('usuario', JSON.stringify(usuarioFormateado));
+      // localStorage.setItem('usuario', JSON.stringify(usuarioFormateado)); // REMOVED SECURITY
       setUsuario(usuarioFormateado);
       setAutenticado(true);
 
@@ -145,7 +145,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('usuario');
+    // localStorage.removeItem('usuario'); // Removed
     setToken(null); // Clear state
     setUsuario(null);
     setAutenticado(false);

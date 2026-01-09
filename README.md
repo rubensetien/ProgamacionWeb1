@@ -73,8 +73,12 @@ ProgamacionWeb1/
 73: *   **Correcciones y Mejoras UX**:
 74:     *   **Landing Page**: Solución a problema de visibilidad en tarjetas de productos (eliminación de conflicto con *Scroll Reveal*).
 75:     *   **Carrito**: Validación de sesión antes de añadir productos, redirigiendo a login si es invitado.
-    
-
+    *   **Carrito**: Validación de sesión antes de añadir productos, redirigiendo a login si es invitado.
+*   **Auditoría de Seguridad y Privacidad**:
+    *   **Eliminación de PII en LocalStorage**: Refactorización crítica de `AlbaranPrint` y `PedidosB2B` para proteger datos personales. Los albaranes ahora obtienen datos seguros desde la API mediante ID, eliminando la exposición en el navegador.
+    *   **Hardening de Sesión**: Limpieza de `AuthContext` para almacenar únicamente el token JWT, evitando la persistencia innecesaria de objetos de usuario completos.
+*   **Optimización de Rendimiento (LCP)**:
+    *   **Core Web Vitals**: Optimización de carga de fuentes (eliminación de `@import` bloqueante, uso de `preconnect`) y priorización de imágenes críticas (`fetchpriority="high"`), mejorando significativamente la velocidad de carga inicial.
 ---
 
 ## 🛠️ Stack Tecnológico

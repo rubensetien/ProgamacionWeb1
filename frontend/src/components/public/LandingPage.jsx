@@ -112,8 +112,10 @@ export default function LandingPage() {
             src="https://regma.es/wp-content/uploads/2024/09/240503-regma-logotipo-rgb-logo-con-tagline-e1721651920696.png"
             alt="REGMA"
             className="hero-logo-dynamic"
+            fetchpriority="high"
+            loading="eager"
           />
-          <p className="hero-subtitle-advanced">Pasión Helada desde 1940</p>
+          <p className="hero-subtitle-advanced">Pasión Helada desde 1933</p>
         </div>
 
         {/* Scroll Indicator (Mouse) */}

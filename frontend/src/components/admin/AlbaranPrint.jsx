@@ -7,24 +7,31 @@ const AlbaranPrint = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Intentar leer de localStorage primero para rapidez
-        const stored = localStorage.getItem('print_pedido');
-        if (stored) {
-            const parsed = JSON.parse(stored);
-            if (parsed._id === id) {
-                setPedido(parsed);
-                setLoading(false);
-                // Clean up
-                // localStorage.removeItem('print_pedido');
-                return;
-            }
-        }
+        const fetchPedido = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/pedidos/${id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
 
-        // Si no está o es otro, fetch
-        // TODO: Implementar fetch si es necesario, pero asumiendo que Admin pasa datos.
-        // Si se accede directo por URL, necesitaríamos fetch y auth token.
-        // Simplificación: mostrar error si no hay datos.
-        setLoading(false);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success) {
+                        setPedido(data.data);
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching pedido:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (id) {
+            fetchPedido();
+        } else {
+            setLoading(false);
+        }
     }, [id]);
 
     useEffect(() => {
