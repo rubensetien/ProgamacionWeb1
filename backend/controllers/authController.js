@@ -71,7 +71,7 @@ const enviarEmailBienvenida = async (nombre, email) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    
+
     const usuario = await Usuario.findOne({ email });
     if (!usuario) {
       return res.status(401).json({ ok: false, mensaje: 'Credenciales inválidas' });
@@ -112,11 +112,12 @@ export const login = async (req, res) => {
     res.json({
       ok: true,
       accessToken,
-      usuario: { 
-        id: usuario._id, 
-        nombre: usuario.nombre, 
-        email: usuario.email, 
-        rol: usuario.rol 
+      usuario: {
+        id: usuario._id,
+        nombre: usuario.nombre,
+        email: usuario.email,
+        rol: usuario.rol,
+        ubicacionAsignada: usuario.ubicacionAsignada
       }
     });
   } catch (error) {
@@ -132,18 +133,18 @@ export const register = async (req, res) => {
     // 1. Verificar reCAPTCHA
     const recaptchaValido = await verificarRecaptcha(recaptchaToken);
     if (!recaptchaValido) {
-      return res.status(400).json({ 
-        ok: false, 
-        mensaje: 'Verificación reCAPTCHA inválida. Por favor, intenta de nuevo.' 
+      return res.status(400).json({
+        ok: false,
+        mensaje: 'Verificación reCAPTCHA inválida. Por favor, intenta de nuevo.'
       });
     }
 
     // 2. Verificar que el email no exista
     const usuarioExistente = await Usuario.findOne({ email });
     if (usuarioExistente) {
-      return res.status(400).json({ 
-        ok: false, 
-        mensaje: 'Este email ya está registrado' 
+      return res.status(400).json({
+        ok: false,
+        mensaje: 'Este email ya está registrado'
       });
     }
 
@@ -185,27 +186,27 @@ export const registerAdmin = async (req, res) => {
     // 1. Verificar que el admin actual existe (viene de authBasic middleware)
     const adminActual = await Usuario.findById(req.user.id);
     if (!adminActual) {
-      return res.status(401).json({ 
-        ok: false, 
-        mensaje: 'Admin no encontrado' 
+      return res.status(401).json({
+        ok: false,
+        mensaje: 'Admin no encontrado'
       });
     }
 
     // 2. Verificar contraseña del admin actual
     const passwordValido = await adminActual.compararPassword(adminPassword);
     if (!passwordValido) {
-      return res.status(401).json({ 
-        ok: false, 
-        mensaje: 'Contraseña de administrador incorrecta' 
+      return res.status(401).json({
+        ok: false,
+        mensaje: 'Contraseña de administrador incorrecta'
       });
     }
 
     // 3. Verificar que el email no exista
     const usuarioExistente = await Usuario.findOne({ email });
     if (usuarioExistente) {
-      return res.status(400).json({ 
-        ok: false, 
-        mensaje: 'Este email ya está registrado' 
+      return res.status(400).json({
+        ok: false,
+        mensaje: 'Este email ya está registrado'
       });
     }
 
@@ -269,13 +270,13 @@ export const registerAdmin = async (req, res) => {
 export const refresh = async (req, res) => {
   try {
     const refreshToken = req.cookies.refreshToken;
-    
+
     if (!refreshToken) {
       return res.status(401).json({ ok: false, mensaje: 'Refresh token no proporcionado' });
     }
 
     const tokenData = await RefreshToken.findOne({ token: refreshToken }).populate('usuario');
-    
+
     if (!tokenData || tokenData.expiresAt < new Date()) {
       return res.status(401).json({ ok: false, mensaje: 'Refresh token inválido' });
     }
@@ -296,11 +297,11 @@ export const refresh = async (req, res) => {
 export const logout = async (req, res) => {
   try {
     const refreshToken = req.cookies.refreshToken;
-    
+
     if (refreshToken) {
       await RefreshToken.deleteOne({ token: refreshToken });
     }
-    
+
     res.clearCookie('refreshToken');
     res.json({ ok: true, mensaje: 'Sesión cerrada' });
   } catch (error) {

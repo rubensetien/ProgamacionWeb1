@@ -6,6 +6,7 @@ import { useCarrito } from '../../context/CarritoContext';
 import Navbar from '../common/Navbar';
 import Swal from 'sweetalert2';
 import '../../styles/cliente/ProductosListModern.css'; // New CSS
+import IceCreamBot from './IceCreamBot';
 
 // API URL Config
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -287,6 +288,9 @@ const ProductosList = () => {
           </div>
         )}
       </main>
+
+      {/* 5. CHATBOT */}
+      <IceCreamBot productos={productos} />
 
     </div>
   );

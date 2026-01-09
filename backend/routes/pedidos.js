@@ -350,6 +350,12 @@ router.put('/:id/estado', auth, async (req, res) => {
 
     await pedido.cambiarEstado(estado, req.usuario.id, 'Cambio de estado manual por tienda/admin');
 
+    // [NEW] Emitir evento socket para actualización en tiempo real
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('pedido-actualizado', pedido);
+    }
+
     res.json({
       success: true,
       message: `Pedido actualizado a ${estado}`,

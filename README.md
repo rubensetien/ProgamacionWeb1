@@ -34,6 +34,8 @@ ProgamacionWeb1/
 │   │   ├── productos.js       # API de catálogo
 │   │   ├── pedidos.js         # API de ventas
 │   │   ├── inventario.js      # API de stock
+│   │   ├── turnos.js          # API de turnos y personal
+│   │   ├── solicitudesStock.js # API de reposición de tiendas
 │   │   └── ubicaciones.js     # API de sedes
 │   └── server.js              # Entry point: Express + Socket.IO + MongoDB
 │
@@ -64,6 +66,10 @@ ProgamacionWeb1/
     *   **Navegación Unificada**: Implementación de una `Navbar` única y responsiva para todo el sitio público (Landing, Historia, Catálogo, Buscador de Tiendas).
     *   **Localizador de Tiendas Avanzado**: Nueva funcionalidad "Cerca de mí" con geolocalización, visualización de radio de búsqueda en mapa y cálculo de distancia en tiempo real.
     *   **Catálogo Premium**: Fondos de video dinámicos, efecto *Glassmorphism* y chips de formato inteligentes (ej. mostrando "Barra de Corte" en lugar de "1 unidad").
+    *   **Heladero Virtual (IceCreamBot)**: Nueva funcionalidad de asistente inteligente (`IceCreamBot.jsx`) que ofrece:
+        *   **Atención 24/7**: Resolución automática de dudas sobre envíos, alérgenos (gluten) y servicios B2B.
+        *   **Recomendador de Productos**: Búsqueda interactiva de sabores en el chat con tarjetas visuales de productos.
+        *   **UX Conversacional**: Simulación de escritura, respuestas rápidas y diseño flotante no intrusivo.
 *   **Datos y Contenido**:
     *   **Descripciones Enriquecidas**: El sistema ahora genera descripciones detalladas y apetitosas específicas para cada formato (tarrina, familiar, etc.) y tipo de dulce.
 69: *   **Portal de Profesionales (B2B)**:

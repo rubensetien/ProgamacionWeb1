@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /tienda
+Disallow: /trabajador
+Disallow: /profesional
+Disallow: /carrito
+Disallow: /perfil
+
+Sitemap: https://regma.es/sitemap.xml

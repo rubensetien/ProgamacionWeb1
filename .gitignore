@@ -26,5 +26,7 @@ backend/uploads/temp/
 
 # Scratchpad & Backups
 *.txt
+!robots.txt
+!frontend/public/robots.txt
 *.backup*
 .vercel/

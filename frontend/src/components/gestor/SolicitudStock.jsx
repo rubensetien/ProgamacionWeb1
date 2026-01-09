@@ -21,12 +21,27 @@ const SolicitudStock = () => {
   const [activeTab, setActiveTab] = useState('nueva'); // nueva | historial
   const [enviando, setEnviando] = useState(false);
 
+  // Helper to extract Safe ID
+  const getUbicacionId = (location) => {
+    if (!location) return null;
+    return typeof location === 'object' ? location._id : location;
+  };
+
+  const ubicacionId = getUbicacionId(usuario?.ubicacionAsignada);
+
   useEffect(() => {
     cargarProductos();
-    if (usuario?.tiendaAsignada) {
+  }, []);
+
+  useEffect(() => {
+    console.log('🔄 [SolicitudStock] Checking usuario for history load:', usuario);
+    if (ubicacionId) {
+      console.log('✅ [SolicitudStock] Tienda asignada found, loading history...');
       cargarHistorial();
+    } else {
+      console.log('⚠️ [SolicitudStock] No tiendaAsignada to load history.');
     }
-  }, [usuario, token]);
+  }, [ubicacionId, token]);
 
   const cargarProductos = async () => {
     try {

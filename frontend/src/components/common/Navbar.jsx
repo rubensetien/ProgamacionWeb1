@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCarrito } from '../../context/CarritoContext';
 import { LogOut, User, LayoutDashboard, ShoppingCart, Menu, X, ChevronDown } from 'lucide-react';
@@ -45,34 +45,32 @@ export default function Navbar({ transparent = false }) {
         <nav className={`${navbarClass} ${isB2B ? 'navbar-b2b' : ''}`} onMouseLeave={() => setShowProfMenu(false)}>
             <div className="navbar-content">
                 {/* LOGO */}
-                <div className="nav-logo-container" onClick={() => navigate(isB2B ? '/profesionales' : '/')}>
+                <Link to={isB2B ? '/profesionales' : '/'} className="nav-logo-container">
                     <img
                         src="https://regma.es/wp-content/uploads/2024/09/240503-regma-logotipo-rgb-logo-con-tagline-e1721651920696.png"
                         alt="Regma"
                         className="nav-logo-img"
                     />
-
-                </div>
+                </Link>
 
                 {/* CENTER LINKS */}
                 <div className="nav-links">
                     <>
-                        <a onClick={() => navigate('/')} className={`nav-link ${isActive('/')}`}>Inicio</a>
+                        <Link to="/" className={`nav-link ${isActive('/')}`}>Inicio</Link>
 
                         {/* PROFESIONALES DROPDOWN TRIGGER */}
                         <div
                             className="nav-item-dropdown"
                             onMouseEnter={() => setShowProfMenu(true)}
-                            onClick={() => navigate('/profesionales')}
                         >
-                            <span className={`nav-link ${isActive('/profesionales')}`} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <Link to="/profesionales" className={`nav-link ${isActive('/profesionales')}`} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                                 Regma para Profesionales <ChevronDown size={14} />
-                            </span>
+                            </Link>
                         </div>
 
-                        <a onClick={() => navigate('/historia')} className={`nav-link ${isActive('/historia')}`}>Sobre Regma</a>
-                        <a onClick={() => navigate('/tiendas')} className={`nav-link ${isActive('/tiendas')}`}>Tiendas</a>
-                        <a onClick={() => navigate('/productos')} className={`btn-nav-catalog ${location.pathname === '/productos' ? 'active-catalog' : ''}`}>Catálogo</a>
+                        <Link to="/historia" className={`nav-link ${isActive('/historia')}`}>Sobre Regma</Link>
+                        <Link to="/tiendas" className={`nav-link ${isActive('/tiendas')}`}>Tiendas</Link>
+                        <Link to="/productos" className={`btn-nav-catalog ${location.pathname === '/productos' ? 'active-catalog' : ''}`}>Catálogo</Link>
                     </>
                 </div>
 
@@ -80,19 +78,19 @@ export default function Navbar({ transparent = false }) {
                 <div className="nav-actions">
 
                     {/* CART ICON */}
-                    <div
+                    <Link
+                        to="/carrito"
                         className="nav-cart-container"
-                        onClick={() => navigate('/carrito')}
                         title="Ver mi carrito"
                     >
                         <ShoppingCart size={24} />
                         {cantidadTotal() > 0 && (
                             <span className="nav-cart-badge">{cantidadTotal()}</span>
                         )}
-                    </div>
+                    </Link>
 
                     {!autenticado ? (
-                        <a onClick={() => navigate('/login')} className="btn-nav-login" style={{ cursor: 'pointer' }}>Entrar</a>
+                        <Link to="/login" className="btn-nav-login" style={{ cursor: 'pointer' }}>Entrar</Link>
                     ) : (
                         <div className="user-avatar-container">
                             <div

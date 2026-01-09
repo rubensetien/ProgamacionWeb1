@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import io from 'socket.io-client';
 import { useAuth } from '../../context/AuthContext';
 import { Package, Clock, CheckCircle, AlertCircle, RefreshCw, Search, ChevronRight } from 'lucide-react';
 import '../../styles/gestor/PanelTienda.css'; // Reusing store styles
@@ -44,6 +45,42 @@ const PedidosTienda = () => {
       cargarPedidos();
     }
   }, [usuario, token]);
+
+  // [NEW] Socket.IO Listener
+  useEffect(() => {
+    if (!usuario?.tiendaAsignada) return;
+
+    const newSocket = io(API_URL);
+
+    newSocket.on('connect', () => {
+      console.log('🔌 Conectado a socket de pedidos');
+      // Identificarse si es necesario para rooms, por ahora broadcast global
+    });
+
+    newSocket.on('nuevo-pedido', (pedido) => {
+      // Verificar si es para esta tienda
+      const tiendaId = typeof pedido.puntoVenta === 'object' ? pedido.puntoVenta._id : pedido.puntoVenta;
+
+      if (tiendaId === usuario.tiendaAsignada) {
+        // Reproducir sonido opcional
+        const audio = new Audio('/sounds/notification.mp3'); // Asegurar ruta o quitar
+        audio.play().catch(e => console.log('Audio autoplay blocked'));
+
+        setPedidos(prev => [pedido, ...prev]);
+        // Podríamos mostrar Toast
+      }
+    });
+
+    newSocket.on('pedido-actualizado', (pedidoActualizado) => {
+      setPedidos(prev => prev.map(p =>
+        p._id === pedidoActualizado._id ? pedidoActualizado : p
+      ));
+    });
+
+    return () => {
+      newSocket.disconnect();
+    };
+  }, [usuario?.tiendaAsignada]);
 
   const cambiarEstado = async (id, nuevoEstado) => {
     if (!confirm(`¿Cambiar estado a ${nuevoEstado}?`)) return;
