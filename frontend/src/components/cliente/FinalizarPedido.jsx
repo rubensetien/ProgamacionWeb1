@@ -230,62 +230,84 @@ export default function FinalizarPedido() {
         return;
       }
 
-      const datosPedido = {
-        items: carrito.items.map(item => ({
-          producto: item.producto,
-          variante: item.variante,
-          formato: item.formato,
-          cantidad: item.cantidad,
-          precioUnitario: item.precioUnitario,
-          // Snapshot de datos
-          nombreProducto: item.nombreProducto,
-          nombreVariante: item.nombreVariante,
-          nombreFormato: item.nombreFormato,
-          sku: item.sku,
-          imagenVariante: item.imagenVariante
-        })),
-        tipoEntrega,
-        telefonoContacto: formulario.telefono,
-        notasEntrega: formulario.notas
+      /* 
+       * =========================================
+       * [MODIFIED] Using GraphQL Mutation instead of REST
+       * =========================================
+       */
+      const query = `
+        mutation CrearPedido($datos: PedidoInput!) {
+          crearPedido(datos: $datos) {
+            id
+            numeroPedido
+            total
+            estado
+          }
+        }
+      `;
+
+      const variables = {
+        datos: {
+          usuarioId: usuario.id || usuario._id,
+          tipoEntrega,
+          telefonoContacto: formulario.telefono,
+          notasEntrega: formulario.notas,
+          distanciaKm: formulario.distanciaKm,
+          puntoVenta: tipoEntrega === 'recogida' ? formulario.puntoVenta : null,
+          fechaRecogida: tipoEntrega === 'recogida' ? formulario.fechaRecogida : null,
+          horaRecogida: tipoEntrega === 'recogida' ? formulario.horaRecogida : null,
+          items: carrito.items.map(item => ({
+            productoId: typeof item.producto === 'object' ? item.producto._id : item.producto,
+            cantidad: item.cantidad
+          })),
+          direccionEnvio: tipoEntrega === 'domicilio' ? {
+            calle: formulario.calle,
+            numero: formulario.numero,
+            piso: formulario.piso,
+            codigoPostal: formulario.codigoPostal,
+            ciudad: formulario.ciudad,
+            provincia: formulario.provincia,
+            pais: 'España'
+          } : null
+        }
       };
 
+      // Cleanup undefined/null for GraphQL strict input if needed, though null is allowed for optionals
       if (tipoEntrega === 'recogida') {
-        datosPedido.puntoVenta = formulario.puntoVenta;
-        datosPedido.fechaRecogida = formulario.fechaRecogida;
-        datosPedido.horaRecogida = formulario.horaRecogida;
+        delete variables.datos.direccionEnvio;
+        variables.datos.puntoVenta = formulario.puntoVenta; // Ensure field matches schema
       } else {
-        datosPedido.direccionEnvio = {
-          calle: formulario.calle,
-          numero: formulario.numero,
-          piso: formulario.piso,
-          codigoPostal: formulario.codigoPostal,
-          ciudad: formulario.ciudad,
-          provincia: formulario.provincia,
-          pais: 'España'
-        };
-        datosPedido.distanciaKm = formulario.distanciaKm;
+        delete variables.datos.puntoVenta;
+        delete variables.datos.fechaRecogida;
+        delete variables.datos.horaRecogida;
       }
 
-      const response = await fetch(`${API_URL}/api/pedidos`, {
+      console.log('🚀 Sending GraphQL Mutation:', variables);
+
+      const response = await fetch(`${API_URL}/graphql`, {
         method: 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify(datosPedido)
+        body: JSON.stringify({ query, variables })
       });
 
-      const data = await response.json();
+      const responseBody = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Error al crear el pedido');
+      if (responseBody.errors) {
+        throw new Error(responseBody.errors[0].message);
       }
 
-      if (data.success) {
+      const data = responseBody.data;
+
+      if (data && data.crearPedido) {
+        // Success
         await fetch(`${API_URL}/api/carrito`, {
           method: 'DELETE',
           headers: getAuthHeaders()
         });
 
-        // alert('Pedido realizado con éxito'); // Removing intrusive alert
         navigate('/mis-pedidos');
+      } else {
+        throw new Error('Error desconocido al crear pedido');
       }
 
     } catch (err) {

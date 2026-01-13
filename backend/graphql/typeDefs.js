@@ -55,9 +55,32 @@ const typeDefs = gql`
   }
 
   # Inputs
+  input DireccionInput {
+    calle: String
+    numero: String
+    piso: String
+    codigoPostal: String
+    ciudad: String
+    provincia: String
+    pais: String
+  }
+
   input PedidoItemInput {
     productoId: ID!
     cantidad: Int!
+  }
+
+  input PedidoInput {
+    usuarioId: ID!
+    items: [PedidoItemInput]!
+    tipoEntrega: String!
+    telefonoContacto: String
+    notasEntrega: String
+    puntoVenta: ID
+    fechaRecogida: String
+    horaRecogida: String
+    direccionEnvio: DireccionInput
+    distanciaKm: Float
   }
 
   # Queries
@@ -70,7 +93,7 @@ const typeDefs = gql`
 
   # Mutations
   type Mutation {
-    crearPedido(usuarioId: ID!, items: [PedidoItemInput]!): Pedido
+    crearPedido(datos: PedidoInput!): Pedido
     actualizarEstadoPedido(id: ID!, estado: String!): Pedido
   }
 `;

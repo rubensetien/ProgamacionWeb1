@@ -1,6 +1,14 @@
-# Plataforma E-Commerce & ERP Regma
+# 🍦 Plataforma Integral Regma - E-Commerce & ERP
+
+> **Solución digital completa para la gestión de heladerías, pastelerías y venta B2C/B2B.**
 
 Sistema integral de gestión para heladerías y pastelerías, combinando un e-commerce moderno con un potente ERP para administración de inventario y logística.
+
+<div align="center">
+  <video src="frontend/src/Grabación de pantalla desde 2026-01-12 22-50-56.webm" width="100%" controls></video>
+</div>
+
+![Regma Banner](https://regma.es/wp-content/uploads/2024/09/240503-regma-logotipo-rgb-logo-con-tagline-e1721651920696.png)
 
 ## 📁 Estructura del Proyecto
 
@@ -211,17 +219,22 @@ Ejemplo de creación de pedido para el usuario **Ruben** incluyendo los producto
 ```graphql
 mutation CrearPedidoDePrueba {
   crearPedido(
-    usuarioId: "693155b03956e7d9c27704bd", 
-    items: [
-      { 
-        productoId: "695576806bfef2433fe5e9e6", 
-        cantidad: 2 
-      },
-      { 
-        productoId: "695576826bfef2433fe5ea19", 
-        cantidad: 1 
-      }
-    ]
+    datos: {
+      usuarioId: "693155b03956e7d9c27704bd", 
+      tipoEntrega: "recogida",
+      puntoVenta: "6952c506b6c9c460c5fc673a",
+      telefonoContacto: "600123456",
+      items: [
+        { 
+          productoId: "695576806bfef2433fe5e9e6", 
+          cantidad: 2 
+        },
+        { 
+          productoId: "695576826bfef2433fe5ea19", 
+          cantidad: 1 
+        }
+      ]
+    }
   ) {
     id
     numeroPedido

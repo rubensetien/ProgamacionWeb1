@@ -64,11 +64,13 @@ const resolvers = {
         },
     },
     Mutation: {
-        crearPedido: async (_, { usuarioId, items }) => {
-            // Implementación básica para demostración.
-            // En un caso real, esto debería reutilizar la lógica de negocio de controladores existentes o servicios.
-            // Aquí asumimos una creación simplificada.
+        crearPedido: async (_, { datos }) => {
             try {
+                const {
+                    usuarioId, items, tipoEntrega, telefonoContacto, notasEntrega,
+                    puntoVenta, fechaRecogida, horaRecogida, direccionEnvio, distanciaKm
+                } = datos;
+
                 const usuario = await Usuario.findById(usuarioId);
                 if (!usuario) throw new Error('Usuario no encontrado');
 
@@ -88,7 +90,10 @@ const resolvers = {
                         cantidad: item.cantidad,
                         precioUnitario: precio,
                         subtotal,
-                        nombreProducto: producto.nombre
+                        nombreProducto: producto.nombre,
+                        // Snapshot básico, idealmente se copiarían más datos
+                        nombreVariante: producto.variante?.nombre,
+                        nombreFormato: producto.formato?.nombre
                     });
                 }
 
@@ -96,19 +101,30 @@ const resolvers = {
                     usuario: usuarioId,
                     items: pedidoItems,
                     total,
-                    subtotal: total, // Asumiendo sin descuentos por ahora
+                    subtotal: total,
                     estado: 'pendiente',
-                    tipo: 'compra-online', // Default
-                    tipoEntrega: 'recogida', // Default simplificado
-                    telefonoContacto: '000000000' // Placeholder
+                    tipo: 'compra-online',
+                    tipoEntrega,
+                    telefonoContacto,
+                    notasEntrega,
+                    // Campos condicionales
+                    puntoVenta: tipoEntrega === 'recogida' ? puntoVenta : undefined,
+                    fechaRecogida: tipoEntrega === 'recogida' ? fechaRecogida : undefined,
+                    horaRecogida: tipoEntrega === 'recogida' ? horaRecogida : undefined,
+                    direccionEnvio: tipoEntrega === 'domicilio' ? direccionEnvio : undefined,
+                    distanciaKm: tipoEntrega === 'domicilio' ? distanciaKm : undefined
                 });
-                // Nota: El modelo Pedido tiene muchos campos requeridos (tipoEntrega, telefonoContacto, etc).
-                // Para una integración real, deberíamos pasar todos estos inputs en la Mutation.
-                // Por simplicidad en este paso, asignaré valores por defecto o dummy para que pase la validación
-                // si el usuario no los provee. Pero la Mutation debería expandirse.
 
                 await nuevoPedido.save();
-                return await Pedido.findById(nuevoPedido._id).populate('items.producto');
+
+                // Emitir evento socket (opcional, replicando lógica de REST)
+                // const io = require('../server').io; // No accesible fácilmente aquí sin inyección de dependencia en contexto
+                // Si el contexto tiene io, usarlo:
+                // if (context.io) context.io.emit('nuevo-pedido', nuevoPedido);
+
+                return await Pedido.findById(nuevoPedido._id)
+                    .populate('items.producto')
+                    .populate('usuario');
 
             } catch (error) {
                 console.error(error);
