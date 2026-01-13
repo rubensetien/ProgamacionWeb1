@@ -5,7 +5,7 @@
 Sistema integral de gestión para heladerías y pastelerías, combinando un e-commerce moderno con un potente ERP para administración de inventario y logística.
 
 <div align="center">
-  <video src="frontend/src/Grabación de pantalla desde 2026-01-12 22-50-56.webm" width="100%" controls></video>
+  <video src="frontend/src/Ruben Setien Fernandez_s Video. mp4" width="100%" controls></video>
 </div>
 
 ![Regma Banner](https://regma.es/wp-content/uploads/2024/09/240503-regma-logotipo-rgb-logo-con-tagline-e1721651920696.png)
